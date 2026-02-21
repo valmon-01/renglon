@@ -1,65 +1,123 @@
-import Image from "next/image";
+import Link from "next/link";
+import { Pencil } from "lucide-react";
 
 export default function Home() {
   return (
-    <div className="flex min-h-screen items-center justify-center bg-zinc-50 font-sans dark:bg-black">
-      <main className="flex min-h-screen w-full max-w-3xl flex-col items-center justify-between py-32 px-16 bg-white dark:bg-black sm:items-start">
-        <Image
-          className="dark:invert"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={100}
-          height={20}
-          priority
-        />
-        <div className="flex flex-col items-center gap-6 text-center sm:items-start sm:text-left">
-          <h1 className="max-w-xs text-3xl font-semibold leading-10 tracking-tight text-black dark:text-zinc-50">
-            To get started, edit the page.tsx file.
-          </h1>
-          <p className="max-w-md text-lg leading-8 text-zinc-600 dark:text-zinc-400">
-            Looking for a starting point or more instructions? Head over to{" "}
-            <a
-              href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
+    <div className="min-h-screen bg-papel">
+
+      {/* Navbar */}
+      <nav className="w-full px-6 py-5">
+        <div className="mx-auto flex max-w-[720px] items-center justify-between">
+          <span className="font-display text-xl italic text-tinta">renglón</span>
+          <div className="flex items-center gap-3">
+            <Link
+              href="/login"
+              className="rounded-[6px] border border-borravino px-4 py-2 text-sm text-borravino transition-colors hover:bg-borravino hover:text-blanco-roto"
+              style={{ borderWidth: "1.5px" }}
             >
-              Templates
-            </a>{" "}
-            or the{" "}
-            <a
-              href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
+              Entrar
+            </Link>
+            <Link
+              href="/registro"
+              className="rounded-[6px] bg-borravino px-4 py-2 text-sm text-blanco-roto transition-colors hover:opacity-90"
             >
-              Learning
-            </a>{" "}
-            center.
-          </p>
+              Empezar
+            </Link>
+          </div>
         </div>
-        <div className="flex flex-col gap-4 text-base font-medium sm:flex-row">
-          <a
-            className="flex h-12 w-full items-center justify-center gap-2 rounded-full bg-foreground px-5 text-background transition-colors hover:bg-[#383838] dark:hover:bg-[#ccc] md:w-[158px]"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="dark:invert"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={16}
-              height={16}
-            />
-            Deploy Now
-          </a>
-          <a
-            className="flex h-12 w-full items-center justify-center rounded-full border border-solid border-black/[.08] px-5 transition-colors hover:border-transparent hover:bg-black/[.04] dark:border-white/[.145] dark:hover:bg-[#1a1a1a] md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Documentation
-          </a>
+      </nav>
+
+      {/* Hero */}
+      <main className="relative mx-auto max-w-[720px] overflow-hidden px-6 pb-24 pt-16">
+
+        {/* Marca de agua */}
+        <span
+          aria-hidden="true"
+          className="pointer-events-none absolute inset-0 flex select-none items-center justify-center font-display font-bold italic leading-none"
+          style={{ fontSize: "clamp(100px, 22vw, 200px)", color: "rgba(100, 49, 62, 0.06)" }}
+        >
+          renglón
+        </span>
+
+        <div className="relative z-10 flex flex-col items-center gap-8 text-center">
+
+          {/* Tag pill */}
+          <div className="flex items-center gap-2 rounded-full border border-borde bg-papel-oscuro px-4 py-2 text-sm text-tinta-suave">
+            <Pencil size={14} strokeWidth={1.5} />
+            <span>Una consigna nueva cada día</span>
+          </div>
+
+          {/* Título */}
+          <h1 className="font-display text-5xl leading-tight text-tinta sm:text-6xl">
+            Un espacio para escribir
+            <br />
+            <em className="italic text-borravino">sin excusas</em>
+          </h1>
+
+          {/* Subtítulo */}
+          <p className="max-w-md text-base leading-relaxed text-tinta-suave">
+            Cada día una nueva consigna. Escribís, y solo después podés leer lo que escribieron los demás.
+          </p>
+
+          {/* Botones */}
+          <div className="flex flex-wrap items-center justify-center gap-3">
+            <Link
+              href="/registro"
+              className="rounded-[6px] bg-borravino px-6 py-3 text-sm font-medium text-blanco-roto transition-colors hover:opacity-90"
+            >
+              Crear mi cuenta
+            </Link>
+            <Link
+              href="/feed"
+              className="rounded-[6px] border border-borravino px-6 py-3 text-sm font-medium text-borravino transition-colors hover:bg-borravino hover:text-blanco-roto"
+              style={{ borderWidth: "1.5px" }}
+            >
+              Ver el feed de hoy
+            </Link>
+          </div>
+
         </div>
       </main>
+
+      {/* ¿Cómo funciona? */}
+      <section className="mx-auto max-w-[720px] px-6 pb-24">
+        <h2 className="mb-12 text-center font-display text-2xl text-tinta">
+          ¿Cómo funciona?
+        </h2>
+        <div className="grid grid-cols-1 gap-6 sm:grid-cols-3">
+          {[
+            {
+              num: "01",
+              title: "Recibís la consigna",
+              desc: "Cada día al abrir la app encontrás una nueva consigna para escribir.",
+            },
+            {
+              num: "02",
+              title: "Escribís lo tuyo",
+              desc: "Tenés el espacio para escribir tu texto sin distracciones.",
+            },
+            {
+              num: "03",
+              title: "Lo compartís",
+              desc: "Una vez que enviás, podés leer lo que escribieron los demás.",
+            },
+          ].map(({ num, title, desc }) => (
+            <div
+              key={num}
+              className="rounded-[8px] border border-borde bg-papel-oscuro p-6"
+            >
+              <span className="font-display text-3xl italic text-borravino">
+                {num}
+              </span>
+              <h3 className="mt-3 text-sm font-semibold text-tinta">{title}</h3>
+              <p className="mt-2 text-sm leading-relaxed text-tinta-suave">
+                {desc}
+              </p>
+            </div>
+          ))}
+        </div>
+      </section>
+
     </div>
   );
 }
