@@ -16,7 +16,7 @@ interface Texto {
   tags: string[] | null;
   created_at: string;
   user_id: string;
-  profiles: { username: string } | null;
+  profiles: { username: string }[] | { username: string } | null;
 }
 
 function getHoy(): string {
@@ -199,7 +199,10 @@ export default function Feed() {
               </div>
             ) : (
               lista.map((texto) => {
-                const username = texto.profiles?.username ?? "Autor";
+                const username =
+                  (Array.isArray(texto.profiles)
+                    ? texto.profiles[0]?.username
+                    : texto.profiles?.username) ?? "Autor";
                 const liked = likes.has(texto.id);
 
                 return (
