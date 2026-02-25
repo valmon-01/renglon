@@ -1,30 +1,20 @@
 import { NextRequest, NextResponse } from 'next/server'
-import OpenAI from 'openai'
+import { GoogleGenerativeAI } from '@google/generative-ai'
 
-const openai = new OpenAI({
-  apiKey: process.env.OPENAI_API_KEY,
-})
+const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY!)
 
 export async function POST(request: NextRequest) {
   try {
     const { categoria, contexto } = await request.json()
 
-    const completion = await openai.chat.completions.create({
-      model: 'gpt-4o-mini',
-      messages: [
-        {
-          role: 'system',
-          content:
-            'Sos un escritor creativo que genera consignas de escritura en español rioplatense. Las consignas deben ser breves (máximo 15 palabras), evocadoras, específicas y que inviten a escribir desde la experiencia personal.',
-        },
-        {
-          role: 'user',
-          content: `Generá 5 consignas de escritura para la categoría '${categoria}'. Contexto adicional: ${contexto}. Devolvé solo las 5 consignas numeradas, sin explicaciones.`,
-        },
-      ],
-    })
+    const model = genAI.getGenerativeModel({ model: 'gemini-1.5-flash' })
 
-    const contenido = completion.choices[0].message.content || ''
+    const prompt = `Sos un escritor creativo que genera consignas de escritura en español rioplatense. Las consignas deben ser breves (máximo 15 palabras), evocadoras, específicas y que inviten a escribir desde la experiencia personal.
+
+Generá 5 consignas de escritura para la categoría '${categoria}'. Contexto adicional: ${contexto}. Devolvé solo las 5 consignas numeradas, sin explicaciones.`
+
+    const result = await model.generateContent(prompt)
+    const contenido = result.response.text()
 
     const consignas = contenido
       .split('\n')
