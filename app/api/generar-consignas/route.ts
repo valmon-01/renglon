@@ -34,7 +34,8 @@ export async function POST(request: NextRequest) {
 
     return NextResponse.json({ consignas })
   } catch (error) {
-    console.error('Error generando consignas:', error)
+    console.error('Error generando consignas — mensaje:', error instanceof Error ? error.message : String(error))
+    console.error('Error generando consignas — completo:', JSON.stringify(error, Object.getOwnPropertyNames(error)))
     return NextResponse.json({ error: 'Error al generar consignas' }, { status: 500 })
   }
 }
