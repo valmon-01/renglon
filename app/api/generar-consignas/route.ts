@@ -7,7 +7,7 @@ export async function POST(request: NextRequest) {
   try {
     const { categoria, contexto } = await request.json()
 
-    const model = genAI.getGenerativeModel({ model: 'gemini-1.5-flash' })
+    const model = genAI.getGenerativeModel({ model: 'gemini-2.0-flash' })
 
     const prompt = `Sos un escritor creativo que genera consignas de escritura en español rioplatense. Las consignas deben ser breves (máximo 15 palabras), evocadoras, específicas y que inviten a escribir desde la experiencia personal.
 
