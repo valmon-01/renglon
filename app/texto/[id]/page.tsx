@@ -6,13 +6,13 @@ import { useParams } from "next/navigation";
 import { ArrowLeft, Heart } from "lucide-react";
 import { supabase } from "@/lib/supabase";
 
-interface Texto {
+type Texto = {
   id: string;
   contenido: string;
   titulo: string | null;
   created_at: string;
   consigna: string;
-  profiles: { username: string } | null;
+  profiles: { username: string }[] | { username: string } | null;
 }
 
 function iniciales(nombre: string): string {
@@ -72,7 +72,10 @@ export default function TextoIndividual() {
     );
   }
 
-  const username = texto.profiles?.username ?? "Autor";
+  const autor = Array.isArray(texto.profiles)
+    ? texto.profiles[0]?.username
+    : texto.profiles?.username;
+  const username = autor ?? "Autor";
 
   return (
     <div className="flex min-h-screen flex-col bg-papel">
