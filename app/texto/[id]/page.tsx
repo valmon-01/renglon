@@ -45,7 +45,7 @@ export default function TextoIndividual() {
       .eq("id", id)
       .single()
       .then(({ data }) => {
-        setTexto(data as Texto);
+        setTexto(data as unknown as Texto);
         setCargando(false);
       });
   }, [id]);
