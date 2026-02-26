@@ -1,3 +1,4 @@
+// v3 - groq
 import { NextRequest, NextResponse } from 'next/server'
 import Groq from 'groq-sdk'
 
