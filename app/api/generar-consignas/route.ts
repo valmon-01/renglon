@@ -1,20 +1,20 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { GoogleGenerativeAI } from '@google/generative-ai'
+import Groq from 'groq-sdk'
 
-const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY!)
+const groq = new Groq({ apiKey: process.env.GROQ_API_KEY })
 
 export async function POST(request: NextRequest) {
   try {
     const { categoria, contexto } = await request.json()
 
-    const model = genAI.getGenerativeModel({ model: 'gemini-2.0-flash' })
+    const prompt = `Sos un escritor creativo que genera consignas de escritura en español rioplatense. Generá 5 consignas breves (máximo 15 palabras cada una), evocadoras y específicas para la categoría '${categoria}'. Contexto: ${contexto}. Devolvé SOLO las 5 consignas numeradas del 1 al 5, sin explicaciones ni texto adicional.`
 
-    const prompt = `Sos un escritor creativo que genera consignas de escritura en español rioplatense. Las consignas deben ser breves (máximo 15 palabras), evocadoras, específicas y que inviten a escribir desde la experiencia personal.
+    const completion = await groq.chat.completions.create({
+      model: 'llama-3.3-70b-versatile',
+      messages: [{ role: 'user', content: prompt }],
+    })
 
-Generá 5 consignas de escritura para la categoría '${categoria}'. Contexto adicional: ${contexto}. Devolvé solo las 5 consignas numeradas, sin explicaciones.`
-
-    const result = await model.generateContent(prompt)
-    const contenido = result.response.text()
+    const contenido = completion.choices[0]?.message?.content ?? ''
 
     const consignas = contenido
       .split('\n')
