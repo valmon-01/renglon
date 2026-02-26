@@ -66,14 +66,14 @@ export default function Home() {
 
           {/* Subtítulo */}
           <p className="max-w-md text-base leading-relaxed text-tinta-suave">
-            Cada día una nueva consigna. Escribís, y solo después podés leer lo que escribieron los demás.
+            Escribís primero. Después leés lo de los demás.
           </p>
 
           {/* Botones */}
           <div className="flex flex-wrap items-center justify-center gap-3">
             <Link
               href="/registro"
-              className="rounded-[6px] bg-borravino px-6 py-3 text-sm font-medium text-blanco-roto transition-colors hover:opacity-90"
+              className="rounded-[6px] border border-transparent bg-borravino px-6 py-3 text-sm font-medium text-blanco-roto transition-colors hover:opacity-90"
             >
               Crear mi cuenta
             </Link>
@@ -109,7 +109,7 @@ export default function Home() {
             {
               num: "03",
               title: "Lo compartís",
-              desc: "Una vez que enviás, podés leer lo que escribieron los demás.",
+              desc: "Tu texto aparece en el feed. Leés, descubrís, conectás.",
             },
           ].map(({ num, title, desc }) => (
             <div
