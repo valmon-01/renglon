@@ -29,8 +29,17 @@ export default function Login() {
   }
 
   return (
-    <div className="flex min-h-screen flex-col items-center justify-center bg-papel px-6">
-      <div className="w-full max-w-[400px]">
+    <div className="relative flex min-h-screen flex-col items-center justify-center bg-papel px-6">
+      {/* Textura de puntos */}
+      <div
+        className="pointer-events-none absolute inset-0"
+        style={{
+          backgroundImage: "radial-gradient(circle, #9e8e7e 1px, transparent 1px)",
+          backgroundSize: "24px 24px",
+          opacity: 0.18,
+        }}
+      />
+      <div className="relative w-full max-w-[400px]">
 
         {/* Header */}
         <h1 className="mb-8 text-center font-display text-4xl italic text-tinta">

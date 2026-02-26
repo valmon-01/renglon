@@ -105,7 +105,17 @@ export default function Editor() {
 
   /* ── Editor principal ── */
   return (
-    <div className="flex min-h-screen flex-col bg-papel">
+    <div className="relative flex min-h-screen flex-col bg-papel">
+
+      {/* Textura de puntos */}
+      <div
+        className="pointer-events-none absolute inset-0"
+        style={{
+          backgroundImage: "radial-gradient(circle, #9e8e7e 1px, transparent 1px)",
+          backgroundSize: "24px 24px",
+          opacity: 0.18,
+        }}
+      />
 
       {/* Navbar */}
       <nav className="sticky top-0 z-20 flex items-center justify-between border-b border-borde bg-papel px-6 py-4">

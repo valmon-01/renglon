@@ -132,7 +132,16 @@ export default function Admin() {
   }
 
   return (
-    <div className="min-h-screen bg-papel">
+    <div className="relative min-h-screen bg-papel">
+      {/* Textura de puntos */}
+      <div
+        className="pointer-events-none absolute inset-0"
+        style={{
+          backgroundImage: "radial-gradient(circle, #9e8e7e 1px, transparent 1px)",
+          backgroundSize: "24px 24px",
+          opacity: 0.18,
+        }}
+      />
       {/* Navbar */}
       <nav className="w-full border-b border-borde px-6 py-5">
         <div className="mx-auto flex max-w-[720px] items-center justify-between">

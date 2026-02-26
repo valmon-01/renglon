@@ -3,7 +3,17 @@ import { Pencil } from "lucide-react";
 
 export default function Home() {
   return (
-    <div className="min-h-screen bg-papel">
+    <div className="relative min-h-screen bg-papel">
+
+      {/* Textura de puntos */}
+      <div
+        className="pointer-events-none absolute inset-0"
+        style={{
+          backgroundImage: "radial-gradient(circle, #9e8e7e 1px, transparent 1px)",
+          backgroundSize: "24px 24px",
+          opacity: 0.18,
+        }}
+      />
 
       {/* Navbar */}
       <nav className="w-full px-6 py-5">
@@ -33,7 +43,7 @@ export default function Home() {
         {/* Marca de agua */}
         <span
           aria-hidden="true"
-          className="pointer-events-none absolute inset-0 flex select-none items-center justify-center font-display font-bold italic leading-none"
+          className="pointer-events-none absolute inset-0 flex select-none items-center justify-center font-display italic leading-none"
           style={{ fontSize: "clamp(100px, 22vw, 200px)", color: "rgba(100, 49, 62, 0.06)" }}
         >
           renglón
