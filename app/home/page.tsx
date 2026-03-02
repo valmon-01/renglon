@@ -6,7 +6,6 @@ import { UserCircle } from "lucide-react";
 import { supabase } from "@/lib/supabase";
 import type { Session } from "@supabase/supabase-js";
 
-const CONSIGNA = "Escribí sobre un objeto que perdiste";
 const RACHA = 4; // hardcodeado hasta tener lógica real
 
 function formatFecha(): string {
@@ -20,11 +19,16 @@ function formatFecha(): string {
 
 export default function Home() {
   const [session, setSession] = useState<Session | null>(null);
+  const [consigna, setConsigna] = useState<string | null>(null);
   const [cargando, setCargando] = useState(true);
 
   useEffect(() => {
-    supabase.auth.getSession().then(({ data }) => {
+    Promise.all([
+      supabase.auth.getSession(),
+      fetch("/api/asignar-consigna-diaria").then((r) => r.json()),
+    ]).then(([{ data }, consignaData]) => {
       setSession(data.session);
+      setConsigna(consignaData.consigna?.texto ?? null);
       setCargando(false);
     });
   }, []);
@@ -78,7 +82,7 @@ export default function Home() {
           className="mt-4 font-display italic text-tinta"
           style={{ fontSize: "28px", lineHeight: "1.4" }}
         >
-          {CONSIGNA}
+          {consigna ?? "—"}
         </h1>
 
         {/* Racha — solo con sesión */}

@@ -1,12 +1,11 @@
 "use client";
 
-import { useState, useRef } from "react";
+import { useState, useRef, useEffect } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { ArrowLeft, Check, Globe, Lock } from "lucide-react";
 import { supabase } from "@/lib/supabase";
 
-const CONSIGNA = "Escribí sobre un objeto que perdiste";
 const META_PALABRAS = 300;
 
 function formatFechaCorta(): string {
@@ -25,8 +24,15 @@ export default function Editor() {
   const router = useRouter();
   const textareaRef = useRef<HTMLTextAreaElement>(null);
 
+  const [consigna, setConsigna] = useState<string | null>(null);
   const [titulo, setTitulo] = useState("");
   const [contenido, setContenido] = useState("");
+
+  useEffect(() => {
+    fetch("/api/asignar-consigna-diaria")
+      .then((r) => r.json())
+      .then((data) => setConsigna(data.consigna?.texto ?? null));
+  }, []);
   const [showModal, setShowModal] = useState(false);
   const [guardando, setGuardando] = useState(false);
   const [confirmacion, setConfirmacion] = useState<"publicado" | "privado" | null>(null);
@@ -62,7 +68,7 @@ export default function Editor() {
         user_id: session?.user.id ?? null,
         contenido,
         titulo: titulo.trim() || null,
-        consigna: CONSIGNA,
+        consigna: consigna ?? "",
         publicado,
       });
 
@@ -193,7 +199,7 @@ export default function Editor() {
               className="select-none font-display italic text-tinta"
               style={{ fontSize: "17px", lineHeight: "40px" }}
             >
-              {CONSIGNA}
+              {consigna ?? "—"}
             </p>
 
             {/* Título */}

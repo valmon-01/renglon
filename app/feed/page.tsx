@@ -5,7 +5,6 @@ import Link from "next/link";
 import { EyeOff, Heart, Pencil } from "lucide-react";
 import { supabase } from "@/lib/supabase";
 
-const CONSIGNA = "Escribí sobre un objeto que perdiste";
 const FILTROS = ["Recientes", "Populares", "Breves"] as const;
 type Filtro = (typeof FILTROS)[number];
 
@@ -61,6 +60,7 @@ function contarPalabras(texto: string): number {
 export default function Feed() {
   const hoy = getHoy();
   const [completado, setCompletado] = useState(false);
+  const [consigna, setConsigna] = useState<string | null>(null);
   const [textos, setTextos] = useState<Texto[]>([]);
   const [cargando, setCargando] = useState(true);
   const [filtro, setFiltro] = useState<Filtro>("Recientes");
@@ -69,15 +69,18 @@ export default function Feed() {
   useEffect(() => {
     setCompletado(!!localStorage.getItem(`renglon_completed_${hoy}`));
 
-    supabase
-      .from("textos")
-      .select("id, contenido, titulo, tags, created_at, user_id, profiles(username)")
-      .eq("publicado", true)
-      .order("created_at", { ascending: false })
-      .then(({ data }) => {
-        setTextos((data as Texto[]) ?? []);
-        setCargando(false);
-      });
+    Promise.all([
+      fetch("/api/asignar-consigna-diaria").then((r) => r.json()),
+      supabase
+        .from("textos")
+        .select("id, contenido, titulo, tags, created_at, user_id, profiles(username)")
+        .eq("publicado", true)
+        .order("created_at", { ascending: false }),
+    ]).then(([consignaData, { data }]) => {
+      setConsigna(consignaData.consigna?.texto ?? null);
+      setTextos((data as Texto[]) ?? []);
+      setCargando(false);
+    });
   }, [hoy]);
 
   function toggleLike(id: string) {
@@ -143,7 +146,7 @@ export default function Feed() {
             Feed del día · {formatFecha()}
           </p>
           <h1 className="mt-3 font-display text-2xl italic text-tinta">
-            {CONSIGNA}
+            {consigna ?? "—"}
           </h1>
 
           <div className="mt-6 flex items-center justify-between border-t border-borde pt-4">

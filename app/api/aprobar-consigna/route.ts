@@ -10,9 +10,10 @@ export async function POST(request: NextRequest) {
   try {
     const { texto, categoria, fecha } = await request.json()
 
+    // fecha puede ser null → va al banco de consignas sin fecha asignada
     const { data, error } = await supabase
       .from('consignas')
-      .insert({ texto, categoria, fecha, aprobada: true })
+      .insert({ texto, categoria, fecha: fecha ?? null, aprobada: true })
       .select()
       .single()
 
