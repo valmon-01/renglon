@@ -25,6 +25,19 @@ export async function POST(request: NextRequest) {
         return NextResponse.json({ consigna: data })
       }
 
+      // Mover del banco a borradores: id + borrador:true
+      if (borrador === true) {
+        const { data, error } = await supabase
+          .from('consignas')
+          .update({ borrador: true, fecha: null })
+          .eq('id', id)
+          .select()
+          .single()
+
+        if (error) throw error
+        return NextResponse.json({ consigna: data })
+      }
+
       // Asignar fecha a una consigna del banco: id + fecha
       const { data: existente } = await supabase
         .from('consignas')
