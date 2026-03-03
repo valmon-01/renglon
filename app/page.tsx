@@ -59,27 +59,14 @@ export default async function Landing() {
       {/* Hero */}
       <main className="relative mx-auto max-w-[680px] px-6 pb-24 pt-12">
 
-        {/* 1. Apertura */}
-        <p
-          className="mb-6 text-center font-display italic leading-relaxed"
-          style={{ fontSize: "17px", color: "#1C1917" }}
-        >
-          Un momento que no se consume, se construye.
-          <br />
-          Todo empieza con una consigna y un renglón en blanco.
-        </p>
-
-        {/* Separador cielo */}
-        <div className="mx-auto mb-6" style={{ width: "48px", height: "2px", backgroundColor: "#C1DBE8" }} />
-
-        {/* 2. Título principal */}
+        {/* Título principal */}
         <h1
           className="mb-6 text-center font-display italic leading-tight text-tinta"
           style={{ fontSize: "clamp(36px, 6vw, 56px)" }}
         >
           El hábito de escribir,
           <br />
-          <span style={{ color: "#64313E" }}>una consigna a la vez.</span>
+          <span style={{ color: "#64313E" }}>un renglón a la vez.</span>
         </h1>
 
         {/* 3. Subtítulo */}
@@ -92,8 +79,7 @@ export default async function Landing() {
             color: "#5C5147",
           }}
         >
-          Cada día una consigna nueva que te invita a recordar, imaginar o crear.
-          Escribís lo tuyo, lo compartís si querés, y después leés lo que crearon los demás.
+          Cada día una consigna nueva te invita a recordar, imaginar o crear. Escribís lo tuyo, lo compartís si querés, y después leés lo que crearon los demás.
         </p>
 
         {/* 4. Preview de consigna — cuaderno */}
@@ -194,7 +180,7 @@ export default async function Landing() {
               <div className="flex flex-col items-center">
                 <p
                   className="font-display italic"
-                  style={{ fontSize: "14px", lineHeight: "1", color: "#C1DBE8" }}
+                  style={{ fontSize: "14px", lineHeight: "1", color: "#64313E" }}
                 >
                   {num}
                 </p>
