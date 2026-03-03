@@ -60,6 +60,14 @@ export default function Admin() {
   const [programadas, setProgramadas] = useState<Consigna[]>([]);
   const [banco, setBanco] = useState<Consigna[]>([]);
 
+  const [textoPropio, setTextoPropio] = useState("");
+  const [categoriaPropia, setCategoriaPropia] = useState("memoria");
+  const [programarFechaPropia, setProgramarFechaPropia] = useState(false);
+  const [fechaPropia, setFechaPropia] = useState(hoyISO());
+  const [guardandoPropio, setGuardandoPropio] = useState(false);
+  const [guardadoMsgPropio, setGuardadoMsgPropio] = useState("");
+  const [errorPropio, setErrorPropio] = useState("");
+
   useEffect(() => {
     supabase.auth.getUser().then(({ data }) => {
       if (data.user?.email !== ADMIN_EMAIL) {
@@ -148,6 +156,45 @@ export default function Admin() {
       console.error(e);
     } finally {
       setAprobando(false);
+    }
+  }
+
+  async function handleGuardarPropia() {
+    if (!textoPropio.trim()) {
+      setErrorPropio("El texto no puede estar vacío.");
+      return;
+    }
+    setGuardandoPropio(true);
+    setGuardadoMsgPropio("");
+    setErrorPropio("");
+    try {
+      const fechaEnviar = programarFechaPropia ? fechaPropia : null;
+      const res = await fetch("/api/aprobar-consigna", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          texto: textoPropio.trim(),
+          categoria: categoriaPropia,
+          fecha: fechaEnviar,
+        }),
+      });
+      const data = await res.json();
+      if (data.consigna) {
+        setGuardadoMsgPropio(
+          programarFechaPropia
+            ? `Consigna programada para el ${formatFechaLegible(fechaPropia)}.`
+            : "Consigna agregada al banco."
+        );
+        setTextoPropio("");
+        setProgramarFechaPropia(false);
+        await cargarConsignas();
+      } else {
+        setGuardadoMsgPropio("Ocurrió un error al guardar. Revisá Supabase.");
+      }
+    } catch (e) {
+      console.error(e);
+    } finally {
+      setGuardandoPropio(false);
     }
   }
 
@@ -309,12 +356,107 @@ export default function Admin() {
           </section>
         )}
 
-        {/* Confirmación */}
+        {/* Confirmación IA */}
         {aprobadoMsg && (
           <div className="mb-10 rounded-[8px] border border-borde bg-papel-oscuro px-5 py-4">
             <p className="text-sm text-tinta">{aprobadoMsg}</p>
           </div>
         )}
+
+        {/* Divider */}
+        <div className="my-10 flex items-center gap-4">
+          <div className="h-px flex-1 bg-borde" />
+          <span className="text-[11px] uppercase tracking-widest text-tinta-suave">
+            — o escribí la tuya —
+          </span>
+          <div className="h-px flex-1 bg-borde" />
+        </div>
+
+        {/* Escribir consigna propia */}
+        <section className="mb-10">
+          <h2 className="mb-6 text-[11px] uppercase tracking-widest text-tinta-suave">
+            Escribir consigna propia
+          </h2>
+
+          <div className="mb-6">
+            <label className="mb-2 block text-[11px] uppercase tracking-widest text-tinta-suave">
+              Consigna
+            </label>
+            <textarea
+              value={textoPropio}
+              onChange={(e) => { setTextoPropio(e.target.value); setErrorPropio(""); }}
+              placeholder="Escribí tu propia consigna..."
+              rows={3}
+              className="w-full resize-none border-b-[1.5px] border-borde bg-blanco-roto py-2.5 text-sm text-tinta outline-none placeholder:text-tinta-suave/60 focus:border-borravino"
+            />
+            {errorPropio && (
+              <p className="mt-1 text-xs text-borravino">{errorPropio}</p>
+            )}
+          </div>
+
+          <div className="mb-6">
+            <label className="mb-2 block text-[11px] uppercase tracking-widest text-tinta-suave">
+              Categoría
+            </label>
+            <select
+              value={categoriaPropia}
+              onChange={(e) => setCategoriaPropia(e.target.value)}
+              className="w-full border-b-[1.5px] border-borde bg-blanco-roto py-2.5 text-sm text-tinta outline-none focus:border-borravino"
+            >
+              {CATEGORIAS.map((c) => (
+                <option key={c.value} value={c.value}>
+                  {c.label}
+                </option>
+              ))}
+            </select>
+          </div>
+
+          <div className="mb-6">
+            <label className="flex cursor-pointer items-center gap-3">
+              <input
+                type="checkbox"
+                checked={programarFechaPropia}
+                onChange={(e) => setProgramarFechaPropia(e.target.checked)}
+                className="h-4 w-4 accent-borravino"
+              />
+              <span className="text-sm text-tinta">Programar para fecha específica</span>
+            </label>
+          </div>
+
+          <div className="flex flex-col gap-4 sm:flex-row sm:items-end">
+            {programarFechaPropia && (
+              <div className="flex-1">
+                <label className="mb-2 block text-[11px] uppercase tracking-widest text-tinta-suave">
+                  Fecha
+                </label>
+                <input
+                  type="date"
+                  value={fechaPropia}
+                  min={hoyISO()}
+                  onChange={(e) => setFechaPropia(e.target.value)}
+                  className="w-full border-b-[1.5px] border-borde bg-blanco-roto py-2.5 text-sm text-tinta outline-none focus:border-borravino"
+                />
+              </div>
+            )}
+            <button
+              onClick={handleGuardarPropia}
+              disabled={guardandoPropio}
+              className="rounded-[6px] bg-borravino px-7 py-2.5 text-sm font-medium text-blanco-roto transition-opacity hover:opacity-90 disabled:opacity-50"
+            >
+              {guardandoPropio
+                ? "Guardando…"
+                : programarFechaPropia
+                ? "Programar para fecha específica"
+                : "Agregar al banco"}
+            </button>
+          </div>
+
+          {guardadoMsgPropio && (
+            <div className="mt-6 rounded-[8px] border border-borde bg-papel-oscuro px-5 py-4">
+              <p className="text-sm text-tinta">{guardadoMsgPropio}</p>
+            </div>
+          )}
+        </section>
 
         <hr className="my-8 border-borde" />
 

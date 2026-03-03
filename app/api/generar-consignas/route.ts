@@ -12,20 +12,7 @@ export async function POST(request: NextRequest) {
 
     const userPrompt = `Generá 5 consignas de escritura para la categoría '${categoria}'. ${contexto ? `Contexto o temática específica: ${contexto}.` : ''}
 
-Cada consigna debe:
-- Ser concreta y sensorial (un objeto, un momento, un gesto — no una emoción abstracta)
-- Poder responderse desde la experiencia personal propia
-- Tener entre 8 y 20 palabras
-- Usar verbos en imperativo: 'Escribí', 'Contá', 'Describí', 'Imaginá', 'Recordá'
-- Abrir una puerta pequeña que lleve a algo más profundo
-- Evitar clichés y consignas genéricas
-
-Ejemplos del estilo buscado:
-- 'Escribí sobre un objeto que alguien te dejó y que no pediste.'
-- 'Contá la última vez que llegaste tarde a algo importante.'
-- 'Describí un lugar que ya no existe pero que todavía recordás con precisión.'
-- 'Escribí la conversación que nunca tuviste con alguien que ya no está.'
-- 'Recordá algo que aprendiste solo, sin que nadie te lo enseñara.'
+Generá una consigna breve y clara que invite a escribir uno o dos renglones. La consigna debe funcionar tanto para introspección como para ficción (realista, fantástica, distópica o apocalíptica). Evitá preguntas complejas. Proponé una situación, detalle, objeto, recuerdo o escena que pueda interpretarse de múltiples formas. Mantener simple, concreto e imaginativo.
 
 Devolvé SOLO las 5 consignas numeradas del 1 al 5, sin explicaciones ni texto adicional.`
 
