@@ -5,7 +5,7 @@ import Link from "next/link";
 import { EyeOff, Heart, Pencil } from "lucide-react";
 import { supabase } from "@/lib/supabase";
 
-const FILTROS = ["Recientes", "Populares", "Breves"] as const;
+const FILTROS = ["Recientes", "Populares"] as const;
 type Filtro = (typeof FILTROS)[number];
 
 interface Texto {
@@ -53,9 +53,6 @@ function iniciales(nombre: string): string {
     .toUpperCase();
 }
 
-function contarPalabras(texto: string): number {
-  return texto.trim() === "" ? 0 : texto.trim().split(/\s+/).length;
-}
 
 export default function Feed() {
   const hoy = getHoy();
@@ -110,11 +107,6 @@ export default function Feed() {
   }
 
   function textosFiltrados(): Texto[] {
-    if (filtro === "Breves") {
-      return [...textos].sort(
-        (a, b) => contarPalabras(a.contenido) - contarPalabras(b.contenido)
-      );
-    }
     return textos;
   }
 
