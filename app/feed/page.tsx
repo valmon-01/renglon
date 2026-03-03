@@ -232,7 +232,13 @@ export default function Feed() {
                         >
                           {iniciales(username)}
                         </div>
-                        <span className="text-sm font-medium text-tinta">{username}</span>
+                        <Link
+                          href={`/perfil-publico?id=${texto.user_id}`}
+                          className="text-sm font-medium text-tinta transition-colors hover:text-borravino"
+                          onClick={(e) => e.stopPropagation()}
+                        >
+                          {username}
+                        </Link>
                       </div>
                       <span className="text-xs text-tinta-suave">
                         {fechaRelativa(texto.created_at)}

@@ -8,6 +8,7 @@ import { supabase } from "@/lib/supabase";
 
 type Texto = {
   id: string;
+  user_id: string;
   contenido: string;
   titulo: string | null;
   created_at: string;
@@ -37,18 +38,84 @@ export default function TextoIndividual() {
   const [texto, setTexto] = useState<Texto | null>(null);
   const [cargando, setCargando] = useState(true);
   const [liked, setLiked] = useState(false);
+  const [likeCount, setLikeCount] = useState(0);
+  const [likedBy, setLikedBy] = useState<string[]>([]);
+  const [sessionUserId, setSessionUserId] = useState<string | null>(null);
 
   useEffect(() => {
-    supabase
-      .from("textos")
-      .select("id, contenido, titulo, created_at, consigna, profiles(username)")
-      .eq("id", id)
-      .single()
-      .then(({ data }) => {
-        setTexto(data as unknown as Texto);
-        setCargando(false);
-      });
+    async function cargar() {
+      const [
+        { data: textoData },
+        { data: { session } },
+      ] = await Promise.all([
+        supabase
+          .from("textos")
+          .select("id, user_id, contenido, titulo, created_at, consigna, profiles(username)")
+          .eq("id", id)
+          .single(),
+        supabase.auth.getSession(),
+      ]);
+
+      setTexto(textoData as unknown as Texto);
+      const uid = session?.user.id ?? null;
+      setSessionUserId(uid);
+
+      // Conteo de likes
+      const { count } = await supabase
+        .from("likes")
+        .select("*", { count: "exact", head: true })
+        .eq("texto_id", id);
+      setLikeCount(count ?? 0);
+
+      // ¿Ya di like?
+      if (uid) {
+        const { data: myLike } = await supabase
+          .from("likes")
+          .select("id")
+          .eq("texto_id", id)
+          .eq("user_id", uid)
+          .maybeSingle();
+        setLiked(!!myLike);
+      }
+
+      // Si soy el autor, cargar quién dio like
+      if (uid && textoData?.user_id === uid) {
+        const { data: likesData } = await supabase
+          .from("likes")
+          .select("user_id")
+          .eq("texto_id", id);
+        if (likesData && likesData.length > 0) {
+          const userIds = likesData.map((l) => l.user_id);
+          const { data: profilesData } = await supabase
+            .from("profiles")
+            .select("username")
+            .in("id", userIds);
+          setLikedBy((profilesData ?? []).map((p) => p.username).filter(Boolean));
+        }
+      }
+
+      setCargando(false);
+    }
+
+    cargar();
   }, [id]);
+
+  async function toggleLike() {
+    if (!sessionUserId) return;
+    if (liked) {
+      await supabase
+        .from("likes")
+        .delete()
+        .eq("texto_id", id)
+        .eq("user_id", sessionUserId);
+      setLiked(false);
+      setLikeCount((c) => Math.max(0, c - 1));
+    } else {
+      await supabase.from("likes").insert({ texto_id: id, user_id: sessionUserId });
+      setLiked(true);
+      setLikeCount((c) => c + 1);
+    }
+  }
 
   if (cargando) {
     return (
@@ -62,10 +129,7 @@ export default function TextoIndividual() {
     return (
       <div className="flex min-h-screen flex-col items-center justify-center gap-4 bg-papel">
         <p className="text-tinta-suave">No se encontró el texto.</p>
-        <Link
-          href="/feed"
-          className="text-sm text-borravino underline underline-offset-2"
-        >
+        <Link href="/feed" className="text-sm text-borravino underline underline-offset-2">
           Volver al feed
         </Link>
       </div>
@@ -99,7 +163,10 @@ export default function TextoIndividual() {
           <ArrowLeft size={18} strokeWidth={1.5} />
           Feed
         </Link>
-        <div className="flex items-center gap-2.5">
+        <Link
+          href={`/perfil-publico?id=${texto.user_id}`}
+          className="flex items-center gap-2.5 transition-opacity hover:opacity-70"
+        >
           <span className="text-sm text-tinta">{username}</span>
           <div
             className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full text-xs font-medium"
@@ -107,7 +174,7 @@ export default function TextoIndividual() {
           >
             {iniciales(username)}
           </div>
-        </div>
+        </Link>
       </nav>
 
       {/* Cuaderno */}
@@ -185,12 +252,13 @@ export default function TextoIndividual() {
             </div>
 
             {/* Corazón centrado */}
-            <div className="flex justify-center" style={{ marginTop: "80px" }}>
+            <div className="flex flex-col items-center" style={{ marginTop: "80px" }}>
               <button
                 type="button"
-                onClick={() => setLiked(!liked)}
+                onClick={toggleLike}
+                disabled={!sessionUserId}
                 aria-label={liked ? "Quitar me gusta" : "Me gusta"}
-                className={`flex flex-col items-center gap-2 transition-colors ${
+                className={`flex flex-col items-center gap-2 transition-colors disabled:cursor-default ${
                   liked ? "text-borravino" : "text-tinta-suave hover:text-borravino"
                 }`}
               >
@@ -200,9 +268,14 @@ export default function TextoIndividual() {
                   fill={liked ? "currentColor" : "none"}
                 />
                 <span className="text-xs" style={{ fontFamily: "Inter, sans-serif" }}>
-                  {liked ? "Te gustó" : "Me gusta"}
+                  {likeCount}
                 </span>
               </button>
+              {sessionUserId === texto.user_id && likedBy.length > 0 && (
+                <p className="mt-3 text-center text-xs text-tinta-suave">
+                  Les gustó a: {likedBy.join(", ")}
+                </p>
+              )}
             </div>
 
           </div>
