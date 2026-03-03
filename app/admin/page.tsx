@@ -120,6 +120,14 @@ export default function Admin() {
     if (dataBorradores) setBorradores(dataBorradores);
   }
 
+  async function authHeaders(): Promise<Record<string, string>> {
+    const { data: { session } } = await supabase.auth.getSession();
+    return {
+      "Content-Type": "application/json",
+      "Authorization": `Bearer ${session?.access_token ?? ""}`,
+    };
+  }
+
   async function handleGenerar() {
     setGenerando(true);
     setConsignasGeneradas([]);
@@ -128,7 +136,7 @@ export default function Admin() {
     try {
       const res = await fetch("/api/generar-consignas", {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: await authHeaders(),
         body: JSON.stringify({ categoria, contexto }),
       });
       const data = await res.json();
@@ -149,7 +157,7 @@ export default function Admin() {
       const borradorEnviar = !programarFecha && !agregarAlBancoIA;
       const res = await fetch("/api/aprobar-consigna", {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: await authHeaders(),
         body: JSON.stringify({
           texto: consignasGeneradas[seleccionada],
           categoria,
@@ -188,7 +196,7 @@ export default function Admin() {
     try {
       const res = await fetch("/api/aprobar-consigna", {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: await authHeaders(),
         body: JSON.stringify({ id: consigna.id, fecha: fechaBancoSeleccionada }),
       });
       const data = await res.json();
@@ -224,7 +232,7 @@ export default function Admin() {
       const borradorEnviar = !programarFechaPropia && !agregarAlBancoPropias;
       const res = await fetch("/api/aprobar-consigna", {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: await authHeaders(),
         body: JSON.stringify({
           texto: textoPropio.trim(),
           categoria: "memoria",
@@ -260,7 +268,7 @@ export default function Admin() {
     try {
       const res = await fetch("/api/aprobar-consigna", {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: await authHeaders(),
         body: JSON.stringify({ id: consigna.id, borrador: false }),
       });
       const data = await res.json();
@@ -280,7 +288,7 @@ export default function Admin() {
     try {
       const res = await fetch("/api/aprobar-consigna", {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: await authHeaders(),
         body: JSON.stringify({ id: consigna.id, borrador: true }),
       });
       const data = await res.json();
