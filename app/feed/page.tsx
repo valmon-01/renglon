@@ -15,7 +15,7 @@ interface Texto {
   tags: string[] | null;
   created_at: string;
   user_id: string;
-  profiles: { username: string }[] | { username: string } | null;
+  username: string;
 }
 
 function getHoy(): string {
@@ -73,12 +73,30 @@ export default function Feed() {
       fetch("/api/asignar-consigna-diaria").then((r) => r.json()),
       supabase
         .from("textos")
-        .select("id, contenido, titulo, tags, created_at, user_id, profiles(username)")
+        .select("id, contenido, titulo, tags, created_at, user_id")
         .eq("publicado", true)
         .order("created_at", { ascending: false }),
-    ]).then(([consignaData, { data }]) => {
+    ]).then(async ([consignaData, { data: textosData }]) => {
       setConsigna(consignaData.consigna?.texto ?? null);
-      setTextos((data as Texto[]) ?? []);
+
+      const textos = (textosData ?? []) as Omit<Texto, "username">[];
+      if (textos.length === 0) {
+        setTextos([]);
+        setCargando(false);
+        return;
+      }
+
+      const userIds = [...new Set(textos.map((t) => t.user_id))];
+      const { data: profilesData } = await supabase
+        .from("profiles")
+        .select("id, username")
+        .in("id", userIds);
+
+      const profileMap = Object.fromEntries(
+        (profilesData ?? []).map((p) => [p.id, p.username])
+      );
+
+      setTextos(textos.map((t) => ({ ...t, username: profileMap[t.user_id] ?? "Autor" })));
       setCargando(false);
     });
   }, [hoy]);
@@ -212,10 +230,7 @@ export default function Feed() {
               </div>
             ) : (
               lista.map((texto) => {
-                const username =
-                  (Array.isArray(texto.profiles)
-                    ? texto.profiles[0]?.username
-                    : texto.profiles?.username) ?? "Autor";
+                const username = texto.username;
                 const liked = likes.has(texto.id);
 
                 return (

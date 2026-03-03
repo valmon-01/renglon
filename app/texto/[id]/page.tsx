@@ -13,7 +13,7 @@ type Texto = {
   titulo: string | null;
   created_at: string;
   consigna: string;
-  profiles: { username: string }[] | { username: string } | null;
+  username: string;
 }
 
 function iniciales(nombre: string): string {
@@ -50,13 +50,23 @@ export default function TextoIndividual() {
       ] = await Promise.all([
         supabase
           .from("textos")
-          .select("id, user_id, contenido, titulo, created_at, consigna, profiles(username)")
+          .select("id, user_id, contenido, titulo, created_at, consigna")
           .eq("id", id)
           .single(),
         supabase.auth.getSession(),
       ]);
 
-      setTexto(textoData as unknown as Texto);
+      let username = "Autor";
+      if (textoData?.user_id) {
+        const { data: perfil } = await supabase
+          .from("profiles")
+          .select("username")
+          .eq("id", textoData.user_id)
+          .single();
+        username = perfil?.username ?? "Autor";
+      }
+
+      setTexto(textoData ? { ...textoData, username } as Texto : null);
       const uid = session?.user.id ?? null;
       setSessionUserId(uid);
 
@@ -136,10 +146,7 @@ export default function TextoIndividual() {
     );
   }
 
-  const autor = Array.isArray(texto.profiles)
-    ? texto.profiles[0]?.username
-    : texto.profiles?.username;
-  const username = autor ?? "Autor";
+  const username = texto.username;
 
   return (
     <div className="relative flex min-h-screen flex-col bg-papel">
