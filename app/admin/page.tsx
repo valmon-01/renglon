@@ -60,6 +60,11 @@ export default function Admin() {
   const [programadas, setProgramadas] = useState<Consigna[]>([]);
   const [banco, setBanco] = useState<Consigna[]>([]);
 
+  const [programandoBancoId, setProgramandoBancoId] = useState<string | null>(null);
+  const [fechaBancoSeleccionada, setFechaBancoSeleccionada] = useState(hoyISO());
+  const [guardandoBancoId, setGuardandoBancoId] = useState<string | null>(null);
+  const [errorBanco, setErrorBanco] = useState("");
+
   const [textoPropio, setTextoPropio] = useState("");
   const [categoriaPropia, setCategoriaPropia] = useState("memoria");
   const [programarFechaPropia, setProgramarFechaPropia] = useState(false);
@@ -156,6 +161,35 @@ export default function Admin() {
       console.error(e);
     } finally {
       setAprobando(false);
+    }
+  }
+
+  async function handleProgramarDesdeBanco(consigna: Consigna) {
+    setGuardandoBancoId(consigna.id);
+    setErrorBanco("");
+    try {
+      const res = await fetch("/api/aprobar-consigna", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ id: consigna.id, fecha: fechaBancoSeleccionada }),
+      });
+      const data = await res.json();
+      if (data.error) {
+        setErrorBanco(data.error);
+      } else if (data.consigna) {
+        setBanco((prev) => prev.filter((c) => c.id !== consigna.id));
+        setProgramadas((prev) =>
+          [...prev, data.consigna].sort((a, b) =>
+            (a.fecha ?? "").localeCompare(b.fecha ?? "")
+          )
+        );
+        setProgramandoBancoId(null);
+        setFechaBancoSeleccionada(hoyISO());
+      }
+    } catch (e) {
+      console.error(e);
+    } finally {
+      setGuardandoBancoId(null);
     }
   }
 
@@ -533,8 +567,55 @@ export default function Admin() {
                       <span className="rounded-[4px] bg-cielo px-2 py-0.5 text-[11px] text-borravino">
                         {CATEGORIAS.find((cat) => cat.value === c.categoria)?.label ?? c.categoria}
                       </span>
+                      <button
+                        onClick={() => {
+                          if (programandoBancoId === c.id) {
+                            setProgramandoBancoId(null);
+                            setErrorBanco("");
+                          } else {
+                            setProgramandoBancoId(c.id);
+                            setFechaBancoSeleccionada(hoyISO());
+                            setErrorBanco("");
+                          }
+                        }}
+                        className="text-[11px] text-tinta-suave underline underline-offset-2 transition-colors hover:text-borravino"
+                      >
+                        {programandoBancoId === c.id ? "Cancelar" : "Programar"}
+                      </button>
                     </div>
                   </div>
+
+                  {programandoBancoId === c.id && (
+                    <div className="mt-4 border-t border-borde pt-4">
+                      <div className="flex flex-col gap-3 sm:flex-row sm:items-end">
+                        <div className="flex-1">
+                          <label className="mb-2 block text-[11px] uppercase tracking-widest text-tinta-suave">
+                            Fecha
+                          </label>
+                          <input
+                            type="date"
+                            value={fechaBancoSeleccionada}
+                            min={hoyISO()}
+                            onChange={(e) => {
+                              setFechaBancoSeleccionada(e.target.value);
+                              setErrorBanco("");
+                            }}
+                            className="w-full border-b-[1.5px] border-borde bg-blanco-roto py-2.5 text-sm text-tinta outline-none focus:border-borravino"
+                          />
+                        </div>
+                        <button
+                          onClick={() => handleProgramarDesdeBanco(c)}
+                          disabled={guardandoBancoId === c.id}
+                          className="rounded-[6px] bg-borravino px-5 py-2.5 text-sm font-medium text-blanco-roto transition-opacity hover:opacity-90 disabled:opacity-50"
+                        >
+                          {guardandoBancoId === c.id ? "Guardando…" : "Confirmar"}
+                        </button>
+                      </div>
+                      {errorBanco && (
+                        <p className="mt-2 text-xs text-borravino">{errorBanco}</p>
+                      )}
+                    </div>
+                  )}
                 </div>
               ))}
             </div>
