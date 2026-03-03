@@ -8,11 +8,24 @@ const supabase = createClient(
 
 export async function POST(request: NextRequest) {
   try {
-    const { id, texto, categoria, fecha } = await request.json()
+    const { id, texto, categoria, fecha, borrador } = await request.json()
 
-    // UPDATE: asignar fecha a una consigna existente del banco
+    // UPDATE: modificar una consigna existente
     if (id) {
-      // Verificar que la fecha no esté ocupada por otra consigna
+      // Mover de borrador al banco: id + borrador:false
+      if (borrador === false) {
+        const { data, error } = await supabase
+          .from('consignas')
+          .update({ borrador: false })
+          .eq('id', id)
+          .select()
+          .single()
+
+        if (error) throw error
+        return NextResponse.json({ consigna: data })
+      }
+
+      // Asignar fecha a una consigna del banco: id + fecha
       const { data: existente } = await supabase
         .from('consignas')
         .select('id')
@@ -39,10 +52,10 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ consigna: data })
     }
 
-    // INSERT: nueva consigna (fecha puede ser null → va al banco)
+    // INSERT: nueva consigna (borrador por defecto)
     const { data, error } = await supabase
       .from('consignas')
-      .insert({ texto, categoria, fecha: fecha ?? null, aprobada: true })
+      .insert({ texto, categoria, fecha: fecha ?? null, aprobada: true, borrador: borrador ?? true })
       .select()
       .single()
 

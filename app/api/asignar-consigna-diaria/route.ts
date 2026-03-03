@@ -10,24 +10,26 @@ export async function GET() {
   try {
     const hoy = new Date().toISOString().split('T')[0]
 
-    // 1. Buscar si ya hay consigna con fecha = hoy y aprobada = true
+    // 1. Buscar si ya hay consigna con fecha = hoy, aprobada = true y no es borrador
     const { data: existente } = await supabase
       .from('consignas')
       .select('*')
       .eq('fecha', hoy)
       .eq('aprobada', true)
+      .eq('borrador', false)
       .maybeSingle()
 
     if (existente) {
       return NextResponse.json({ consigna: existente })
     }
 
-    // 2. Buscar del banco: fecha IS NULL, aprobada = true, la más antigua
+    // 2. Buscar del banco: fecha IS NULL, aprobada = true, no es borrador, la más antigua
     const { data: delBanco } = await supabase
       .from('consignas')
       .select('*')
       .is('fecha', null)
       .eq('aprobada', true)
+      .eq('borrador', false)
       .order('created_at', { ascending: true })
       .limit(1)
       .maybeSingle()

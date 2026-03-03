@@ -27,6 +27,7 @@ interface Consigna {
   categoria: string;
   fecha: string | null;
   aprobada: boolean;
+  borrador: boolean;
   asignada_automaticamente: boolean;
   created_at: string;
 }
@@ -59,6 +60,11 @@ export default function Admin() {
   const [aprobadoMsg, setAprobadoMsg] = useState("");
   const [programadas, setProgramadas] = useState<Consigna[]>([]);
   const [banco, setBanco] = useState<Consigna[]>([]);
+  const [borradores, setBorradores] = useState<Consigna[]>([]);
+
+  const [agregarAlBancoIA, setAgregarAlBancoIA] = useState(false);
+  const [agregarAlBancoPropias, setAgregarAlBancoPropias] = useState(false);
+  const [moviendoBorradorId, setMoviendoBorradorId] = useState<string | null>(null);
 
   const [programandoBancoId, setProgramandoBancoId] = useState<string | null>(null);
   const [fechaBancoSeleccionada, setFechaBancoSeleccionada] = useState(hoyISO());
@@ -87,24 +93,34 @@ export default function Admin() {
   async function cargarConsignas() {
     const hoy = hoyISO();
 
-    // Programadas: fecha >= hoy
+    // Programadas: fecha >= hoy, no borrador
     const { data: dataProgramadas } = await supabase
       .from("consignas")
       .select("*")
       .eq("aprobada", true)
+      .eq("borrador", false)
       .gte("fecha", hoy)
       .order("fecha", { ascending: true });
 
-    // Banco: fecha IS NULL
+    // Banco: fecha IS NULL, no borrador
     const { data: dataBanco } = await supabase
       .from("consignas")
       .select("*")
       .eq("aprobada", true)
+      .eq("borrador", false)
       .is("fecha", null)
       .order("created_at", { ascending: true });
 
+    // Borradores: borrador = true
+    const { data: dataBorradores } = await supabase
+      .from("consignas")
+      .select("*")
+      .eq("borrador", true)
+      .order("created_at", { ascending: false });
+
     if (dataProgramadas) setProgramadas(dataProgramadas);
     if (dataBanco) setBanco(dataBanco);
+    if (dataBorradores) setBorradores(dataBorradores);
   }
 
   async function handleGenerar() {
@@ -133,6 +149,7 @@ export default function Admin() {
     setAprobadoMsg("");
     try {
       const fechaEnviar = programarFecha ? fecha : null;
+      const borradorEnviar = !programarFecha && !agregarAlBancoIA;
       const res = await fetch("/api/aprobar-consigna", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -140,6 +157,7 @@ export default function Admin() {
           texto: consignasGeneradas[seleccionada],
           categoria,
           fecha: fechaEnviar,
+          borrador: borradorEnviar,
         }),
       });
       const data = await res.json();
@@ -147,12 +165,15 @@ export default function Admin() {
         setAprobadoMsg(
           programarFecha
             ? `Consigna programada para el ${formatFechaLegible(fecha)}.`
-            : "Consigna agregada al banco."
+            : agregarAlBancoIA
+            ? "Consigna agregada al banco."
+            : "Consigna guardada como borrador."
         );
         setSeleccionada(null);
         setConsignasGeneradas([]);
         setContexto("");
         setProgramarFecha(false);
+        setAgregarAlBancoIA(false);
         await cargarConsignas();
       } else {
         setAprobadoMsg("Ocurrió un error al guardar. Revisá Supabase.");
@@ -203,6 +224,7 @@ export default function Admin() {
     setErrorPropio("");
     try {
       const fechaEnviar = programarFechaPropia ? fechaPropia : null;
+      const borradorEnviar = !programarFechaPropia && !agregarAlBancoPropias;
       const res = await fetch("/api/aprobar-consigna", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -210,6 +232,7 @@ export default function Admin() {
           texto: textoPropio.trim(),
           categoria: categoriaPropia,
           fecha: fechaEnviar,
+          borrador: borradorEnviar,
         }),
       });
       const data = await res.json();
@@ -217,10 +240,13 @@ export default function Admin() {
         setGuardadoMsgPropio(
           programarFechaPropia
             ? `Consigna programada para el ${formatFechaLegible(fechaPropia)}.`
-            : "Consigna agregada al banco."
+            : agregarAlBancoPropias
+            ? "Consigna agregada al banco."
+            : "Consigna guardada como borrador."
         );
         setTextoPropio("");
         setProgramarFechaPropia(false);
+        setAgregarAlBancoPropias(false);
         await cargarConsignas();
       } else {
         setGuardadoMsgPropio("Ocurrió un error al guardar. Revisá Supabase.");
@@ -229,6 +255,26 @@ export default function Admin() {
       console.error(e);
     } finally {
       setGuardandoPropio(false);
+    }
+  }
+
+  async function handleMoverAlBanco(consigna: Consigna) {
+    setMoviendoBorradorId(consigna.id);
+    try {
+      const res = await fetch("/api/aprobar-consigna", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ id: consigna.id, borrador: false }),
+      });
+      const data = await res.json();
+      if (data.consigna) {
+        setBorradores((prev) => prev.filter((c) => c.id !== consigna.id));
+        setBanco((prev) => [data.consigna, ...prev]);
+      }
+    } catch (e) {
+      console.error(e);
+    } finally {
+      setMoviendoBorradorId(null);
     }
   }
 
@@ -352,11 +398,24 @@ export default function Admin() {
                   <input
                     type="checkbox"
                     checked={programarFecha}
-                    onChange={(e) => setProgramarFecha(e.target.checked)}
+                    onChange={(e) => { setProgramarFecha(e.target.checked); if (e.target.checked) setAgregarAlBancoIA(false); }}
                     className="h-4 w-4 accent-borravino"
                   />
                   <span className="text-sm text-tinta">Programar para fecha específica</span>
                 </label>
+
+                {/* Checkbox agregar al banco */}
+                {!programarFecha && (
+                  <label className="flex cursor-pointer items-center gap-3">
+                    <input
+                      type="checkbox"
+                      checked={agregarAlBancoIA}
+                      onChange={(e) => setAgregarAlBancoIA(e.target.checked)}
+                      className="h-4 w-4 accent-borravino"
+                    />
+                    <span className="text-sm text-tinta">Agregar directo al banco</span>
+                  </label>
+                )}
 
                 <div className="flex flex-col gap-4 sm:flex-row sm:items-end">
                   {programarFecha && (
@@ -382,7 +441,9 @@ export default function Admin() {
                       ? "Guardando…"
                       : programarFecha
                       ? "Programar para fecha específica"
-                      : "Agregar al banco"}
+                      : agregarAlBancoIA
+                      ? "Agregar al banco"
+                      : "Guardar como borrador"}
                   </button>
                 </div>
               </div>
@@ -445,17 +506,31 @@ export default function Admin() {
             </select>
           </div>
 
-          <div className="mb-6">
+          <div className="mb-4">
             <label className="flex cursor-pointer items-center gap-3">
               <input
                 type="checkbox"
                 checked={programarFechaPropia}
-                onChange={(e) => setProgramarFechaPropia(e.target.checked)}
+                onChange={(e) => { setProgramarFechaPropia(e.target.checked); if (e.target.checked) setAgregarAlBancoPropias(false); }}
                 className="h-4 w-4 accent-borravino"
               />
               <span className="text-sm text-tinta">Programar para fecha específica</span>
             </label>
           </div>
+
+          {!programarFechaPropia && (
+            <div className="mb-6">
+              <label className="flex cursor-pointer items-center gap-3">
+                <input
+                  type="checkbox"
+                  checked={agregarAlBancoPropias}
+                  onChange={(e) => setAgregarAlBancoPropias(e.target.checked)}
+                  className="h-4 w-4 accent-borravino"
+                />
+                <span className="text-sm text-tinta">Agregar directo al banco</span>
+              </label>
+            </div>
+          )}
 
           <div className="flex flex-col gap-4 sm:flex-row sm:items-end">
             {programarFechaPropia && (
@@ -481,7 +556,9 @@ export default function Admin() {
                 ? "Guardando…"
                 : programarFechaPropia
                 ? "Programar para fecha específica"
-                : "Agregar al banco"}
+                : agregarAlBancoPropias
+                ? "Agregar al banco"
+                : "Guardar como borrador"}
             </button>
           </div>
 
@@ -535,6 +612,49 @@ export default function Admin() {
             </div>
           )}
         </section>
+
+        {/* Borradores */}
+        <section className="mb-10">
+          <h2 className="mb-5 text-[11px] uppercase tracking-widest text-tinta-suave">
+            Borradores
+          </h2>
+
+          {borradores.length === 0 ? (
+            <p className="text-sm text-tinta-suave">No hay borradores guardados.</p>
+          ) : (
+            <div className="flex flex-col gap-3">
+              {borradores.map((c) => (
+                <div
+                  key={c.id}
+                  className="rounded-[8px] border border-borde bg-papel-oscuro px-5 py-4"
+                >
+                  <div className="flex items-start justify-between gap-6">
+                    <span
+                      className="font-display italic text-tinta"
+                      style={{ fontSize: "16px", lineHeight: "1.5" }}
+                    >
+                      {c.texto}
+                    </span>
+                    <div className="flex shrink-0 flex-col items-end gap-1.5">
+                      <span className="rounded-[4px] bg-cielo px-2 py-0.5 text-[11px] text-borravino">
+                        {CATEGORIAS.find((cat) => cat.value === c.categoria)?.label ?? c.categoria}
+                      </span>
+                      <button
+                        onClick={() => handleMoverAlBanco(c)}
+                        disabled={moviendoBorradorId === c.id}
+                        className="text-[11px] text-tinta-suave underline underline-offset-2 transition-colors hover:text-borravino disabled:opacity-50"
+                      >
+                        {moviendoBorradorId === c.id ? "Moviendo…" : "Mover al banco"}
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
+        </section>
+
+        <hr className="my-8 border-borde" />
 
         {/* Banco de consignas */}
         <section>
