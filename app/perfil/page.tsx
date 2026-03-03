@@ -29,11 +29,11 @@ function iniciales(nombre: string): string {
 }
 
 function fechaCorta(iso: string): string {
-  return new Date(iso).toLocaleDateString("es-AR", {
-    day: "numeric",
-    month: "short",
-    year: "numeric",
-  });
+  const d = new Date(iso);
+  const dd = String(d.getDate()).padStart(2, "0");
+  const mm = String(d.getMonth() + 1).padStart(2, "0");
+  const aa = String(d.getFullYear()).slice(2);
+  return `${dd}/${mm}/${aa}`;
 }
 
 function extracto(contenido: string, max = 110): string {
@@ -220,21 +220,13 @@ export default function Perfil() {
                 className="block rounded-[8px] border border-borde bg-papel-oscuro p-5 transition-opacity hover:opacity-80"
               >
                 {texto.titulo && (
-                  <p className="mb-1 font-display italic text-tinta">
+                  <p className="mb-1 font-display italic text-tinta" style={{ fontSize: "18px" }}>
                     {texto.titulo}
                   </p>
                 )}
                 <p className="text-sm leading-relaxed text-tinta-suave">
                   {extracto(texto.contenido)}
                 </p>
-                {texto.consigna && (
-                  <p
-                    className="mt-2 font-display italic"
-                    style={{ fontSize: "13px", color: "#5C5147" }}
-                  >
-                    — {texto.consigna}
-                  </p>
-                )}
                 {texto.tags && texto.tags.length > 0 && (
                   <div className="mt-3 flex flex-wrap gap-1.5">
                     {texto.tags.map((tag) => (
@@ -247,8 +239,11 @@ export default function Perfil() {
                     ))}
                   </div>
                 )}
-                <p className="mt-3 text-xs text-tinta-suave">
-                  {fechaCorta(texto.created_at)}
+                <p
+                  className="mt-3 font-display italic"
+                  style={{ fontSize: "13px", color: "#5C5147" }}
+                >
+                  {fechaCorta(texto.created_at)}{texto.consigna ? ` — ${texto.consigna}` : ""}
                 </p>
               </Link>
             ))}
