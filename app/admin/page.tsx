@@ -7,12 +7,18 @@ import { supabase } from "@/lib/supabase";
 const ADMIN_EMAIL = "valenmonti01@gmail.com";
 
 const CATEGORIAS = [
-  { value: "emocion", label: "Emoción" },
-  { value: "lugar", label: "Lugar" },
-  { value: "personaje", label: "Personaje" },
-  { value: "objeto", label: "Objeto" },
-  { value: "tiempo", label: "Tiempo" },
   { value: "memoria", label: "Memoria" },
+  { value: "objeto cotidiano", label: "Objeto cotidiano" },
+  { value: "lugar", label: "Lugar" },
+  { value: "cuerpo", label: "Cuerpo" },
+  { value: "tiempo", label: "Tiempo" },
+  { value: "vínculo", label: "Vínculo" },
+  { value: "primera vez", label: "Primera vez" },
+  { value: "ausencia", label: "Ausencia" },
+  { value: "trabajo y rutina", label: "Trabajo y rutina" },
+  { value: "infancia", label: "Infancia" },
+  { value: "decisión", label: "Decisión" },
+  { value: "miedo", label: "Miedo" },
 ];
 
 interface Consigna {
@@ -42,7 +48,7 @@ export default function Admin() {
   const router = useRouter();
 
   const [verificando, setVerificando] = useState(true);
-  const [categoria, setCategoria] = useState("emocion");
+  const [categoria, setCategoria] = useState("memoria");
   const [contexto, setContexto] = useState("");
   const [generando, setGenerando] = useState(false);
   const [consignasGeneradas, setConsignasGeneradas] = useState<string[]>([]);
