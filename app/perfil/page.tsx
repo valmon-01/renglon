@@ -14,6 +14,7 @@ interface Texto {
   tags: string[] | null;
   created_at: string;
   publicado: boolean;
+  consigna: string;
 }
 
 type Tab = "publicados" | "privados";
@@ -67,7 +68,7 @@ export default function Perfil() {
         supabase.from("profiles").select("bio, racha_actual").eq("id", user.id).single(),
         supabase
           .from("textos")
-          .select("id, contenido, titulo, tags, created_at, publicado")
+          .select("id, contenido, titulo, tags, created_at, publicado, consigna")
           .eq("user_id", user.id)
           .order("created_at", { ascending: false }),
       ]);
@@ -226,6 +227,14 @@ export default function Perfil() {
                 <p className="text-sm leading-relaxed text-tinta-suave">
                   {extracto(texto.contenido)}
                 </p>
+                {texto.consigna && (
+                  <p
+                    className="mt-2 font-display italic"
+                    style={{ fontSize: "13px", color: "#5C5147" }}
+                  >
+                    — {texto.consigna}
+                  </p>
+                )}
                 {texto.tags && texto.tags.length > 0 && (
                   <div className="mt-3 flex flex-wrap gap-1.5">
                     {texto.tags.map((tag) => (

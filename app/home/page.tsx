@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
-import { UserCircle } from "lucide-react";
+import { UserCircle, Flame } from "lucide-react";
 import { supabase } from "@/lib/supabase";
 import type { Session } from "@supabase/supabase-js";
 
@@ -34,7 +34,10 @@ export default function Home() {
           .select("racha_actual")
           .eq("id", data.session.user.id)
           .single();
-        setRacha(perfil?.racha_actual ?? 0);
+        const hoy = new Date().toISOString().slice(0, 10);
+        const yaEscribioHoy = !!localStorage.getItem(`renglon_completed_${hoy}`);
+        const rachaBase = perfil?.racha_actual ?? 0;
+        setRacha(yaEscribioHoy ? rachaBase + 1 : rachaBase);
       }
       setCargando(false);
     });
@@ -94,8 +97,9 @@ export default function Home() {
 
         {/* Racha — solo con sesión */}
         {session && (
-          <p className="mt-6 text-sm text-tinta-suave">
-            🔥 {racha} días seguidos
+          <p className="mt-6 flex items-center gap-1.5 text-sm text-tinta-suave">
+            <Flame size={16} strokeWidth={1.5} style={{ color: "#64313E" }} />
+            {racha} días seguidos
           </p>
         )}
 

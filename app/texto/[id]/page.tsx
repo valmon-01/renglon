@@ -210,7 +210,7 @@ export default function TextoIndividual() {
               paddingLeft: "52px",
               paddingRight: "52px",
               paddingTop: "24px",
-              paddingBottom: "120px",
+              paddingBottom: "48px",
             }}
           >
 
@@ -258,35 +258,35 @@ export default function TextoIndividual() {
               ))}
             </div>
 
-            {/* Corazón centrado */}
-            <div className="flex flex-col items-center" style={{ marginTop: "80px" }}>
-              <button
-                type="button"
-                onClick={toggleLike}
-                disabled={!sessionUserId}
-                aria-label={liked ? "Quitar me gusta" : "Me gusta"}
-                className={`flex flex-col items-center gap-2 transition-colors disabled:cursor-default ${
-                  liked ? "text-borravino" : "text-tinta-suave hover:text-borravino"
-                }`}
-              >
-                <Heart
-                  size={28}
-                  strokeWidth={1.5}
-                  fill={liked ? "currentColor" : "none"}
-                />
-                <span className="text-xs" style={{ fontFamily: "Inter, sans-serif" }}>
-                  {likeCount}
-                </span>
-              </button>
-              {sessionUserId === texto.user_id && likedBy.length > 0 && (
-                <p className="mt-3 text-center text-xs text-tinta-suave">
-                  Les gustó a: {likedBy.join(", ")}
-                </p>
-              )}
-            </div>
-
           </div>
         </div>
+      </div>
+
+      {/* Likes — fuera del cuaderno */}
+      <div className="flex flex-col items-center py-6 text-center">
+        <button
+          type="button"
+          onClick={toggleLike}
+          disabled={!sessionUserId}
+          aria-label={liked ? "Quitar me gusta" : "Me gusta"}
+          className={`flex flex-col items-center gap-2 transition-colors disabled:cursor-default ${
+            liked ? "text-borravino" : "text-tinta-suave hover:text-borravino"
+          }`}
+        >
+          <Heart
+            size={28}
+            strokeWidth={1.5}
+            fill={liked ? "currentColor" : "none"}
+          />
+          <span className="text-xs" style={{ fontFamily: "Inter, sans-serif" }}>
+            {likeCount}
+          </span>
+        </button>
+        {sessionUserId === texto.user_id && likedBy.length > 0 && (
+          <p className="mt-3 text-xs text-tinta-suave">
+            Les gustó a: {likedBy.join(", ")}
+          </p>
+        )}
       </div>
 
     </div>
