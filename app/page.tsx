@@ -1,6 +1,26 @@
 import Link from "next/link";
+import { createClient } from "@supabase/supabase-js";
 
-export default function Landing() {
+const FALLBACK = "Escribí sobre un objeto que alguien te dejó y que no pediste.";
+
+async function getConsignaHoy(): Promise<string> {
+  const supabase = createClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
+  );
+  const hoy = new Date().toISOString().slice(0, 10);
+  const { data } = await supabase
+    .from("consignas")
+    .select("texto")
+    .eq("fecha", hoy)
+    .eq("aprobada", true)
+    .single();
+  return data?.texto ?? FALLBACK;
+}
+
+export default async function Landing() {
+  const consigna = await getConsignaHoy();
+
   return (
     <div className="relative min-h-screen bg-papel">
 
@@ -24,13 +44,13 @@ export default function Landing() {
               className="rounded-[6px] border border-borravino px-4 py-2 text-sm text-borravino transition-colors hover:bg-borravino hover:text-blanco-roto"
               style={{ borderWidth: "1.5px" }}
             >
-              Entrar
+              Iniciar sesión
             </Link>
             <Link
               href="/registro"
               className="rounded-[6px] bg-borravino px-4 py-2 text-sm text-blanco-roto transition-colors hover:opacity-90"
             >
-              Empezar
+              Registrarse
             </Link>
           </div>
         </div>
@@ -99,39 +119,38 @@ export default function Landing() {
               paddingLeft: "52px",
               paddingRight: "52px",
               paddingTop: "24px",
-              paddingBottom: "32px",
+              paddingBottom: "24px",
             }}
           >
+            {/* Label ocupa exactamente un renglón */}
             <p
-              className="mb-2 text-center uppercase tracking-widest text-tinta-suave"
-              style={{ fontSize: "10px", fontFamily: "Inter, sans-serif" }}
+              className="text-center uppercase tracking-widest text-tinta-suave"
+              style={{
+                fontSize: "10px",
+                lineHeight: "40px",
+                fontFamily: "Inter, sans-serif",
+              }}
             >
               Consigna de hoy
             </p>
+            {/* Consigna alineada a los renglones */}
             <p
               className="text-center font-display italic text-tinta"
-              style={{ fontSize: "22px", lineHeight: "1.5" }}
+              style={{ fontSize: "20px", lineHeight: "40px" }}
             >
-              Escribí sobre un objeto que alguien te dejó y que no pediste.
+              {consigna}
             </p>
           </div>
         </div>
 
-        {/* 5. CTAs */}
-        <div className="flex flex-col items-center gap-4">
+        {/* 5. CTA único */}
+        <div className="flex justify-center">
           <Link
             href="/registro"
             className="rounded-[6px] bg-borravino text-sm font-medium text-blanco-roto transition-opacity hover:opacity-90"
             style={{ padding: "14px 40px" }}
           >
             Empezar a escribir
-          </Link>
-          <Link
-            href="/feed"
-            className="text-sm text-tinta-suave transition-colors hover:text-tinta"
-            style={{ fontFamily: "Inter, sans-serif" }}
-          >
-            Ver la consigna de hoy →
           </Link>
         </div>
 
