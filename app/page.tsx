@@ -1,7 +1,6 @@
 import Link from "next/link";
-import { Pencil } from "lucide-react";
 
-export default function Home() {
+export default function Landing() {
   return (
     <div className="relative min-h-screen bg-papel">
 
@@ -17,7 +16,7 @@ export default function Home() {
 
       {/* Navbar */}
       <nav className="w-full px-6 py-5">
-        <div className="mx-auto flex max-w-[720px] items-center justify-between">
+        <div className="mx-auto flex max-w-[680px] items-center justify-between">
           <span className="font-display text-xl italic text-tinta">renglón</span>
           <div className="flex items-center gap-3">
             <Link
@@ -38,93 +37,196 @@ export default function Home() {
       </nav>
 
       {/* Hero */}
-      <main className="relative mx-auto max-w-[720px] overflow-hidden px-6 pb-24 pt-16">
+      <main className="relative mx-auto max-w-[680px] px-6 pb-24 pt-12">
 
-        {/* Marca de agua */}
-        <span
-          aria-hidden="true"
-          className="pointer-events-none absolute inset-0 flex select-none items-center justify-center font-display italic leading-none"
-          style={{ fontSize: "clamp(100px, 22vw, 200px)", color: "rgba(100, 49, 62, 0.06)" }}
+        {/* 1. Apertura */}
+        <p
+          className="mb-8 text-center font-display italic leading-relaxed text-tinta-suave"
+          style={{ fontSize: "16px" }}
         >
-          renglón
-        </span>
+          Un momento que no se consume, se construye.
+          <br />
+          Todo empieza con una consigna y un renglón en blanco.
+        </p>
 
-        <div className="relative z-10 flex flex-col items-center gap-8 text-center">
+        {/* 2. Título principal */}
+        <h1
+          className="mb-6 text-center font-display leading-tight text-tinta"
+          style={{ fontSize: "clamp(48px, 8vw, 72px)" }}
+        >
+          El hábito de escribir,
+          <br />
+          <span style={{ color: "#64313E" }}>una consigna a la vez.</span>
+        </h1>
 
-          {/* Tag pill */}
-          <div className="flex items-center gap-2 rounded-full border border-borde bg-papel-oscuro px-4 py-2 text-sm text-tinta-suave">
-            <Pencil size={14} strokeWidth={1.5} />
-            <span>Una consigna nueva cada día</span>
-          </div>
+        {/* 3. Subtítulo */}
+        <p
+          className="mx-auto mb-12 text-center text-tinta-suave"
+          style={{
+            fontSize: "17px",
+            lineHeight: "1.7",
+            maxWidth: "520px",
+            fontFamily: "Inter, sans-serif",
+          }}
+        >
+          Cada día una consigna nueva que te invita a recordar, imaginar o crear.
+          Escribís lo tuyo, lo compartís si querés, y después leés lo que crearon los demás.
+        </p>
 
-          {/* Título */}
-          <h1 className="font-display text-5xl leading-tight text-tinta sm:text-6xl">
-            Un espacio para escribir
-            <br />
-            <em className="italic text-borravino">sin excusas</em>
-          </h1>
-
-          {/* Subtítulo */}
-          <p className="max-w-md text-base leading-relaxed text-tinta-suave">
-            Escribís primero. Después leés lo de los demás.
-          </p>
-
-          {/* Botones */}
-          <div className="flex flex-wrap items-center justify-center gap-3">
-            <Link
-              href="/registro"
-              className="rounded-[6px] border border-transparent bg-borravino px-6 py-3 text-sm font-medium text-blanco-roto transition-colors hover:opacity-90"
+        {/* 4. Preview de consigna — cuaderno */}
+        <div
+          className="relative mx-auto mb-12 overflow-hidden"
+          style={{
+            maxWidth: "460px",
+            backgroundColor: "#FDFAF5",
+            border: "1px solid #D6CFBF",
+            borderRadius: "8px",
+            backgroundImage:
+              "repeating-linear-gradient(transparent, transparent 39px, #D6CFBF 39px, #D6CFBF 40px)",
+            backgroundPositionY: "24px",
+          }}
+        >
+          {/* Línea de margen */}
+          <div
+            className="pointer-events-none absolute bottom-0 top-0"
+            style={{ left: "44px", width: "1px", backgroundColor: "#C1DBE8" }}
+          />
+          <div
+            style={{
+              paddingLeft: "52px",
+              paddingRight: "52px",
+              paddingTop: "24px",
+              paddingBottom: "32px",
+            }}
+          >
+            <p
+              className="mb-2 uppercase tracking-widest text-tinta-suave"
+              style={{ fontSize: "10px", fontFamily: "Inter, sans-serif" }}
             >
-              Crear mi cuenta
-            </Link>
-            <Link
-              href="/feed"
-              className="rounded-[6px] border border-borravino px-6 py-3 text-sm font-medium text-borravino transition-colors hover:bg-borravino hover:text-blanco-roto"
-              style={{ borderWidth: "1.5px" }}
+              Consigna de hoy
+            </p>
+            <p
+              className="font-display italic text-tinta"
+              style={{ fontSize: "22px", lineHeight: "1.5" }}
             >
-              Ver el feed de hoy
-            </Link>
+              Escribí sobre un objeto que alguien te dejó y que no pediste.
+            </p>
           </div>
-
         </div>
+
+        {/* 5. CTAs */}
+        <div className="flex flex-col items-center gap-4">
+          <Link
+            href="/registro"
+            className="rounded-[6px] bg-borravino text-sm font-medium text-blanco-roto transition-opacity hover:opacity-90"
+            style={{ padding: "14px 40px" }}
+          >
+            Empezar a escribir
+          </Link>
+          <Link
+            href="/feed"
+            className="text-sm text-tinta-suave transition-colors hover:text-tinta"
+            style={{ fontFamily: "Inter, sans-serif" }}
+          >
+            Ver la consigna de hoy →
+          </Link>
+        </div>
+
       </main>
 
       {/* ¿Cómo funciona? */}
-      <section className="mx-auto max-w-[720px] px-6 pb-24">
-        <h2 className="mb-12 text-center font-display text-2xl text-tinta">
-          ¿Cómo funciona?
-        </h2>
-        <div className="grid grid-cols-1 gap-6 sm:grid-cols-3">
+      <section className="mx-auto max-w-[680px] px-6 pb-24">
+
+        {/* Título de sección */}
+        <div className="mb-12 flex flex-col items-center gap-4">
+          <h2
+            className="text-center font-display text-tinta"
+            style={{ fontSize: "28px" }}
+          >
+            ¿Cómo funciona?
+          </h2>
+          <div style={{ width: "60px", height: "1px", backgroundColor: "#D6CFBF" }} />
+        </div>
+
+        {/* Pasos */}
+        <div className="flex flex-col">
           {[
             {
               num: "01",
               title: "Recibís la consigna",
-              desc: "Cada día al abrir la app encontrás una nueva consigna para escribir.",
+              desc: "Cada día hay una consigna nueva: un objeto, un recuerdo, una escena. Tu punto de partida está listo.",
             },
             {
               num: "02",
               title: "Escribís lo tuyo",
-              desc: "Tenés el espacio para escribir tu texto sin distracciones.",
+              desc: "Un espacio limpio, sin distracciones. Solo vos y el renglón en blanco. Escribís desde donde podás.",
             },
             {
               num: "03",
-              title: "Lo compartís",
-              desc: "Tu texto aparece en el feed. Leés, descubrís, conectás.",
+              title: "Lo compartís y leés",
+              desc: "Publicás si querés. Y entonces se abre el feed: lo que escribieron los demás sobre la misma consigna, hoy.",
             },
-          ].map(({ num, title, desc }) => (
-            <div
-              key={num}
-              className="rounded-[8px] border border-borde bg-papel-oscuro p-6"
-            >
-              <span className="font-display text-3xl italic text-borravino">
-                {num}
-              </span>
-              <h3 className="mt-3 text-sm font-semibold text-tinta">{title}</h3>
-              <p className="mt-2 text-sm leading-relaxed text-tinta-suave">
-                {desc}
-              </p>
+          ].map(({ num, title, desc }, i, arr) => (
+            <div key={num} className="flex gap-6">
+              {/* Línea conectora + número */}
+              <div className="flex flex-col items-center">
+                <p
+                  className="font-display italic text-borravino"
+                  style={{ fontSize: "14px", lineHeight: "1" }}
+                >
+                  {num}
+                </p>
+                {i < arr.length - 1 && (
+                  <div
+                    className="mt-3 flex-1"
+                    style={{ width: "1px", backgroundColor: "#D6CFBF", minHeight: "40px" }}
+                  />
+                )}
+              </div>
+
+              {/* Contenido */}
+              <div className={i < arr.length - 1 ? "pb-10" : ""}>
+                <p
+                  className="font-medium text-tinta"
+                  style={{ fontSize: "16px", fontFamily: "Inter, sans-serif" }}
+                >
+                  {title}
+                </p>
+                <p
+                  className="mt-1.5 text-tinta-suave"
+                  style={{ fontSize: "14px", lineHeight: "1.6", fontFamily: "Inter, sans-serif" }}
+                >
+                  {desc}
+                </p>
+              </div>
             </div>
           ))}
+        </div>
+      </section>
+
+      {/* Cierre */}
+      <section className="mx-auto max-w-[680px] px-6 pb-24">
+        <div style={{ height: "1px", backgroundColor: "#D6CFBF" }} className="mb-12" />
+        <div className="flex flex-col items-center gap-5 text-center">
+          <p
+            className="font-display italic text-tinta"
+            style={{ fontSize: "20px" }}
+          >
+            La consigna de hoy ya está esperándote.
+          </p>
+          <Link
+            href="/registro"
+            className="rounded-[6px] bg-borravino text-sm font-medium text-blanco-roto transition-opacity hover:opacity-90"
+            style={{ padding: "14px 40px" }}
+          >
+            Empezar a escribir
+          </Link>
+          <p
+            className="text-tinta-suave"
+            style={{ fontSize: "13px", fontFamily: "Inter, sans-serif" }}
+          >
+            Es gratis. No hace falta experiencia previa.
+          </p>
         </div>
       </section>
 
