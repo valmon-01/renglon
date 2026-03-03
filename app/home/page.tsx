@@ -6,8 +6,6 @@ import { UserCircle } from "lucide-react";
 import { supabase } from "@/lib/supabase";
 import type { Session } from "@supabase/supabase-js";
 
-const RACHA = 4; // hardcodeado hasta tener lógica real
-
 function formatFecha(): string {
   return new Date().toLocaleDateString("es-AR", {
     weekday: "long",
@@ -20,15 +18,24 @@ function formatFecha(): string {
 export default function Home() {
   const [session, setSession] = useState<Session | null>(null);
   const [consigna, setConsigna] = useState<string | null>(null);
+  const [racha, setRacha] = useState<number>(0);
   const [cargando, setCargando] = useState(true);
 
   useEffect(() => {
     Promise.all([
       supabase.auth.getSession(),
       fetch("/api/asignar-consigna-diaria").then((r) => r.json()),
-    ]).then(([{ data }, consignaData]) => {
+    ]).then(async ([{ data }, consignaData]) => {
       setSession(data.session);
       setConsigna(consignaData.consigna?.texto ?? null);
+      if (data.session?.user.id) {
+        const { data: perfil } = await supabase
+          .from("profiles")
+          .select("racha_actual")
+          .eq("id", data.session.user.id)
+          .single();
+        setRacha(perfil?.racha_actual ?? 0);
+      }
       setCargando(false);
     });
   }, []);
@@ -88,7 +95,7 @@ export default function Home() {
         {/* Racha — solo con sesión */}
         {session && (
           <p className="mt-6 text-sm text-tinta-suave">
-            🔥 {RACHA} días seguidos
+            🔥 {racha} días seguidos
           </p>
         )}
 

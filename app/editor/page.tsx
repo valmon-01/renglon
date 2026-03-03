@@ -5,6 +5,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { ArrowLeft, Check, Globe, Lock } from "lucide-react";
 import { supabase } from "@/lib/supabase";
+import { calcularYActualizarRacha } from "@/utils/dailyProgress";
 
 const META_PALABRAS = 300;
 
@@ -71,6 +72,10 @@ export default function Editor() {
         consigna: consigna ?? "",
         publicado,
       });
+
+      if (session?.user.id) {
+        await calcularYActualizarRacha(session.user.id);
+      }
 
       const hoy = new Date().toISOString().slice(0, 10);
       localStorage.setItem(`renglon_completed_${hoy}`, "1");

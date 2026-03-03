@@ -62,6 +62,7 @@ export default function Feed() {
   const [cargando, setCargando] = useState(true);
   const [filtro, setFiltro] = useState<Filtro>("Recientes");
   const [likes, setLikes] = useState<Set<string>>(new Set());
+  const [likesCounts, setLikesCounts] = useState<Record<string, number>>({});
 
   useEffect(() => {
     setCompletado(!!localStorage.getItem(`renglon_completed_${hoy}`));
@@ -93,7 +94,20 @@ export default function Feed() {
         (profilesData ?? []).map((p) => [p.id, p.username])
       );
 
-      setTextos(textos.map((t) => ({ ...t, username: profileMap[t.user_id] ?? "Autor" })));
+      const textosConUsername = textos.map((t) => ({ ...t, username: profileMap[t.user_id] ?? "Autor" }));
+      setTextos(textosConUsername);
+
+      // Likes count para Populares
+      const textoIds = textos.map((t) => t.id);
+      const { data: likesData } = await supabase
+        .from("likes")
+        .select("texto_id")
+        .in("texto_id", textoIds);
+      const counts: Record<string, number> = {};
+      for (const like of (likesData ?? [])) {
+        counts[like.texto_id] = (counts[like.texto_id] ?? 0) + 1;
+      }
+      setLikesCounts(counts);
       setCargando(false);
     });
   }, [hoy]);
@@ -107,6 +121,11 @@ export default function Feed() {
   }
 
   function textosFiltrados(): Texto[] {
+    if (filtro === "Populares") {
+      return [...textos].sort(
+        (a, b) => (likesCounts[b.id] ?? 0) - (likesCounts[a.id] ?? 0)
+      );
+    }
     return textos;
   }
 

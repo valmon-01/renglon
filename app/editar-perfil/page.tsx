@@ -24,6 +24,7 @@ export default function EditarPerfil() {
   const [bio, setBio] = useState("");
   const [guardando, setGuardando] = useState(false);
   const [guardado, setGuardado] = useState(false);
+  const [error, setError] = useState<string | null>(null);
   const [cargando, setCargando] = useState(true);
 
   useEffect(() => {
@@ -58,8 +59,9 @@ export default function EditarPerfil() {
     if (!user) return;
 
     setGuardando(true);
+    setError(null);
 
-    await Promise.all([
+    const [{ error: authError }, { error: profileError }] = await Promise.all([
       supabase.auth.updateUser({ data: { username: nombre.trim() } }),
       supabase.from("profiles").upsert({
         id: user.id,
@@ -67,6 +69,12 @@ export default function EditarPerfil() {
         bio: bio.trim() || null,
       }),
     ]);
+
+    if (authError || profileError) {
+      setError(authError?.message ?? profileError?.message ?? "Error al guardar los cambios.");
+      setGuardando(false);
+      return;
+    }
 
     setGuardando(false);
     setGuardado(true);
@@ -176,6 +184,11 @@ export default function EditarPerfil() {
               No se puede cambiar
             </p>
           </div>
+
+          {/* Error */}
+          {error && (
+            <p className="text-sm text-borravino">{error}</p>
+          )}
 
           {/* Botón */}
           <button

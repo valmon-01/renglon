@@ -45,6 +45,7 @@ export default function Perfil() {
   const router = useRouter();
   const [user, setUser] = useState<User | null>(null);
   const [bio, setBio] = useState<string | null>(null);
+  const [racha, setRacha] = useState<number>(0);
   const [textos, setTextos] = useState<Texto[]>([]);
   const [tab, setTab] = useState<Tab>("publicados");
   const [cargando, setCargando] = useState(true);
@@ -63,7 +64,7 @@ export default function Perfil() {
       setUser(user);
 
       const [{ data: prof }, { data: texs }] = await Promise.all([
-        supabase.from("profiles").select("bio").eq("id", user.id).single(),
+        supabase.from("profiles").select("bio, racha_actual").eq("id", user.id).single(),
         supabase
           .from("textos")
           .select("id, contenido, titulo, tags, created_at, publicado")
@@ -72,6 +73,7 @@ export default function Perfil() {
       ]);
 
       setBio(prof?.bio ?? null);
+      setRacha(prof?.racha_actual ?? 0);
       setTextos((texs as Texto[]) ?? []);
       setCargando(false);
     }
@@ -161,7 +163,7 @@ export default function Perfil() {
               <p className="mt-0.5 text-xs text-tinta-suave">publicados</p>
             </div>
             <div className="text-center">
-              <p className="text-xl font-medium text-tinta">0</p>
+              <p className="text-xl font-medium text-tinta">{racha}</p>
               <p className="mt-0.5 text-xs text-tinta-suave">días seguidos</p>
             </div>
           </div>
