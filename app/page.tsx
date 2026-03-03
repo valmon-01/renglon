@@ -41,18 +41,21 @@ export default function Landing() {
 
         {/* 1. Apertura */}
         <p
-          className="mb-8 text-center font-display italic leading-relaxed text-tinta-suave"
-          style={{ fontSize: "16px" }}
+          className="mb-6 text-center font-display italic leading-relaxed"
+          style={{ fontSize: "17px", color: "#1C1917" }}
         >
           Un momento que no se consume, se construye.
           <br />
           Todo empieza con una consigna y un renglón en blanco.
         </p>
 
+        {/* Separador cielo */}
+        <div className="mx-auto mb-6" style={{ width: "48px", height: "2px", backgroundColor: "#C1DBE8" }} />
+
         {/* 2. Título principal */}
         <h1
-          className="mb-6 text-center font-display leading-tight text-tinta"
-          style={{ fontSize: "clamp(48px, 8vw, 72px)" }}
+          className="mb-6 text-center font-display italic leading-tight text-tinta"
+          style={{ fontSize: "clamp(36px, 6vw, 56px)" }}
         >
           El hábito de escribir,
           <br />
@@ -61,12 +64,12 @@ export default function Landing() {
 
         {/* 3. Subtítulo */}
         <p
-          className="mx-auto mb-12 text-center text-tinta-suave"
+          className="mx-auto mb-12 text-center font-display italic"
           style={{
             fontSize: "17px",
             lineHeight: "1.7",
             maxWidth: "520px",
-            fontFamily: "Inter, sans-serif",
+            color: "#5C5147",
           }}
         >
           Cada día una consigna nueva que te invita a recordar, imaginar o crear.
@@ -82,7 +85,7 @@ export default function Landing() {
             border: "1px solid #D6CFBF",
             borderRadius: "8px",
             backgroundImage:
-              "repeating-linear-gradient(transparent, transparent 39px, #D6CFBF 39px, #D6CFBF 40px)",
+              "repeating-linear-gradient(to bottom, transparent, transparent 39px, #D6CFBF 39px, #D6CFBF 40px)",
             backgroundPositionY: "24px",
           }}
         >
@@ -100,13 +103,13 @@ export default function Landing() {
             }}
           >
             <p
-              className="mb-2 uppercase tracking-widest text-tinta-suave"
+              className="mb-2 text-center uppercase tracking-widest text-tinta-suave"
               style={{ fontSize: "10px", fontFamily: "Inter, sans-serif" }}
             >
               Consigna de hoy
             </p>
             <p
-              className="font-display italic text-tinta"
+              className="text-center font-display italic text-tinta"
               style={{ fontSize: "22px", lineHeight: "1.5" }}
             >
               Escribí sobre un objeto que alguien te dejó y que no pediste.
@@ -145,7 +148,7 @@ export default function Landing() {
           >
             ¿Cómo funciona?
           </h2>
-          <div style={{ width: "60px", height: "1px", backgroundColor: "#D6CFBF" }} />
+          <div style={{ width: "60px", height: "1px", backgroundColor: "#C1DBE8" }} />
         </div>
 
         {/* Pasos */}
@@ -171,8 +174,8 @@ export default function Landing() {
               {/* Línea conectora + número */}
               <div className="flex flex-col items-center">
                 <p
-                  className="font-display italic text-borravino"
-                  style={{ fontSize: "14px", lineHeight: "1" }}
+                  className="font-display italic"
+                  style={{ fontSize: "14px", lineHeight: "1", color: "#C1DBE8" }}
                 >
                   {num}
                 </p>
