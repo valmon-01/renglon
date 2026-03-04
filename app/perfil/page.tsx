@@ -3,6 +3,7 @@
 import { useState, useEffect } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
+import { motion } from "framer-motion";
 import { LogOut, PenLine } from "lucide-react";
 import { supabase } from "@/lib/supabase";
 import type { User } from "@supabase/supabase-js";
@@ -132,44 +133,100 @@ export default function Perfil() {
 
       <main className="mx-auto max-w-[720px] px-6 pb-24">
 
-        {/* Cabecera de perfil */}
-        <div className="mb-10 flex flex-col items-center gap-4 text-center">
+        {/* Tapa de libreta */}
+        <motion.div
+          initial={{ opacity: 0, y: 24 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.5, ease: [0.16, 1, 0.3, 1] }}
+          className="mx-auto mb-6 flex flex-col items-center gap-5 px-10 py-10 text-center"
+          style={{
+            maxWidth: "480px",
+            backgroundColor: "#64313E",
+            borderRadius: "4px 16px 16px 4px",
+            boxShadow: "-4px 0 0 #4a2230, -8px 0 0 #3a1828, 0 8px 32px rgba(28,25,23,0.2)",
+          }}
+        >
+          {/* Label */}
+          <p className="font-display italic" style={{ fontSize: "12px", color: "rgba(245,240,232,0.4)" }}>
+            renglón
+          </p>
 
           {/* Avatar */}
           <div
             className="flex h-20 w-20 items-center justify-center rounded-full text-2xl font-medium"
-            style={{ backgroundColor: "#C1DBE8", color: "#64313E" }}
+            style={{ backgroundColor: "rgba(193,219,232,0.2)", color: "#F5F0E8" }}
           >
             {iniciales(username)}
           </div>
 
-          {/* Nombre + bio */}
-          <div>
-            <h1 className="text-xl font-medium text-tinta">{username}</h1>
-            {bio && (
-              <p className="mt-2 max-w-sm text-sm leading-relaxed text-tinta-suave">
-                {bio}
+          {/* Nombre */}
+          <h1
+            className="font-display italic"
+            style={{ fontSize: "32px", color: "#F5F0E8", lineHeight: 1.2 }}
+          >
+            {username}
+          </h1>
+
+          {/* Bio */}
+          {bio && (
+            <p style={{ fontSize: "14px", color: "rgba(245,240,232,0.5)", lineHeight: 1.6 }}>
+              {bio}
+            </p>
+          )}
+
+          {/* Separador */}
+          <div style={{ width: "100%", height: "1px", backgroundColor: "rgba(245,240,232,0.15)" }} />
+
+          {/* Stats */}
+          <div className="flex gap-10">
+            <div className="text-center">
+              <p className="font-display" style={{ fontSize: "28px", color: "#F5F0E8", lineHeight: 1 }}>
+                {textos.length}
               </p>
-            )}
+              <p style={{ fontSize: "10px", color: "rgba(245,240,232,0.4)", textTransform: "uppercase", letterSpacing: "0.1em", marginTop: "4px" }}>
+                escritos
+              </p>
+            </div>
+            <div className="text-center">
+              <p className="font-display" style={{ fontSize: "28px", color: "#F5F0E8", lineHeight: 1 }}>
+                {publicados.length}
+              </p>
+              <p style={{ fontSize: "10px", color: "rgba(245,240,232,0.4)", textTransform: "uppercase", letterSpacing: "0.1em", marginTop: "4px" }}>
+                publicados
+              </p>
+            </div>
+            <div className="text-center">
+              <p className="font-display" style={{ fontSize: "28px", color: "#F5F0E8", lineHeight: 1 }}>
+                {racha}
+              </p>
+              <p style={{ fontSize: "10px", color: "rgba(245,240,232,0.4)", textTransform: "uppercase", letterSpacing: "0.1em", marginTop: "4px" }}>
+                días seguidos
+              </p>
+            </div>
           </div>
 
-          {/* Estadísticas */}
-          <div className="flex gap-10 border-t border-borde pt-6">
-            <div className="text-center">
-              <p className="text-xl font-medium text-tinta">{textos.length}</p>
-              <p className="mt-0.5 text-xs text-tinta-suave">escritos</p>
-            </div>
-            <div className="text-center">
-              <p className="text-xl font-medium text-tinta">{publicados.length}</p>
-              <p className="mt-0.5 text-xs text-tinta-suave">publicados</p>
-            </div>
-            <div className="text-center">
-              <p className="text-xl font-medium text-tinta">{racha}</p>
-              <p className="mt-0.5 text-xs text-tinta-suave">días seguidos</p>
-            </div>
-          </div>
+          {/* CTA scroll */}
+          <button
+            type="button"
+            onClick={() => document.getElementById("escritos")?.scrollIntoView({ behavior: "smooth" })}
+            className="font-display italic"
+            style={{
+              backgroundColor: "rgba(245,240,232,0.1)",
+              border: "1px solid rgba(245,240,232,0.2)",
+              color: "#F5F0E8",
+              fontSize: "15px",
+              borderRadius: "6px",
+              padding: "10px 24px",
+              cursor: "pointer",
+              marginTop: "4px",
+            }}
+          >
+            Leer escritos →
+          </button>
+        </motion.div>
 
-          {/* Editar perfil */}
+        {/* Editar perfil */}
+        <div className="mb-8 flex justify-center">
           <Link
             href="/editar-perfil"
             className="flex items-center gap-2 rounded-[6px] border border-borravino px-5 py-2 text-sm text-borravino transition-colors hover:bg-borravino hover:text-blanco-roto"
@@ -178,11 +235,10 @@ export default function Perfil() {
             <PenLine size={14} strokeWidth={1.5} />
             Editar perfil
           </Link>
-
         </div>
 
         {/* Tabs */}
-        <div className="mb-6 flex border-b border-borde">
+        <div id="escritos" className="mb-6 flex border-b border-borde">
           {(["publicados", "privados"] as Tab[]).map((t) => (
             <button
               key={t}
