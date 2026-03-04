@@ -114,7 +114,6 @@ export default async function Landing() {
               style={{
                 fontSize: "10px",
                 lineHeight: "40px",
-                fontFamily: "Inter, sans-serif",
               }}
             >
               Consigna de hoy
@@ -196,13 +195,13 @@ export default async function Landing() {
               <div className={i < arr.length - 1 ? "pb-10" : ""}>
                 <p
                   className="font-medium text-tinta"
-                  style={{ fontSize: "16px", fontFamily: "Inter, sans-serif" }}
+                  style={{ fontSize: "16px" }}
                 >
                   {title}
                 </p>
                 <p
                   className="mt-1.5 text-tinta-suave"
-                  style={{ fontSize: "14px", lineHeight: "1.6", fontFamily: "Inter, sans-serif" }}
+                  style={{ fontSize: "14px", lineHeight: "1.6" }}
                 >
                   {desc}
                 </p>
@@ -231,7 +230,7 @@ export default async function Landing() {
           </Link>
           <p
             className="text-tinta-suave"
-            style={{ fontSize: "13px", fontFamily: "Inter, sans-serif" }}
+            style={{ fontSize: "13px" }}
           >
             Es gratis. No hace falta experiencia previa.
           </p>

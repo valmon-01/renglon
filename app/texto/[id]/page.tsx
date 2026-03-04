@@ -238,7 +238,6 @@ export default function TextoIndividual() {
               style={{
                 fontSize: "1rem",
                 lineHeight: "40px",
-                fontFamily: "Inter, sans-serif",
               }}
             >
               {texto.contenido.split("\n").map((linea, i) => (
@@ -266,7 +265,7 @@ export default function TextoIndividual() {
             strokeWidth={1.5}
             fill={liked ? "currentColor" : "none"}
           />
-          <span className="text-xs" style={{ fontFamily: "Inter, sans-serif" }}>
+          <span className="text-xs">
             {likeCount}
           </span>
         </button>

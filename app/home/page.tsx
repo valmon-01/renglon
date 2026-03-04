@@ -78,7 +78,7 @@ export default function Home() {
       <main className="mx-auto flex max-w-[600px] flex-col items-center px-6 pb-24 pt-10 text-center">
 
         {/* Fecha */}
-        <p className="text-[13px] uppercase tracking-wide text-tinta-suave" style={{ fontFamily: "Inter, sans-serif" }}>
+        <p className="text-[13px] uppercase tracking-wide text-tinta-suave">
           {formatFecha()}
         </p>
 

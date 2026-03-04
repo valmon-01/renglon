@@ -237,7 +237,6 @@ export default function Editor() {
               style={{
                 fontSize: "17px",
                 lineHeight: "40px",
-                fontFamily: "Inter, sans-serif",
               }}
             />
 
@@ -254,7 +253,6 @@ export default function Editor() {
               style={{
                 fontSize: "17px",
                 lineHeight: "40px",
-                fontFamily: "Inter, sans-serif",
                 minHeight: "240px",
               }}
             />
