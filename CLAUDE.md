@@ -226,3 +226,37 @@ GROQ_API_KEY=
 
 Estas tres variables deben estar configuradas tanto en `.env.local` (desarrollo)
 como en Vercel (producción). Sin ellas la app no funciona.
+
+## Design System
+
+Renglon usa Tailwind v4 con @theme. NO hay tailwind.config.ts. Toda la config esta en globals.css.
+
+### Colores (usar siempre con bg-, text-, border-)
+- papel / papel-oscuro / blanco-roto — fondos y superficies
+- tinta / tinta-suave / tinta-ligera — texto principal, secundario, terciario
+- borravino / borravino-claro / borravino-oscuro / borravino-suave — acento editorial
+- cielo / cielo-claro / cielo-oscuro — acento secundario
+- borde — bordes por defecto
+- exito / error / aviso — estados semanticos
+
+### Fuentes
+- font-display (Playfair Display): titulos, headings, prosa de articulos
+- font-sans (Inter): UI, navegacion, botones, metadata
+- font-mono (JetBrains Mono): bloques de codigo
+
+### Componentes CSS disponibles
+- .prose-content — wrapper para articulos (incluye drop cap automatico)
+- .card — card con hover elevado
+- .btn-primary, .btn-borravino, .btn-secondary, .btn-ghost + .btn-sm, .btn-lg
+- .badge-default, .badge-borravino, .badge-cielo
+- .input — campos con focus borravino
+- .divider — separador editorial
+- .page-container, .content-container
+
+### Reglas de diseno
+- SIEMPRE usar tokens del @theme, NUNCA valores hardcodeados
+- Ancho de lectura: max-w-prose (42rem)
+- Animaciones: fade-in, fade-in-slow, slide-up
+- Transiciones: 150ms para hovers, 250ms para cambios de estado
+- El fondo general es papel, las cards son blanco-roto
+- El color de accion principal es borravino, no azul ni negro

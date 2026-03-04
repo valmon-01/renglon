@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from "react";
 import Link from "next/link";
+import { motion } from "framer-motion";
 import { EyeOff, Heart, Pencil } from "lucide-react";
 import { supabase } from "@/lib/supabase";
 
@@ -222,10 +223,13 @@ export default function Feed() {
         <div className="relative">
 
           {/* Cards */}
-          <div
+          <motion.div
             className={`flex flex-col gap-4 ${
               !completado ? "pointer-events-none select-none blur-sm" : ""
             }`}
+            variants={{ visible: { transition: { staggerChildren: 0.08 } } }}
+            initial="hidden"
+            animate="visible"
           >
             {lista.length === 0 ? (
               <div className="flex flex-col items-center gap-4 py-20 text-center">
@@ -245,8 +249,12 @@ export default function Feed() {
                 const liked = likes.has(texto.id);
 
                 return (
-                  <article
+                  <motion.article
                     key={texto.id}
+                    variants={{
+                      hidden: { opacity: 0, y: 16 },
+                      visible: { opacity: 1, y: 0, transition: { duration: 0.35, ease: [0.4, 0, 0.2, 1] } },
+                    }}
                     className="rounded-[8px] border border-borde bg-papel-oscuro p-6"
                   >
                     {/* Autor + fecha */}
@@ -320,11 +328,11 @@ export default function Feed() {
                         />
                       </button>
                     </div>
-                  </article>
+                  </motion.article>
                 );
               })
             )}
-          </div>
+          </motion.div>
 
           {/* Overlay bloqueado */}
           {!completado && (

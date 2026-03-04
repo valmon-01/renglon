@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import "./globals.css";
+import AnimatePresenceWrapper from "./components/AnimatePresenceWrapper";
 
 export const metadata: Metadata = {
   title: "renglón",
@@ -13,7 +14,9 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="es">
-      <body className="antialiased">{children}</body>
+      <body className="antialiased">
+          <AnimatePresenceWrapper>{children}</AnimatePresenceWrapper>
+        </body>
     </html>
   );
 }
