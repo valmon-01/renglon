@@ -1,20 +1,13 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createClient } from '@supabase/supabase-js'
 
-const ADMIN_EMAIL = 'valenmonti01@gmail.com'
+const supabase = createClient(
+  process.env.NEXT_PUBLIC_SUPABASE_URL!,
+  process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
+)
 
 export async function POST(request: NextRequest) {
   try {
-    const token = request.headers.get('Authorization')?.replace('Bearer ', '')
-    const supabase = createClient(
-      process.env.NEXT_PUBLIC_SUPABASE_URL!,
-      process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
-    )
-    const { data: { user } } = await supabase.auth.getUser(token)
-    if (!user || user.email !== ADMIN_EMAIL) {
-      return NextResponse.json({ error: 'No autorizado' }, { status: 401 })
-    }
-
     const { id, texto, categoria, fecha, borrador } = await request.json()
 
     // UPDATE: modificar una consigna existente
@@ -24,19 +17,6 @@ export async function POST(request: NextRequest) {
         const { data, error } = await supabase
           .from('consignas')
           .update({ borrador: false })
-          .eq('id', id)
-          .select()
-          .single()
-
-        if (error) throw error
-        return NextResponse.json({ consigna: data })
-      }
-
-      // Mover del banco a borradores: id + borrador:true
-      if (borrador === true) {
-        const { data, error } = await supabase
-          .from('consignas')
-          .update({ borrador: true, fecha: null })
           .eq('id', id)
           .select()
           .single()

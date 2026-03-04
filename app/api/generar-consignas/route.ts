@@ -1,24 +1,11 @@
 // v3 - groq
 import { NextRequest, NextResponse } from 'next/server'
 import Groq from 'groq-sdk'
-import { createClient } from '@supabase/supabase-js'
-
-const ADMIN_EMAIL = 'valenmonti01@gmail.com'
 
 const groq = new Groq({ apiKey: process.env.GROQ_API_KEY })
 
 export async function POST(request: NextRequest) {
   try {
-    const token = request.headers.get('Authorization')?.replace('Bearer ', '')
-    const supabase = createClient(
-      process.env.NEXT_PUBLIC_SUPABASE_URL!,
-      process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
-    )
-    const { data: { user } } = await supabase.auth.getUser(token)
-    if (!user || user.email !== ADMIN_EMAIL) {
-      return NextResponse.json({ error: 'No autorizado' }, { status: 401 })
-    }
-
     const { categoria, contexto } = await request.json()
 
     const systemPrompt = `Sos un coordinador de taller literario con experiencia en escritura creativa rioplatense. Conocés la tradición de consignas de talleres argentinos: consignas que funcionan como disparadores concretos, no como temas abstractos. Una buena consigna es específica, sensorial y abre una puerta pequeña hacia algo más grande. No dice 'escribí sobre el amor' sino 'escribí sobre algo que dejaste sin decir'. Para textos cortos de práctica diaria (200-300 palabras), la consigna ideal rompe la parálisis del primer renglón en blanco y permite escribir desde la experiencia personal sin necesitar ser escritor.`

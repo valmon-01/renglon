@@ -3,7 +3,6 @@
 import { useState, useRef, useEffect } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { motion } from "framer-motion";
 import { ArrowLeft, Check, Globe, Lock } from "lucide-react";
 import { supabase } from "@/lib/supabase";
 import { calcularYActualizarRacha } from "@/utils/dailyProgress";
@@ -164,11 +163,8 @@ export default function Editor() {
 
       {/* Cuaderno */}
       <div className="flex-1 overflow-auto">
-        <motion.div
+        <div
           className="relative mx-auto w-full"
-          initial={{ opacity: 0, scaleX: 0.95, x: -20 }}
-          animate={{ opacity: 1, scaleX: 1, x: 0 }}
-          transition={{ duration: 0.6, ease: [0.16, 1, 0.3, 1] }}
           style={{
             maxWidth: "720px",
             minHeight: "calc(100vh - 120px)",
@@ -176,24 +172,8 @@ export default function Editor() {
             backgroundImage:
               "repeating-linear-gradient(transparent, transparent 39px, #D6CFBF 39px, #D6CFBF 40px)",
             backgroundPositionY: "24px",
-            boxShadow: "4px 4px 0px #D6CFBF, 8px 8px 0px #C8C0B0, -4px 0 8px rgba(28,25,23,0.06)",
-            transformPerspective: 1200,
           }}
         >
-          {/* Lomo */}
-          <div
-            style={{
-              position: "absolute",
-              left: 0,
-              top: 0,
-              bottom: 0,
-              width: "8px",
-              background: "linear-gradient(to right, #C8C0B0, #D6CFBF)",
-              borderRadius: "4px 0 0 4px",
-              boxShadow: "inset -2px 0 4px rgba(28,25,23,0.1)",
-            }}
-          />
-
           {/* Línea de margen */}
           <div
             className="pointer-events-none absolute bottom-0 top-0"
@@ -239,6 +219,7 @@ export default function Editor() {
               style={{
                 fontSize: "17px",
                 lineHeight: "40px",
+                fontFamily: "Inter, sans-serif",
               }}
             />
 
@@ -255,13 +236,14 @@ export default function Editor() {
               style={{
                 fontSize: "17px",
                 lineHeight: "40px",
+                fontFamily: "Inter, sans-serif",
                 minHeight: "240px",
               }}
             />
 
 
           </div>
-        </motion.div>
+        </div>
       </div>
 
       {/* Barra inferior */}

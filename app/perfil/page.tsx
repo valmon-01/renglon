@@ -3,7 +3,6 @@
 import { useState, useEffect } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { motion, AnimatePresence } from "framer-motion";
 import { LogOut, PenLine } from "lucide-react";
 import { supabase } from "@/lib/supabase";
 import type { User } from "@supabase/supabase-js";
@@ -18,6 +17,8 @@ interface Texto {
   consigna: string;
 }
 
+type Tab = "publicados" | "privados";
+
 function iniciales(nombre: string): string {
   return nombre
     .split(" ")
@@ -28,14 +29,14 @@ function iniciales(nombre: string): string {
 }
 
 function fechaCorta(iso: string): string {
-  const d = new Date(iso);
-  const dd = String(d.getDate()).padStart(2, "0");
-  const mm = String(d.getMonth() + 1).padStart(2, "0");
-  const aa = String(d.getFullYear()).slice(2);
-  return `${dd}/${mm}/${aa}`;
+  return new Date(iso).toLocaleDateString("es-AR", {
+    day: "numeric",
+    month: "short",
+    year: "numeric",
+  });
 }
 
-function extracto(contenido: string, max = 140): string {
+function extracto(contenido: string, max = 110): string {
   return contenido.length > max
     ? contenido.slice(0, max).trimEnd() + "…"
     : contenido;
@@ -47,8 +48,8 @@ export default function Perfil() {
   const [bio, setBio] = useState<string | null>(null);
   const [racha, setRacha] = useState<number>(0);
   const [textos, setTextos] = useState<Texto[]>([]);
+  const [tab, setTab] = useState<Tab>("publicados");
   const [cargando, setCargando] = useState(true);
-  const [libroAbierto, setLibroAbierto] = useState(false);
 
   useEffect(() => {
     async function cargar() {
@@ -86,13 +87,6 @@ export default function Perfil() {
     router.push("/");
   }
 
-  function abrirLibro() {
-    setLibroAbierto(true);
-    setTimeout(() => {
-      document.getElementById("escritos")?.scrollIntoView({ behavior: "smooth" });
-    }, 80);
-  }
-
   if (cargando) {
     return (
       <div className="flex min-h-screen items-center justify-center bg-papel">
@@ -103,6 +97,8 @@ export default function Perfil() {
 
   const username = user?.user_metadata?.username ?? "Usuario";
   const publicados = textos.filter((t) => t.publicado);
+  const privados = textos.filter((t) => !t.publicado);
+  const lista = tab === "publicados" ? publicados : privados;
 
   return (
     <div className="relative min-h-screen bg-papel">
@@ -136,100 +132,44 @@ export default function Perfil() {
 
       <main className="mx-auto max-w-[720px] px-6 pb-24">
 
-        {/* Tapa de libreta */}
-        <motion.div
-          initial={{ opacity: 0, y: 24 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.5, ease: [0.16, 1, 0.3, 1] }}
-          className="mx-auto mb-6 flex flex-col items-center gap-5 px-10 py-10 text-center"
-          style={{
-            maxWidth: "480px",
-            backgroundColor: "#64313E",
-            borderRadius: "4px 16px 16px 4px",
-            boxShadow: "-4px 0 0 #4a2230, -8px 0 0 #3a1828, 0 8px 32px rgba(28,25,23,0.2)",
-          }}
-        >
-          {/* Label */}
-          <p className="font-display italic" style={{ fontSize: "12px", color: "rgba(245,240,232,0.4)" }}>
-            renglón
-          </p>
+        {/* Cabecera de perfil */}
+        <div className="mb-10 flex flex-col items-center gap-4 text-center">
 
           {/* Avatar */}
           <div
             className="flex h-20 w-20 items-center justify-center rounded-full text-2xl font-medium"
-            style={{ backgroundColor: "rgba(193,219,232,0.2)", color: "#F5F0E8" }}
+            style={{ backgroundColor: "#C1DBE8", color: "#64313E" }}
           >
             {iniciales(username)}
           </div>
 
-          {/* Nombre */}
-          <h1
-            className="font-display italic"
-            style={{ fontSize: "32px", color: "#F5F0E8", lineHeight: 1.2 }}
-          >
-            {username}
-          </h1>
+          {/* Nombre + bio */}
+          <div>
+            <h1 className="text-xl font-medium text-tinta">{username}</h1>
+            {bio && (
+              <p className="mt-2 max-w-sm text-sm leading-relaxed text-tinta-suave">
+                {bio}
+              </p>
+            )}
+          </div>
 
-          {/* Bio */}
-          {bio && (
-            <p style={{ fontSize: "14px", color: "rgba(245,240,232,0.5)", lineHeight: 1.6 }}>
-              {bio}
-            </p>
-          )}
-
-          {/* Separador */}
-          <div style={{ width: "100%", height: "1px", backgroundColor: "rgba(245,240,232,0.15)" }} />
-
-          {/* Stats */}
-          <div className="flex gap-10">
+          {/* Estadísticas */}
+          <div className="flex gap-10 border-t border-borde pt-6">
             <div className="text-center">
-              <p className="font-display" style={{ fontSize: "28px", color: "#F5F0E8", lineHeight: 1 }}>
-                {textos.length}
-              </p>
-              <p style={{ fontSize: "10px", color: "rgba(245,240,232,0.4)", textTransform: "uppercase", letterSpacing: "0.1em", marginTop: "4px" }}>
-                escritos
-              </p>
+              <p className="text-xl font-medium text-tinta">{textos.length}</p>
+              <p className="mt-0.5 text-xs text-tinta-suave">escritos</p>
             </div>
             <div className="text-center">
-              <p className="font-display" style={{ fontSize: "28px", color: "#F5F0E8", lineHeight: 1 }}>
-                {publicados.length}
-              </p>
-              <p style={{ fontSize: "10px", color: "rgba(245,240,232,0.4)", textTransform: "uppercase", letterSpacing: "0.1em", marginTop: "4px" }}>
-                publicados
-              </p>
+              <p className="text-xl font-medium text-tinta">{publicados.length}</p>
+              <p className="mt-0.5 text-xs text-tinta-suave">publicados</p>
             </div>
             <div className="text-center">
-              <p className="font-display" style={{ fontSize: "28px", color: "#F5F0E8", lineHeight: 1 }}>
-                {racha}
-              </p>
-              <p style={{ fontSize: "10px", color: "rgba(245,240,232,0.4)", textTransform: "uppercase", letterSpacing: "0.1em", marginTop: "4px" }}>
-                días seguidos
-              </p>
+              <p className="text-xl font-medium text-tinta">{racha}</p>
+              <p className="mt-0.5 text-xs text-tinta-suave">días seguidos</p>
             </div>
           </div>
 
-          {/* CTA abrir libro */}
-          <button
-            type="button"
-            onClick={abrirLibro}
-            className="font-display italic"
-            style={{
-              backgroundColor: "rgba(245,240,232,0.1)",
-              border: "1px solid rgba(245,240,232,0.2)",
-              color: "#F5F0E8",
-              fontSize: "15px",
-              borderRadius: "6px",
-              padding: "10px 24px",
-              cursor: "pointer",
-              marginTop: "4px",
-            }}
-          >
-            Leer escritos →
-          </button>
-        </motion.div>
-
-        {/* Editar perfil */}
-        <div className="mb-10 flex justify-center">
+          {/* Editar perfil */}
           <Link
             href="/editar-perfil"
             className="flex items-center gap-2 rounded-[6px] border border-borravino px-5 py-2 text-sm text-borravino transition-colors hover:bg-borravino hover:text-blanco-roto"
@@ -238,102 +178,82 @@ export default function Perfil() {
             <PenLine size={14} strokeWidth={1.5} />
             Editar perfil
           </Link>
+
         </div>
 
-        {/* Libro abierto */}
-        <AnimatePresence>
-          {libroAbierto && (
-            <motion.div
-              id="escritos"
-              initial={{ opacity: 0, rotateY: -8, x: -20 }}
-              animate={{ opacity: 1, rotateY: 0, x: 0 }}
-              exit={{ opacity: 0, x: -20 }}
-              transition={{ duration: 0.5, ease: [0.16, 1, 0.3, 1] }}
-              style={{ transformPerspective: 1200 }}
+        {/* Tabs */}
+        <div className="mb-6 flex border-b border-borde">
+          {(["publicados", "privados"] as Tab[]).map((t) => (
+            <button
+              key={t}
+              type="button"
+              onClick={() => setTab(t)}
+              className={`px-4 pb-3 text-sm transition-colors ${
+                tab === t
+                  ? "border-b-2 border-borravino font-medium text-tinta"
+                  : "text-tinta-suave hover:text-tinta"
+              }`}
+              style={tab === t ? { marginBottom: "-1px" } : {}}
             >
-              {/* Cerrar libro */}
-              <button
-                type="button"
-                onClick={() => setLibroAbierto(false)}
-                className="mb-6 flex items-center gap-1.5 text-sm text-tinta-suave transition-colors hover:text-tinta"
-              >
-                ← Cerrar libro
-              </button>
+              {t === "publicados"
+                ? `Publicados (${publicados.length})`
+                : `Privados (${privados.length})`}
+            </button>
+          ))}
+        </div>
 
-              {/* Páginas con stagger */}
-              <motion.div
-                className="flex flex-col gap-4"
-                variants={{ visible: { transition: { staggerChildren: 0.06 } } }}
-                initial="hidden"
-                animate="visible"
+        {/* Lista de textos */}
+        {lista.length === 0 ? (
+          <div className="py-16 text-center">
+            <p className="font-display italic text-tinta-suave">
+              {tab === "publicados"
+                ? "Todavía no publicaste ningún texto."
+                : "No tenés textos guardados en privado."}
+            </p>
+          </div>
+        ) : (
+          <div className="flex flex-col gap-4">
+            {lista.map((texto) => (
+              <Link
+                key={texto.id}
+                href={`/texto/${texto.id}`}
+                className="block rounded-[8px] border border-borde bg-papel-oscuro p-5 transition-opacity hover:opacity-80"
               >
-                {textos.length === 0 ? (
-                  <p className="py-16 text-center font-display italic text-tinta-suave">
-                    Todavía no escribiste nada.
+                {texto.titulo && (
+                  <p className="mb-1 font-display italic text-tinta">
+                    {texto.titulo}
                   </p>
-                ) : (
-                  textos.map((texto) => (
-                    <motion.div
-                      key={texto.id}
-                      variants={{
-                        hidden: { opacity: 0, y: 12 },
-                        visible: { opacity: 1, y: 0, transition: { duration: 0.35, ease: [0.16, 1, 0.3, 1] } },
-                      }}
-                      className="relative overflow-hidden"
-                      style={{
-                        backgroundColor: "#FDFAF5",
-                        borderRadius: "2px 8px 8px 2px",
-                        boxShadow: "2px 2px 8px rgba(28,25,23,0.08), -1px 0 0 #D6CFBF",
-                        backgroundImage:
-                          "repeating-linear-gradient(to bottom, transparent, transparent 31px, #E8E2D8 31px, #E8E2D8 32px)",
-                        backgroundPositionY: "40px",
-                        padding: "24px 24px 24px 60px",
-                      }}
-                    >
-                      {/* Línea de margen */}
-                      <div
-                        className="pointer-events-none absolute bottom-0 top-0"
-                        style={{ left: "44px", width: "1px", backgroundColor: "#C1DBE8" }}
-                      />
-
-                      {/* Fecha + consigna */}
-                      <p
-                        className="font-display italic text-tinta-suave"
-                        style={{ fontSize: "12px", marginBottom: "8px" }}
-                      >
-                        {fechaCorta(texto.created_at)}{texto.consigna ? ` — ${texto.consigna}` : ""}
-                      </p>
-
-                      {/* Título */}
-                      {texto.titulo && (
-                        <p
-                          className="font-display italic text-tinta"
-                          style={{ fontSize: "20px", marginBottom: "8px" }}
-                        >
-                          {texto.titulo}
-                        </p>
-                      )}
-
-                      {/* Excerpt */}
-                      <p className="text-tinta" style={{ fontSize: "14px", lineHeight: "32px" }}>
-                        {extracto(texto.contenido)}
-                      </p>
-
-                      {/* Leer completo */}
-                      <Link
-                        href={`/texto/${texto.id}`}
-                        className="mt-3 inline-block text-borravino transition-opacity hover:opacity-70"
-                        style={{ fontSize: "13px" }}
-                      >
-                        Leer completo →
-                      </Link>
-                    </motion.div>
-                  ))
                 )}
-              </motion.div>
-            </motion.div>
-          )}
-        </AnimatePresence>
+                <p className="text-sm leading-relaxed text-tinta-suave">
+                  {extracto(texto.contenido)}
+                </p>
+                {texto.consigna && (
+                  <p
+                    className="mt-2 font-display italic"
+                    style={{ fontSize: "13px", color: "#5C5147" }}
+                  >
+                    — {texto.consigna}
+                  </p>
+                )}
+                {texto.tags && texto.tags.length > 0 && (
+                  <div className="mt-3 flex flex-wrap gap-1.5">
+                    {texto.tags.map((tag) => (
+                      <span
+                        key={tag}
+                        className="rounded-[4px] bg-cielo px-2 py-0.5 text-xs text-borravino"
+                      >
+                        {tag}
+                      </span>
+                    ))}
+                  </div>
+                )}
+                <p className="mt-3 text-xs text-tinta-suave">
+                  {fechaCorta(texto.created_at)}
+                </p>
+              </Link>
+            ))}
+          </div>
+        )}
 
       </main>
     </div>

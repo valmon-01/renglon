@@ -214,19 +214,31 @@ export default function TextoIndividual() {
             }}
           >
 
-            {/* Renglón 1: fecha — consigna */}
+            {/* Renglón 1: fecha DD/MM/AAAA — derecha */}
+            <p
+              className="select-none text-right font-display italic text-tinta-suave"
+              style={{ fontSize: "1rem", lineHeight: "40px" }}
+            >
+              {fechaCorta(texto.created_at)}
+            </p>
+
+            {/* Renglón 2: consigna */}
             <p
               className="select-none font-display italic text-tinta-suave"
               style={{ fontSize: "1rem", lineHeight: "40px" }}
             >
-              {fechaCorta(texto.created_at)} — {texto.consigna}
+              {texto.consigna}
             </p>
 
-            {/* Renglón 2: título (si existe) */}
+            {/* Renglón 3: título (si existe) */}
             {texto.titulo && (
               <p
-                className="font-display italic text-tinta"
-                style={{ fontSize: "22px", lineHeight: "40px" }}
+                className="italic text-tinta"
+                style={{
+                  fontSize: "1rem",
+                  lineHeight: "40px",
+                  fontFamily: "Inter, sans-serif",
+                }}
               >
                 {texto.titulo}
               </p>
@@ -238,6 +250,7 @@ export default function TextoIndividual() {
               style={{
                 fontSize: "1rem",
                 lineHeight: "40px",
+                fontFamily: "Inter, sans-serif",
               }}
             >
               {texto.contenido.split("\n").map((linea, i) => (
@@ -265,7 +278,7 @@ export default function TextoIndividual() {
             strokeWidth={1.5}
             fill={liked ? "currentColor" : "none"}
           />
-          <span className="text-xs">
+          <span className="text-xs" style={{ fontFamily: "Inter, sans-serif" }}>
             {likeCount}
           </span>
         </button>
