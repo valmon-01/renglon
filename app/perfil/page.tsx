@@ -3,7 +3,7 @@
 import { useState, useEffect } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { motion } from "framer-motion";
+import { motion, AnimatePresence } from "framer-motion";
 import { LogOut, PenLine } from "lucide-react";
 import { supabase } from "@/lib/supabase";
 import type { User } from "@supabase/supabase-js";
@@ -17,8 +17,6 @@ interface Texto {
   publicado: boolean;
   consigna: string;
 }
-
-type Tab = "publicados" | "privados";
 
 function iniciales(nombre: string): string {
   return nombre
@@ -37,7 +35,7 @@ function fechaCorta(iso: string): string {
   return `${dd}/${mm}/${aa}`;
 }
 
-function extracto(contenido: string, max = 110): string {
+function extracto(contenido: string, max = 140): string {
   return contenido.length > max
     ? contenido.slice(0, max).trimEnd() + "…"
     : contenido;
@@ -49,8 +47,8 @@ export default function Perfil() {
   const [bio, setBio] = useState<string | null>(null);
   const [racha, setRacha] = useState<number>(0);
   const [textos, setTextos] = useState<Texto[]>([]);
-  const [tab, setTab] = useState<Tab>("publicados");
   const [cargando, setCargando] = useState(true);
+  const [libroAbierto, setLibroAbierto] = useState(false);
 
   useEffect(() => {
     async function cargar() {
@@ -88,6 +86,13 @@ export default function Perfil() {
     router.push("/");
   }
 
+  function abrirLibro() {
+    setLibroAbierto(true);
+    setTimeout(() => {
+      document.getElementById("escritos")?.scrollIntoView({ behavior: "smooth" });
+    }, 80);
+  }
+
   if (cargando) {
     return (
       <div className="flex min-h-screen items-center justify-center bg-papel">
@@ -98,8 +103,6 @@ export default function Perfil() {
 
   const username = user?.user_metadata?.username ?? "Usuario";
   const publicados = textos.filter((t) => t.publicado);
-  const privados = textos.filter((t) => !t.publicado);
-  const lista = tab === "publicados" ? publicados : privados;
 
   return (
     <div className="relative min-h-screen bg-papel">
@@ -205,10 +208,10 @@ export default function Perfil() {
             </div>
           </div>
 
-          {/* CTA scroll */}
+          {/* CTA abrir libro */}
           <button
             type="button"
-            onClick={() => document.getElementById("escritos")?.scrollIntoView({ behavior: "smooth" })}
+            onClick={abrirLibro}
             className="font-display italic"
             style={{
               backgroundColor: "rgba(245,240,232,0.1)",
@@ -226,7 +229,7 @@ export default function Perfil() {
         </motion.div>
 
         {/* Editar perfil */}
-        <div className="mb-8 flex justify-center">
+        <div className="mb-10 flex justify-center">
           <Link
             href="/editar-perfil"
             className="flex items-center gap-2 rounded-[6px] border border-borravino px-5 py-2 text-sm text-borravino transition-colors hover:bg-borravino hover:text-blanco-roto"
@@ -237,74 +240,100 @@ export default function Perfil() {
           </Link>
         </div>
 
-        {/* Tabs */}
-        <div id="escritos" className="mb-6 flex border-b border-borde">
-          {(["publicados", "privados"] as Tab[]).map((t) => (
-            <button
-              key={t}
-              type="button"
-              onClick={() => setTab(t)}
-              className={`px-4 pb-3 text-sm transition-colors ${
-                tab === t
-                  ? "border-b-2 border-borravino font-medium text-tinta"
-                  : "text-tinta-suave hover:text-tinta"
-              }`}
-              style={tab === t ? { marginBottom: "-1px" } : {}}
+        {/* Libro abierto */}
+        <AnimatePresence>
+          {libroAbierto && (
+            <motion.div
+              id="escritos"
+              initial={{ opacity: 0, rotateY: -8, x: -20 }}
+              animate={{ opacity: 1, rotateY: 0, x: 0 }}
+              exit={{ opacity: 0, x: -20 }}
+              transition={{ duration: 0.5, ease: [0.16, 1, 0.3, 1] }}
+              style={{ transformPerspective: 1200 }}
             >
-              {t === "publicados"
-                ? `Publicados (${publicados.length})`
-                : `Privados (${privados.length})`}
-            </button>
-          ))}
-        </div>
-
-        {/* Lista de textos */}
-        {lista.length === 0 ? (
-          <div className="py-16 text-center">
-            <p className="font-display italic text-tinta-suave">
-              {tab === "publicados"
-                ? "Todavía no publicaste ningún texto."
-                : "No tenés textos guardados en privado."}
-            </p>
-          </div>
-        ) : (
-          <div className="flex flex-col gap-4">
-            {lista.map((texto) => (
-              <Link
-                key={texto.id}
-                href={`/texto/${texto.id}`}
-                className="block rounded-[8px] border border-borde bg-papel-oscuro p-5 transition-opacity hover:opacity-80"
+              {/* Cerrar libro */}
+              <button
+                type="button"
+                onClick={() => setLibroAbierto(false)}
+                className="mb-6 flex items-center gap-1.5 text-sm text-tinta-suave transition-colors hover:text-tinta"
               >
-                {texto.titulo && (
-                  <p className="mb-1 font-display italic text-tinta" style={{ fontSize: "18px" }}>
-                    {texto.titulo}
+                ← Cerrar libro
+              </button>
+
+              {/* Páginas con stagger */}
+              <motion.div
+                className="flex flex-col gap-4"
+                variants={{ visible: { transition: { staggerChildren: 0.06 } } }}
+                initial="hidden"
+                animate="visible"
+              >
+                {textos.length === 0 ? (
+                  <p className="py-16 text-center font-display italic text-tinta-suave">
+                    Todavía no escribiste nada.
                   </p>
-                )}
-                <p className="text-sm leading-relaxed text-tinta-suave">
-                  {extracto(texto.contenido)}
-                </p>
-                {texto.tags && texto.tags.length > 0 && (
-                  <div className="mt-3 flex flex-wrap gap-1.5">
-                    {texto.tags.map((tag) => (
-                      <span
-                        key={tag}
-                        className="rounded-[4px] bg-cielo px-2 py-0.5 text-xs text-borravino"
+                ) : (
+                  textos.map((texto) => (
+                    <motion.div
+                      key={texto.id}
+                      variants={{
+                        hidden: { opacity: 0, y: 12 },
+                        visible: { opacity: 1, y: 0, transition: { duration: 0.35, ease: [0.16, 1, 0.3, 1] } },
+                      }}
+                      className="relative overflow-hidden"
+                      style={{
+                        backgroundColor: "#FDFAF5",
+                        borderRadius: "2px 8px 8px 2px",
+                        boxShadow: "2px 2px 8px rgba(28,25,23,0.08), -1px 0 0 #D6CFBF",
+                        backgroundImage:
+                          "repeating-linear-gradient(to bottom, transparent, transparent 31px, #E8E2D8 31px, #E8E2D8 32px)",
+                        backgroundPositionY: "40px",
+                        padding: "24px 24px 24px 60px",
+                      }}
+                    >
+                      {/* Línea de margen */}
+                      <div
+                        className="pointer-events-none absolute bottom-0 top-0"
+                        style={{ left: "44px", width: "1px", backgroundColor: "#C1DBE8" }}
+                      />
+
+                      {/* Fecha + consigna */}
+                      <p
+                        className="font-display italic text-tinta-suave"
+                        style={{ fontSize: "12px", marginBottom: "8px" }}
                       >
-                        {tag}
-                      </span>
-                    ))}
-                  </div>
+                        {fechaCorta(texto.created_at)}{texto.consigna ? ` — ${texto.consigna}` : ""}
+                      </p>
+
+                      {/* Título */}
+                      {texto.titulo && (
+                        <p
+                          className="font-display italic text-tinta"
+                          style={{ fontSize: "20px", marginBottom: "8px" }}
+                        >
+                          {texto.titulo}
+                        </p>
+                      )}
+
+                      {/* Excerpt */}
+                      <p className="text-tinta" style={{ fontSize: "14px", lineHeight: "32px" }}>
+                        {extracto(texto.contenido)}
+                      </p>
+
+                      {/* Leer completo */}
+                      <Link
+                        href={`/texto/${texto.id}`}
+                        className="mt-3 inline-block text-borravino transition-opacity hover:opacity-70"
+                        style={{ fontSize: "13px" }}
+                      >
+                        Leer completo →
+                      </Link>
+                    </motion.div>
+                  ))
                 )}
-                <p
-                  className="mt-3 font-display italic"
-                  style={{ fontSize: "13px", color: "#5C5147" }}
-                >
-                  {fechaCorta(texto.created_at)}{texto.consigna ? ` — ${texto.consigna}` : ""}
-                </p>
-              </Link>
-            ))}
-          </div>
-        )}
+              </motion.div>
+            </motion.div>
+          )}
+        </AnimatePresence>
 
       </main>
     </div>

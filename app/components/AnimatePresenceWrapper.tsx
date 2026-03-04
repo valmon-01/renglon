@@ -1,6 +1,6 @@
 "use client";
 
-import { AnimatePresence } from "framer-motion";
+import { AnimatePresence, motion } from "framer-motion";
 import { usePathname } from "next/navigation";
 
 export default function AnimatePresenceWrapper({ children }: { children: React.ReactNode }) {
@@ -8,7 +8,15 @@ export default function AnimatePresenceWrapper({ children }: { children: React.R
 
   return (
     <AnimatePresence mode="wait">
-      <div key={pathname}>{children}</div>
+      <motion.div
+        key={pathname}
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        exit={{ opacity: 0 }}
+        transition={{ duration: 0.25 }}
+      >
+        {children}
+      </motion.div>
     </AnimatePresence>
   );
 }

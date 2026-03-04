@@ -177,6 +177,7 @@ export default function Editor() {
               "repeating-linear-gradient(transparent, transparent 39px, #D6CFBF 39px, #D6CFBF 40px)",
             backgroundPositionY: "24px",
             boxShadow: "4px 4px 0px #D6CFBF, 8px 8px 0px #C8C0B0, -4px 0 8px rgba(28,25,23,0.06)",
+            transformPerspective: 1200,
           }}
         >
           {/* Lomo */}
@@ -189,6 +190,7 @@ export default function Editor() {
               width: "8px",
               background: "linear-gradient(to right, #C8C0B0, #D6CFBF)",
               borderRadius: "4px 0 0 4px",
+              boxShadow: "inset -2px 0 4px rgba(28,25,23,0.1)",
             }}
           />
 
