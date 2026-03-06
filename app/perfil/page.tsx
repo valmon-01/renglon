@@ -74,6 +74,7 @@ export default function Perfil() {
 
   const username = user?.user_metadata?.username ?? "Usuario";
   const publicados = textos.filter((t) => t.publicado);
+  const containerWidth = libroAbierto ? 660 : 480;
 
   return (
     <div className="relative min-h-screen bg-papel">
@@ -108,8 +109,9 @@ export default function Perfil() {
       {/* Contenedor central */}
       <main
         style={{
-          maxWidth: 480,
+          maxWidth: containerWidth,
           margin: "0 auto",
+          transition: "max-width 0.3s ease",
           padding: "40px 20px 80px",
         }}
       >

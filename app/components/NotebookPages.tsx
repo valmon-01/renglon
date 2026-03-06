@@ -166,19 +166,48 @@ export default function NotebookPages({ texts, username, onClose }: NotebookPage
             {text.titulo || "Sin título"}
           </h2>
 
-          {/* Fecha + consigna — height 40px */}
-          <div style={{ height: 40, display: "flex", alignItems: "center", flexShrink: 0 }}>
+          {/* Fecha + consigna — una línea */}
+          <div
+            style={{
+              height: 40,
+              minHeight: 40,
+              display: "flex",
+              alignItems: "center",
+              overflow: "hidden",
+              flexShrink: 0,
+              gap: 0,
+              minWidth: 0,
+            }}
+          >
             <span
               style={{
                 fontFamily: "var(--font-sans)",
-                fontSize: 13,
+                fontSize: 12,
                 color: "#5C5147",
                 opacity: 0.65,
+                whiteSpace: "nowrap",
+                flexShrink: 0,
               }}
             >
               {fechaDDMMYYYY(text.created_at)}
-              {text.consigna ? ` — ${text.consigna}` : ""}
+              {text.consigna ? " — " : ""}
             </span>
+            {text.consigna && (
+              <span
+                style={{
+                  fontFamily: "var(--font-sans)",
+                  fontSize: 12,
+                  color: "#5C5147",
+                  opacity: 0.65,
+                  whiteSpace: "nowrap",
+                  overflow: "hidden",
+                  textOverflow: "ellipsis",
+                  minWidth: 0,
+                }}
+              >
+                {text.consigna}
+              </span>
+            )}
           </div>
 
           {/* Cuerpo */}
