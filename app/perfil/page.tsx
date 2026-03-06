@@ -4,8 +4,10 @@ import { useState, useEffect } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { LogOut, PenLine } from "lucide-react";
+import { AnimatePresence, motion } from "framer-motion";
 import { supabase } from "@/lib/supabase";
 import type { User } from "@supabase/supabase-js";
+import NotebookPages from "@/app/components/NotebookPages";
 
 interface Texto {
   id: string;
@@ -49,6 +51,7 @@ export default function Perfil() {
   const [racha, setRacha] = useState<number>(0);
   const [textos, setTextos] = useState<Texto[]>([]);
   const [tab, setTab] = useState<Tab>("publicados");
+  const [libroAbierto, setLibroAbierto] = useState(false);
   const [cargando, setCargando] = useState(true);
 
   useEffect(() => {
@@ -181,79 +184,120 @@ export default function Perfil() {
 
         </div>
 
-        {/* Tabs */}
-        <div className="mb-6 flex border-b border-borde">
-          {(["publicados", "privados"] as Tab[]).map((t) => (
-            <button
-              key={t}
-              type="button"
-              onClick={() => setTab(t)}
-              className={`px-4 pb-3 text-sm transition-colors ${
-                tab === t
-                  ? "border-b-2 border-borravino font-medium text-tinta"
-                  : "text-tinta-suave hover:text-tinta"
-              }`}
-              style={tab === t ? { marginBottom: "-1px" } : {}}
+        <AnimatePresence mode="wait">
+          {libroAbierto ? (
+            <motion.div
+              key="libro"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              transition={{ duration: 0.25 }}
             >
-              {t === "publicados"
-                ? `Publicados (${publicados.length})`
-                : `Privados (${privados.length})`}
-            </button>
-          ))}
-        </div>
+              <NotebookPages
+                texts={textos}
+                username={username}
+                onClose={() => setLibroAbierto(false)}
+              />
+            </motion.div>
+          ) : (
+            <motion.div
+              key="lista"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              transition={{ duration: 0.25 }}
+            >
+              {/* Botón Leer escritos */}
+              <div className="mb-6 flex justify-center">
+                <button
+                  type="button"
+                  onClick={() => setLibroAbierto(true)}
+                  className="flex items-center gap-2 rounded-[6px] px-5 py-2 text-sm transition-colors"
+                  style={{
+                    backgroundColor: "#64313E",
+                    color: "#FDFAF5",
+                  }}
+                >
+                  Leer escritos
+                </button>
+              </div>
 
-        {/* Lista de textos */}
-        {lista.length === 0 ? (
-          <div className="py-16 text-center">
-            <p className="font-display italic text-tinta-suave">
-              {tab === "publicados"
-                ? "Todavía no publicaste ningún texto."
-                : "No tenés textos guardados en privado."}
-            </p>
-          </div>
-        ) : (
-          <div className="flex flex-col gap-4">
-            {lista.map((texto) => (
-              <Link
-                key={texto.id}
-                href={`/texto/${texto.id}`}
-                className="block rounded-[8px] border border-borde bg-papel-oscuro p-5 transition-opacity hover:opacity-80"
-              >
-                {texto.titulo && (
-                  <p className="mb-1 font-display italic text-tinta">
-                    {texto.titulo}
-                  </p>
-                )}
-                <p className="text-sm leading-relaxed text-tinta-suave">
-                  {extracto(texto.contenido)}
-                </p>
-                {texto.consigna && (
-                  <p
-                    className="mt-2 font-display italic"
-                    style={{ fontSize: "13px", color: "#5C5147" }}
+              {/* Tabs */}
+              <div className="mb-6 flex border-b border-borde">
+                {(["publicados", "privados"] as Tab[]).map((t) => (
+                  <button
+                    key={t}
+                    type="button"
+                    onClick={() => setTab(t)}
+                    className={`px-4 pb-3 text-sm transition-colors ${
+                      tab === t
+                        ? "border-b-2 border-borravino font-medium text-tinta"
+                        : "text-tinta-suave hover:text-tinta"
+                    }`}
+                    style={tab === t ? { marginBottom: "-1px" } : {}}
                   >
-                    — {texto.consigna}
+                    {t === "publicados"
+                      ? `Publicados (${publicados.length})`
+                      : `Privados (${privados.length})`}
+                  </button>
+                ))}
+              </div>
+
+              {/* Lista de textos */}
+              {lista.length === 0 ? (
+                <div className="py-16 text-center">
+                  <p className="font-display italic text-tinta-suave">
+                    {tab === "publicados"
+                      ? "Todavía no publicaste ningún texto."
+                      : "No tenés textos guardados en privado."}
                   </p>
-                )}
-                {texto.tags && texto.tags.length > 0 && (
-                  <div className="mt-3 flex flex-wrap gap-1.5">
-                    {texto.tags.map((tag) => (
-                      <span
-                        key={tag}
-                        className="rounded-[4px] bg-cielo px-2 py-0.5 text-xs text-borravino"
-                      >
-                        {tag}
-                      </span>
-                    ))}
-                  </div>
-                )}
-                <p className="mt-3 text-xs text-tinta-suave">
-                  {fechaCorta(texto.created_at)}
-                </p>
-              </Link>
-            ))}
-          </div>
-        )}
+                </div>
+              ) : (
+                <div className="flex flex-col gap-4">
+                  {lista.map((texto) => (
+                    <Link
+                      key={texto.id}
+                      href={`/texto/${texto.id}`}
+                      className="block rounded-[8px] border border-borde bg-papel-oscuro p-5 transition-opacity hover:opacity-80"
+                    >
+                      {texto.titulo && (
+                        <p className="mb-1 font-display italic text-tinta">
+                          {texto.titulo}
+                        </p>
+                      )}
+                      <p className="text-sm leading-relaxed text-tinta-suave">
+                        {extracto(texto.contenido)}
+                      </p>
+                      {texto.consigna && (
+                        <p
+                          className="mt-2 font-display italic"
+                          style={{ fontSize: "13px", color: "#5C5147" }}
+                        >
+                          — {texto.consigna}
+                        </p>
+                      )}
+                      {texto.tags && texto.tags.length > 0 && (
+                        <div className="mt-3 flex flex-wrap gap-1.5">
+                          {texto.tags.map((tag) => (
+                            <span
+                              key={tag}
+                              className="rounded-[4px] bg-cielo px-2 py-0.5 text-xs text-borravino"
+                            >
+                              {tag}
+                            </span>
+                          ))}
+                        </div>
+                      )}
+                      <p className="mt-3 text-xs text-tinta-suave">
+                        {fechaCorta(texto.created_at)}
+                      </p>
+                    </Link>
+                  ))}
+                </div>
+              )}
+            </motion.div>
+          )}
+        </AnimatePresence>
 
       </main>
     </div>
