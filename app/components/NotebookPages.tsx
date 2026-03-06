@@ -37,12 +37,9 @@ export default function NotebookPages({ texts, username, onClose }: NotebookPage
     <div
       style={{
         display: "flex",
-        maxWidth: 680,
-        margin: "0 auto",
         minHeight: 680,
         boxShadow: "4px 6px 32px rgba(28,25,23,0.16), -2px 0 0 rgba(28,25,23,0.08)",
         borderRadius: "4px 10px 10px 4px",
-        animation: "openBook 0.35s ease",
       }}
     >
       {/* Lomo izquierdo */}
