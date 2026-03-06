@@ -149,7 +149,7 @@ export default function NotebookPages({ texts, username, onClose }: NotebookPage
             </span>
           </div>
 
-          {/* Título — lineHeight 40px */}
+          {/* Título — height 40px, una línea */}
           <h2
             style={{
               fontFamily: "var(--font-display)",
@@ -157,8 +157,13 @@ export default function NotebookPages({ texts, username, onClose }: NotebookPage
               fontSize: 21,
               color: "#1C1917",
               lineHeight: "40px",
+              height: "40px",
               margin: 0,
-              marginBottom: 0,
+              padding: 0,
+              overflow: "hidden",
+              textOverflow: "ellipsis",
+              whiteSpace: "nowrap",
+              flexShrink: 0,
             }}
           >
             {text.titulo || "Sin título"}
