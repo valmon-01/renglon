@@ -65,8 +65,8 @@ export default function NotebookPages({ texts, username, onClose }: NotebookPage
           display: "flex",
           flexDirection: "column",
           backgroundImage:
-            "repeating-linear-gradient(to bottom, transparent, transparent 31px, #E8E2D8 31px, #E8E2D8 32px)",
-          backgroundPositionY: "40px",
+            "repeating-linear-gradient(to bottom, transparent, transparent 39px, #E8E2D8 39px, #E8E2D8 40px)",
+          backgroundPositionY: "0px",
           overflow: "hidden",
         }}
       >
@@ -89,14 +89,14 @@ export default function NotebookPages({ texts, username, onClose }: NotebookPage
             flex: 1,
             display: "flex",
             flexDirection: "column",
-            padding: "0 48px 48px 60px",
+            padding: "0 40px 40px 60px",
             position: "relative",
           }}
         >
-          {/* Barra superior — height 32px */}
+          {/* Barra superior — height 40px */}
           <div
             style={{
-              height: 32,
+              height: 40,
               display: "flex",
               alignItems: "center",
               justifyContent: "space-between",
@@ -134,8 +134,8 @@ export default function NotebookPages({ texts, username, onClose }: NotebookPage
             </button>
           </div>
 
-          {/* Número de página — height 32px */}
-          <div style={{ height: 32, display: "flex", alignItems: "center", flexShrink: 0 }}>
+          {/* Número de página — height 40px */}
+          <div style={{ height: 40, display: "flex", alignItems: "center", flexShrink: 0 }}>
             <span
               style={{
                 fontFamily: "var(--font-display)",
@@ -149,14 +149,14 @@ export default function NotebookPages({ texts, username, onClose }: NotebookPage
             </span>
           </div>
 
-          {/* Título — lineHeight 32px */}
+          {/* Título — lineHeight 40px */}
           <h2
             style={{
               fontFamily: "var(--font-display)",
               fontStyle: "italic",
               fontSize: 21,
               color: "#1C1917",
-              lineHeight: "32px",
+              lineHeight: "40px",
               margin: 0,
               marginBottom: 0,
             }}
@@ -164,8 +164,8 @@ export default function NotebookPages({ texts, username, onClose }: NotebookPage
             {text.titulo || "Sin título"}
           </h2>
 
-          {/* Fecha + consigna — height 32px */}
-          <div style={{ height: 32, display: "flex", alignItems: "center", flexShrink: 0 }}>
+          {/* Fecha + consigna — height 40px */}
+          <div style={{ height: 40, display: "flex", alignItems: "center", flexShrink: 0 }}>
             <span
               style={{
                 fontFamily: "var(--font-sans)",
@@ -191,9 +191,9 @@ export default function NotebookPages({ texts, username, onClose }: NotebookPage
             <p
               style={{
                 fontFamily: "var(--font-sans)",
-                fontSize: 16,
+                fontSize: 15,
                 color: "#1C1917",
-                lineHeight: "32px",
+                lineHeight: "40px",
                 whiteSpace: "pre-wrap",
                 margin: 0,
               }}

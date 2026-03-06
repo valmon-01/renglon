@@ -135,53 +135,179 @@ export default function Perfil() {
 
       <main className="mx-auto max-w-[720px] px-6 pb-24">
 
-        {/* Cabecera de perfil */}
-        <div className="mb-10 flex flex-col items-center gap-4 text-center">
-
-          {/* Avatar */}
+        {/* Tapa de libro */}
+        <div
+          style={{
+            padding: "40px 20px",
+            display: "flex",
+            flexDirection: "column",
+            alignItems: "center",
+          }}
+        >
           <div
-            className="flex h-20 w-20 items-center justify-center rounded-full text-2xl font-medium"
-            style={{ backgroundColor: "#C1DBE8", color: "#64313E" }}
+            style={{
+              width: "100%",
+              maxWidth: 400,
+              position: "relative",
+              backgroundColor: "#64313E",
+              borderRadius: "4px 16px 16px 4px",
+              boxShadow: "-4px 0 0 #4a2230, -8px 0 0 #3a1828, 0 12px 40px rgba(28,25,23,0.25)",
+              padding: "40px 32px 32px 40px",
+              overflow: "hidden",
+            }}
           >
-            {iniciales(username)}
-          </div>
+            {/* Label renglón */}
+            <span
+              style={{
+                fontFamily: "var(--font-display)",
+                fontStyle: "italic",
+                fontSize: 12,
+                color: "rgba(245,240,232,0.35)",
+                marginBottom: 20,
+                display: "block",
+              }}
+            >
+              renglón
+            </span>
 
-          {/* Nombre + bio */}
-          <div>
-            <h1 className="text-xl font-medium text-tinta">{username}</h1>
+            {/* Avatar */}
+            <div
+              style={{
+                width: 52,
+                height: 52,
+                borderRadius: "50%",
+                backgroundColor: "rgba(193,219,232,0.15)",
+                border: "1px solid rgba(193,219,232,0.2)",
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                margin: "0 auto 16px",
+              }}
+            >
+              <span
+                style={{
+                  fontFamily: "var(--font-display)",
+                  fontStyle: "italic",
+                  fontSize: 20,
+                  color: "#F5F0E8",
+                }}
+              >
+                {username[0]?.toUpperCase() ?? "U"}
+              </span>
+            </div>
+
+            {/* Username */}
+            <span
+              style={{
+                fontFamily: "var(--font-display)",
+                fontStyle: "italic",
+                fontSize: 28,
+                color: "#F5F0E8",
+                textAlign: "center",
+                display: "block",
+                marginBottom: 6,
+              }}
+            >
+              {username}
+            </span>
+
+            {/* Bio */}
             {bio && (
-              <p className="mt-2 max-w-sm text-sm leading-relaxed text-tinta-suave">
+              <p
+                style={{
+                  fontFamily: "var(--font-sans)",
+                  fontSize: 13,
+                  color: "rgba(245,240,232,0.45)",
+                  textAlign: "center",
+                  lineHeight: 1.5,
+                  margin: 0,
+                }}
+              >
                 {bio}
               </p>
             )}
+
+            {/* Separador */}
+            <div
+              style={{
+                height: 1,
+                backgroundColor: "rgba(245,240,232,0.12)",
+                margin: "24px 0",
+              }}
+            />
+
+            {/* Stats */}
+            <div style={{ display: "flex", justifyContent: "space-around" }}>
+              {[
+                { valor: textos.length, label: "escritos" },
+                { valor: publicados.length, label: "publicados" },
+                { valor: racha, label: "días" },
+              ].map(({ valor, label }) => (
+                <div key={label} style={{ textAlign: "center" }}>
+                  <span
+                    style={{
+                      fontFamily: "var(--font-display)",
+                      fontStyle: "italic",
+                      fontSize: 26,
+                      color: "#F5F0E8",
+                      display: "block",
+                      lineHeight: 1,
+                    }}
+                  >
+                    {valor}
+                  </span>
+                  <span
+                    style={{
+                      fontFamily: "var(--font-sans)",
+                      fontSize: 10,
+                      letterSpacing: "0.1em",
+                      textTransform: "uppercase",
+                      color: "rgba(245,240,232,0.35)",
+                      marginTop: 4,
+                      display: "block",
+                    }}
+                  >
+                    {label}
+                  </span>
+                </div>
+              ))}
+            </div>
+
+            {/* Botón Leer escritos */}
+            <button
+              type="button"
+              onClick={() => setLibroAbierto(true)}
+              style={{
+                marginTop: 28,
+                width: "100%",
+                padding: "13px 0",
+                backgroundColor: "rgba(245,240,232,0.08)",
+                border: "1px solid rgba(245,240,232,0.18)",
+                borderRadius: 8,
+                color: "#F5F0E8",
+                fontFamily: "var(--font-display)",
+                fontStyle: "italic",
+                fontSize: 15,
+                cursor: "pointer",
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                gap: 8,
+              }}
+            >
+              Leer escritos →
+            </button>
           </div>
 
-          {/* Estadísticas */}
-          <div className="flex gap-10 border-t border-borde pt-6">
-            <div className="text-center">
-              <p className="text-xl font-medium text-tinta">{textos.length}</p>
-              <p className="mt-0.5 text-xs text-tinta-suave">escritos</p>
-            </div>
-            <div className="text-center">
-              <p className="text-xl font-medium text-tinta">{publicados.length}</p>
-              <p className="mt-0.5 text-xs text-tinta-suave">publicados</p>
-            </div>
-            <div className="text-center">
-              <p className="text-xl font-medium text-tinta">{racha}</p>
-              <p className="mt-0.5 text-xs text-tinta-suave">días seguidos</p>
-            </div>
-          </div>
-
-          {/* Editar perfil */}
+          {/* Editar perfil — fuera de la tapa */}
           <Link
             href="/editar-perfil"
-            className="flex items-center gap-2 rounded-[6px] border border-borravino px-5 py-2 text-sm text-borravino transition-colors hover:bg-borravino hover:text-blanco-roto"
-            style={{ borderWidth: "1.5px" }}
+            style={{ marginTop: 16 }}
+            className="flex items-center gap-2 rounded-[6px] border border-borde px-5 py-2 text-sm text-tinta-suave transition-colors hover:border-tinta hover:text-tinta"
           >
             <PenLine size={14} strokeWidth={1.5} />
             Editar perfil
           </Link>
-
         </div>
 
         <AnimatePresence mode="wait">
@@ -207,21 +333,6 @@ export default function Perfil() {
               exit={{ opacity: 0 }}
               transition={{ duration: 0.25 }}
             >
-              {/* Botón Leer escritos */}
-              <div className="mb-6 flex justify-center">
-                <button
-                  type="button"
-                  onClick={() => setLibroAbierto(true)}
-                  className="flex items-center gap-2 rounded-[6px] px-5 py-2 text-sm transition-colors"
-                  style={{
-                    backgroundColor: "#64313E",
-                    color: "#FDFAF5",
-                  }}
-                >
-                  Leer escritos
-                </button>
-              </div>
-
               {/* Tabs */}
               <div className="mb-6 flex border-b border-borde">
                 {(["publicados", "privados"] as Tab[]).map((t) => (
