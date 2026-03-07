@@ -6,6 +6,7 @@ import { UserCircle, Flame } from "lucide-react";
 import { supabase } from "@/lib/supabase";
 import type { Session } from "@supabase/supabase-js";
 import TypewriterLoader from "@/app/components/TypewriterLoader";
+import OnboardingModal from "@/app/components/OnboardingModal";
 
 function formatFecha(): string {
   return new Date().toLocaleDateString("es-AR", {
@@ -21,6 +22,7 @@ export default function Home() {
   const [consigna, setConsigna] = useState<string | null>(null);
   const [racha, setRacha] = useState<number>(0);
   const [cargando, setCargando] = useState(true);
+  const [showOnboarding, setShowOnboarding] = useState(false);
 
   useEffect(() => {
     Promise.all([
@@ -32,13 +34,14 @@ export default function Home() {
       if (data.session?.user.id) {
         const { data: perfil } = await supabase
           .from("profiles")
-          .select("racha_actual")
+          .select("racha_actual, onboarding_completado")
           .eq("id", data.session.user.id)
           .single();
         const hoy = new Date().toISOString().slice(0, 10);
         const yaEscribioHoy = !!localStorage.getItem(`renglon_completed_${hoy}`);
         const rachaBase = perfil?.racha_actual ?? 0;
         setRacha(yaEscribioHoy ? rachaBase + 1 : rachaBase);
+        if (perfil?.onboarding_completado === false) setShowOnboarding(true);
       }
       setCargando(false);
     });
@@ -48,6 +51,12 @@ export default function Home() {
 
   return (
     <div className="relative min-h-screen bg-papel">
+      {showOnboarding && session?.user.id && (
+        <OnboardingModal
+          userId={session.user.id}
+          onClose={() => setShowOnboarding(false)}
+        />
+      )}
 
       {/* Textura de puntos */}
       <div
