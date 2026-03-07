@@ -238,6 +238,44 @@ export default async function Landing() {
         </div>
       </section>
 
+      {/* Footer */}
+      <footer style={{ borderTop: "1px solid rgba(61,53,48,0.08)", padding: "40px 24px 48px" }}>
+        <div style={{ maxWidth: 480, margin: "0 auto", textAlign: "center" }}>
+
+          {/* Logo + tagline */}
+          <p style={{ fontFamily: "var(--font-display)", fontStyle: "italic", fontSize: 20, color: "#3D3530" }}>
+            renglón
+          </p>
+          <p style={{ fontSize: 13, color: "#9C8B7E", marginTop: 8, fontStyle: "italic", fontFamily: "var(--font-sans)" }}>
+            El hábito de escribir, un renglón a la vez.
+          </p>
+
+          {/* Links + crédito */}
+          <div style={{ marginTop: 32 }}>
+            <div style={{ display: "flex", justifyContent: "center", gap: 24 }}>
+              <Link
+                href="/login"
+                className="transition-colors duration-200 hover:text-tinta"
+                style={{ fontSize: 13, color: "#9C8B7E", textDecoration: "none", fontFamily: "var(--font-sans)" }}
+              >
+                Iniciar sesión
+              </Link>
+              <Link
+                href="/registro"
+                className="transition-colors duration-200 hover:text-tinta"
+                style={{ fontSize: 13, color: "#9C8B7E", textDecoration: "none", fontFamily: "var(--font-sans)" }}
+              >
+                Registrarse
+              </Link>
+            </div>
+            <p style={{ marginTop: 20, fontSize: 12, color: "rgba(61,53,48,0.35)", fontFamily: "var(--font-sans)" }}>
+              hecho con amor en Argentina 🧉
+            </p>
+          </div>
+
+        </div>
+      </footer>
+
     </div>
   );
 }
