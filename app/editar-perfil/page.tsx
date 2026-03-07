@@ -6,6 +6,7 @@ import { useRouter } from "next/navigation";
 import { ArrowLeft, Check } from "lucide-react";
 import { supabase } from "@/lib/supabase";
 import type { User } from "@supabase/supabase-js";
+import TypewriterLoader from "@/app/components/TypewriterLoader";
 
 function iniciales(nombre: string): string {
   if (!nombre.trim()) return "?";
@@ -81,13 +82,7 @@ export default function EditarPerfil() {
     setTimeout(() => router.push("/perfil"), 1000);
   }
 
-  if (cargando) {
-    return (
-      <div className="flex min-h-screen items-center justify-center bg-papel">
-        <span className="text-sm text-tinta-suave">Cargando…</span>
-      </div>
-    );
-  }
+  if (cargando) return <TypewriterLoader />;
 
   return (
     <div className="relative min-h-screen bg-papel">

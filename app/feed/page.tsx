@@ -4,6 +4,7 @@ import { useState, useEffect } from "react";
 import Link from "next/link";
 import { EyeOff, Heart, Pencil } from "lucide-react";
 import { supabase } from "@/lib/supabase";
+import TypewriterLoader from "@/app/components/TypewriterLoader";
 
 const FILTROS = ["Recientes", "Populares"] as const;
 type Filtro = (typeof FILTROS)[number];
@@ -131,13 +132,7 @@ export default function Feed() {
 
   const lista = textosFiltrados();
 
-  if (cargando) {
-    return (
-      <div className="flex min-h-screen items-center justify-center bg-papel">
-        <span className="text-sm text-tinta-suave">Cargando…</span>
-      </div>
-    );
-  }
+  if (cargando) return <TypewriterLoader />;
 
   return (
     <div className="relative min-h-screen bg-papel">

@@ -5,6 +5,7 @@ import Link from "next/link";
 import { useParams } from "next/navigation";
 import { ArrowLeft, Heart } from "lucide-react";
 import { supabase } from "@/lib/supabase";
+import TypewriterLoader from "@/app/components/TypewriterLoader";
 
 type Texto = {
   id: string;
@@ -127,13 +128,7 @@ export default function TextoIndividual() {
     }
   }
 
-  if (cargando) {
-    return (
-      <div className="flex min-h-screen items-center justify-center bg-papel">
-        <span className="text-sm text-tinta-suave">Cargando…</span>
-      </div>
-    );
-  }
+  if (cargando) return <TypewriterLoader />;
 
   if (!texto) {
     return (

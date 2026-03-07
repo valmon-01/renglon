@@ -5,6 +5,7 @@ import Link from "next/link";
 import { UserCircle, Flame } from "lucide-react";
 import { supabase } from "@/lib/supabase";
 import type { Session } from "@supabase/supabase-js";
+import TypewriterLoader from "@/app/components/TypewriterLoader";
 
 function formatFecha(): string {
   return new Date().toLocaleDateString("es-AR", {
@@ -43,13 +44,7 @@ export default function Home() {
     });
   }, []);
 
-  if (cargando) {
-    return (
-      <div className="flex min-h-screen items-center justify-center bg-papel">
-        <span className="text-sm text-tinta-suave">Cargando…</span>
-      </div>
-    );
-  }
+  if (cargando) return <TypewriterLoader />;
 
   return (
     <div className="relative min-h-screen bg-papel">

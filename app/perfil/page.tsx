@@ -6,6 +6,7 @@ import { useRouter } from "next/navigation";
 import { LogOut, PenLine } from "lucide-react";
 import { AnimatePresence, motion } from "framer-motion";
 import { supabase } from "@/lib/supabase";
+import TypewriterLoader from "@/app/components/TypewriterLoader";
 import type { User } from "@supabase/supabase-js";
 import NotebookPages from "@/app/components/NotebookPages";
 
@@ -64,13 +65,7 @@ export default function Perfil() {
     router.push("/");
   }
 
-  if (cargando) {
-    return (
-      <div className="flex min-h-screen items-center justify-center bg-papel">
-        <span className="text-sm text-tinta-suave">Cargando…</span>
-      </div>
-    );
-  }
+  if (cargando) return <TypewriterLoader />;
 
   const username = user?.user_metadata?.username ?? "Usuario";
   const publicados = textos.filter((t) => t.publicado);

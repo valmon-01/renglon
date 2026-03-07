@@ -5,6 +5,7 @@ import Link from "next/link";
 import { useSearchParams, useRouter } from "next/navigation";
 import { ArrowLeft } from "lucide-react";
 import { supabase } from "@/lib/supabase";
+import TypewriterLoader from "@/app/components/TypewriterLoader";
 
 interface Texto {
   id: string;
@@ -111,13 +112,7 @@ function PerfilPublicoContenido() {
     setToggling(false);
   }
 
-  if (cargando) {
-    return (
-      <div className="flex min-h-screen items-center justify-center bg-papel">
-        <span className="text-sm text-tinta-suave">Cargando…</span>
-      </div>
-    );
-  }
+  if (cargando) return <TypewriterLoader />;
 
   const esPropioPerfil = sessionUserId === userId;
 
@@ -234,13 +229,7 @@ function PerfilPublicoContenido() {
 
 export default function PerfilPublico() {
   return (
-    <Suspense
-      fallback={
-        <div className="flex min-h-screen items-center justify-center bg-papel">
-          <span className="text-sm text-tinta-suave">Cargando…</span>
-        </div>
-      }
-    >
+    <Suspense fallback={<TypewriterLoader />}>
       <PerfilPublicoContenido />
     </Suspense>
   );
