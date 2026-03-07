@@ -86,7 +86,7 @@ export default function NotebookPages({ texts, username, onClose }: NotebookPage
             flex: 1,
             display: "flex",
             flexDirection: "column",
-            padding: "0 40px 40px 60px",
+            padding: "40px 0 40px 0",
             position: "relative",
           }}
         >
@@ -98,6 +98,8 @@ export default function NotebookPages({ texts, username, onClose }: NotebookPage
               alignItems: "center",
               justifyContent: "space-between",
               flexShrink: 0,
+              paddingLeft: "60px",
+              paddingRight: "40px",
             }}
           >
             <span
@@ -132,7 +134,7 @@ export default function NotebookPages({ texts, username, onClose }: NotebookPage
           </div>
 
           {/* Número de página — height 40px */}
-          <div style={{ height: 40, display: "flex", alignItems: "center", flexShrink: 0 }}>
+          <div style={{ height: 40, display: "flex", alignItems: "center", flexShrink: 0, paddingLeft: "60px" }}>
             <span
               style={{
                 fontFamily: "var(--font-display)",
@@ -157,6 +159,8 @@ export default function NotebookPages({ texts, username, onClose }: NotebookPage
               height: "40px",
               margin: 0,
               padding: 0,
+              paddingLeft: "60px",
+              paddingRight: "40px",
               overflow: "hidden",
               textOverflow: "ellipsis",
               whiteSpace: "nowrap",
@@ -177,6 +181,8 @@ export default function NotebookPages({ texts, username, onClose }: NotebookPage
               flexShrink: 0,
               gap: 0,
               minWidth: 0,
+              paddingLeft: "60px",
+              paddingRight: "40px",
             }}
           >
             <span
@@ -221,12 +227,17 @@ export default function NotebookPages({ texts, username, onClose }: NotebookPage
           >
             <p
               style={{
-                fontFamily: "var(--font-sans)",
-                fontSize: 15,
-                color: "#1C1917",
+                fontFamily: "inherit",
+                fontSize: "15px",
                 lineHeight: "40px",
-                whiteSpace: "pre-wrap",
+                color: "#3D3530",
                 margin: 0,
+                padding: 0,
+                paddingLeft: "52px",
+                paddingRight: "24px",
+                wordBreak: "break-word",
+                whiteSpace: "pre-wrap",
+                display: "block",
               }}
             >
               {text.contenido}
@@ -238,6 +249,8 @@ export default function NotebookPages({ texts, username, onClose }: NotebookPage
             style={{
               borderTop: "1px solid #D6CFBF",
               paddingTop: 12,
+              paddingLeft: "60px",
+              paddingRight: "40px",
               display: "flex",
               alignItems: "center",
               justifyContent: "space-between",

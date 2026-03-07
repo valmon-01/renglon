@@ -125,12 +125,14 @@ export default function Perfil() {
               {/* Tapa de libro */}
               <div
                 style={{
+                  maxWidth: 420,
+                  margin: "0 auto",
                   width: "100%",
                   position: "relative",
                   backgroundColor: "#64313E",
                   borderRadius: "4px 16px 16px 4px",
-                  boxShadow: "-4px 0 0 #4a2230, -8px 0 0 #3a1828, 0 12px 40px rgba(28,25,23,0.25)",
-                  padding: "40px 32px 32px 40px",
+                  boxShadow: "-4px 0 0 #4a2230, -8px 0 0 #3a1828, 0 8px 32px rgba(28,25,23,0.2)",
+                  padding: "40px 32px 32px 32px",
                   overflow: "hidden",
                 }}
               >
@@ -139,8 +141,8 @@ export default function Perfil() {
                   style={{
                     fontFamily: "var(--font-display)",
                     fontStyle: "italic",
-                    fontSize: 12,
-                    color: "rgba(245,240,232,0.35)",
+                    fontSize: 13,
+                    color: "rgba(245,240,232,0.4)",
                     marginBottom: 20,
                     display: "block",
                   }}
@@ -151,22 +153,22 @@ export default function Perfil() {
                 {/* Avatar */}
                 <div
                   style={{
-                    width: 52,
-                    height: 52,
+                    width: 56,
+                    height: 56,
                     borderRadius: "50%",
                     backgroundColor: "rgba(193,219,232,0.15)",
                     border: "1px solid rgba(193,219,232,0.2)",
                     display: "flex",
                     alignItems: "center",
                     justifyContent: "center",
-                    margin: "0 auto 16px",
+                    margin: "24px auto",
                   }}
                 >
                   <span
                     style={{
                       fontFamily: "var(--font-display)",
                       fontStyle: "italic",
-                      fontSize: 20,
+                      fontSize: 22,
                       color: "#F5F0E8",
                     }}
                   >
@@ -179,7 +181,7 @@ export default function Perfil() {
                   style={{
                     fontFamily: "var(--font-display)",
                     fontStyle: "italic",
-                    fontSize: 28,
+                    fontSize: 32,
                     color: "#F5F0E8",
                     textAlign: "center",
                     display: "block",
@@ -194,11 +196,11 @@ export default function Perfil() {
                   <p
                     style={{
                       fontFamily: "var(--font-sans)",
-                      fontSize: 13,
-                      color: "rgba(245,240,232,0.45)",
+                      fontSize: 14,
+                      color: "rgba(245,240,232,0.5)",
                       textAlign: "center",
                       lineHeight: 1.5,
-                      margin: 0,
+                      marginTop: 8,
                     }}
                   >
                     {bio}
@@ -209,7 +211,7 @@ export default function Perfil() {
                 <div
                   style={{
                     height: 1,
-                    backgroundColor: "rgba(245,240,232,0.12)",
+                    backgroundColor: "rgba(245,240,232,0.15)",
                     margin: "24px 0",
                   }}
                 />
@@ -226,7 +228,7 @@ export default function Perfil() {
                         style={{
                           fontFamily: "var(--font-display)",
                           fontStyle: "italic",
-                          fontSize: 26,
+                          fontSize: 28,
                           color: "#F5F0E8",
                           display: "block",
                           lineHeight: 1,
@@ -240,7 +242,7 @@ export default function Perfil() {
                           fontSize: 10,
                           letterSpacing: "0.1em",
                           textTransform: "uppercase",
-                          color: "rgba(245,240,232,0.35)",
+                          color: "rgba(245,240,232,0.4)",
                           marginTop: 4,
                           display: "block",
                         }}
@@ -256,16 +258,16 @@ export default function Perfil() {
                   type="button"
                   onClick={() => setLibroAbierto(true)}
                   style={{
-                    marginTop: 28,
+                    marginTop: 24,
                     width: "100%",
-                    padding: "13px 0",
-                    backgroundColor: "rgba(245,240,232,0.08)",
-                    border: "1px solid rgba(245,240,232,0.18)",
+                    padding: "14px 0",
+                    backgroundColor: "rgba(245,240,232,0.1)",
+                    border: "1px solid rgba(245,240,232,0.2)",
                     borderRadius: 8,
                     color: "#F5F0E8",
                     fontFamily: "var(--font-display)",
                     fontStyle: "italic",
-                    fontSize: 15,
+                    fontSize: 16,
                     cursor: "pointer",
                     display: "flex",
                     alignItems: "center",
