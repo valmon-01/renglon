@@ -93,50 +93,68 @@ export default function Home() {
       {/* Contenido principal */}
       <main className="mx-auto flex max-w-[600px] flex-col items-center px-6 pb-24 pt-10 text-center">
 
-        {/* Label consigna */}
-        <p className="mt-8 text-[11px] uppercase tracking-widest text-tinta-suave">
-          consigna de hoy
-        </p>
+        {consigna === null ? (
+          <div style={{ textAlign: "center", padding: "64px 32px" }}>
+            <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 6, marginBottom: 32 }}>
+              <div style={{ width: 48, height: 1, backgroundColor: "rgba(61,53,48,0.15)" }} />
+              <div style={{ width: 64, height: 1, backgroundColor: "rgba(61,53,48,0.15)" }} />
+              <div style={{ width: 48, height: 1, backgroundColor: "rgba(61,53,48,0.15)" }} />
+            </div>
+            <p style={{ fontFamily: "'Playfair Display', serif", fontStyle: "italic", fontSize: 20, color: "#3D3530", margin: "0 0 12px" }}>
+              Hoy todavía no hay consigna.
+            </p>
+            <p style={{ fontSize: 14, color: "#9C8B7E", margin: 0 }}>
+              Volvé más tarde, que vale la pena.
+            </p>
+          </div>
+        ) : (
+          <>
+            {/* Label consigna */}
+            <p className="mt-8 text-[11px] uppercase tracking-widest text-tinta-suave">
+              consigna de hoy
+            </p>
 
-        {/* Consigna */}
-        <h1
-          className="mt-4 font-display italic text-tinta"
-          style={{ fontSize: "28px", lineHeight: "1.4" }}
-        >
-          {consigna ?? "—"}
-        </h1>
+            {/* Consigna */}
+            <h1
+              className="mt-4 font-display italic text-tinta"
+              style={{ fontSize: "28px", lineHeight: "1.4" }}
+            >
+              {consigna}
+            </h1>
 
-        {/* Racha — solo con sesión */}
-        {session && (
-          <p className="mt-6 flex items-center gap-1.5 text-sm text-tinta-suave">
-            <Flame size={16} strokeWidth={1.5} style={{ color: "#64313E" }} />
-            {racha} días seguidos
-          </p>
+            {/* Racha — solo con sesión */}
+            {session && (
+              <p className="mt-6 flex items-center gap-1.5 text-sm text-tinta-suave">
+                <Flame size={16} strokeWidth={1.5} style={{ color: "#64313E" }} />
+                {racha} días seguidos
+              </p>
+            )}
+
+            {/* Mensaje sin sesión */}
+            {!session && (
+              <p className="mt-6 text-sm text-tinta-suave">
+                Iniciá sesión para escribir tu versión
+              </p>
+            )}
+
+            {/* Acciones */}
+            <div className="mt-10 flex flex-col items-center gap-4">
+              <Link
+                href={session ? "/editor" : "/login"}
+                className="rounded-[6px] bg-borravino px-8 py-3 text-sm font-medium text-blanco-roto transition-opacity hover:opacity-90"
+              >
+                Escribir
+              </Link>
+
+              <Link
+                href="/feed"
+                className="text-sm text-tinta-suave underline underline-offset-4 transition-colors hover:text-tinta"
+              >
+                Ver lo que escribieron otros
+              </Link>
+            </div>
+          </>
         )}
-
-        {/* Mensaje sin sesión */}
-        {!session && (
-          <p className="mt-6 text-sm text-tinta-suave">
-            Iniciá sesión para escribir tu versión
-          </p>
-        )}
-
-        {/* Acciones */}
-        <div className="mt-10 flex flex-col items-center gap-4">
-          <Link
-            href={session ? "/editor" : "/login"}
-            className="rounded-[6px] bg-borravino px-8 py-3 text-sm font-medium text-blanco-roto transition-opacity hover:opacity-90"
-          >
-            Escribir
-          </Link>
-
-          <Link
-            href="/feed"
-            className="text-sm text-tinta-suave underline underline-offset-4 transition-colors hover:text-tinta"
-          >
-            Ver lo que escribieron otros
-          </Link>
-        </div>
 
       </main>
     </div>

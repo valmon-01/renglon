@@ -306,13 +306,35 @@ export default function Perfil() {
               transition={{ duration: 0.35, ease: [0.16, 1, 0.3, 1] }}
               style={{ transformPerspective: 800 }}
             >
-              <NotebookPages
-                texts={textos}
-                username={username}
-                userId={user?.id ?? ""}
-                sessionUserId={user?.id ?? ""}
-                onClose={() => setLibroAbierto(false)}
-              />
+              {textos.length === 0 ? (
+                <div style={{ textAlign: "center", padding: "48px 32px" }}>
+                  <svg width="60" height="40" viewBox="0 0 60 40" style={{ marginBottom: 24 }}>
+                    <line x1="10" y1="35" x2="50" y2="5" stroke="#9C8B7E" strokeWidth="1.5" strokeLinecap="round"/>
+                  </svg>
+                  <p style={{ fontFamily: "'Playfair Display', serif", fontStyle: "italic", fontSize: 20, color: "#3D3530", margin: "0 0 12px" }}>
+                    Tu primer renglón está esperando.
+                  </p>
+                  <p style={{ fontSize: 14, color: "#9C8B7E", margin: "0 0 24px" }}>
+                    Escribí hoy y aparece acá.
+                  </p>
+                  <Link href="/editor" style={{
+                    display: "inline-block",
+                    backgroundColor: "#64313E", color: "#F5F0EA",
+                    padding: "12px 32px", borderRadius: 8,
+                    fontSize: 14, textDecoration: "none"
+                  }}>
+                    Ir a escribir
+                  </Link>
+                </div>
+              ) : (
+                <NotebookPages
+                  texts={textos}
+                  username={username}
+                  userId={user?.id ?? ""}
+                  sessionUserId={user?.id ?? ""}
+                  onClose={() => setLibroAbierto(false)}
+                />
+              )}
             </motion.div>
           )}
         </AnimatePresence>

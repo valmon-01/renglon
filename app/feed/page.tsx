@@ -169,23 +169,25 @@ export default function Feed() {
           {/* Cards */}
           <div style={{ filter: !completado ? "blur(4px)" : undefined, pointerEvents: !completado ? "none" : undefined, userSelect: !completado ? "none" : undefined }}>
             {textos.length === 0 ? (
-              <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 16, padding: "80px 16px", textAlign: "center" }}>
-                <p style={{ fontFamily: "'Playfair Display', serif", fontSize: 20, fontStyle: "italic", color: "#3D3530" }}>
-                  Todavía nadie escribió hoy. ¡Sé el primero!
+              <div style={{ textAlign: "center", padding: "64px 32px" }}>
+                <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 8, marginBottom: 32, opacity: 0.3 }}>
+                  <div style={{ width: 120, height: 1, backgroundColor: "#3D3530" }} />
+                  <div style={{ width: 120, height: 1, backgroundColor: "#3D3530" }} />
+                  <div style={{ width: 120, height: 1, backgroundColor: "#3D3530" }} />
+                </div>
+                <p style={{ fontFamily: "'Playfair Display', serif", fontStyle: "italic", fontSize: 20, color: "#3D3530", margin: "0 0 12px" }}>
+                  Nadie escribió todavía.
                 </p>
-                <Link
-                  href="/editor"
-                  style={{
-                    backgroundColor: "#64313E",
-                    color: "#FDFAF5",
-                    borderRadius: 6,
-                    padding: "10px 24px",
-                    fontSize: 14,
-                    fontWeight: 500,
-                    textDecoration: "none",
-                  }}
-                >
-                  Ir a escribir
+                <p style={{ fontSize: 14, color: "#9C8B7E", margin: "0 0 24px" }}>
+                  Podés ser el primero hoy.
+                </p>
+                <Link href="/editor" style={{
+                  display: "inline-block",
+                  backgroundColor: "#64313E", color: "#F5F0EA",
+                  padding: "12px 32px", borderRadius: 8,
+                  fontSize: 14, textDecoration: "none"
+                }}>
+                  Escribir ahora
                 </Link>
               </div>
             ) : (
