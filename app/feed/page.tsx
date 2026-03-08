@@ -151,7 +151,7 @@ export default function Feed() {
           overflow: "hidden",
           textOverflow: "ellipsis",
         }}>
-          {consigna || ""}
+          {consigna ?? "—"}
         </p>
       </div>
 
@@ -162,28 +162,6 @@ export default function Feed() {
           {textos.length} {textos.length === 1 ? "persona respondió" : "personas respondieron"} hoy
         </p>
 
-        {/* Botón escribir si no completó */}
-        {!completado && (
-          <Link
-            href="/editor"
-            style={{
-              display: "inline-flex",
-              alignItems: "center",
-              gap: 6,
-              backgroundColor: "#64313E",
-              color: "#FDFAF5",
-              borderRadius: 6,
-              padding: "8px 16px",
-              fontSize: 12,
-              fontWeight: 500,
-              textDecoration: "none",
-              marginBottom: 16,
-            }}
-          >
-            <Pencil size={12} strokeWidth={1.5} />
-            Escribir mi versión
-          </Link>
-        )}
 
         {/* Feed */}
         <div className="relative">
@@ -341,6 +319,31 @@ export default function Feed() {
                 >
                   Ir a escribir
                 </Link>
+                <br />
+                <button
+                  type="button"
+                  onClick={() => {
+                    localStorage.setItem(`renglon_completed_${hoy}`, "1");
+                    setCompletado(true);
+                  }}
+                  style={{
+                    display: "inline-flex",
+                    alignItems: "center",
+                    gap: 6,
+                    marginTop: 12,
+                    backgroundColor: "transparent",
+                    color: "#64313E",
+                    border: "1.5px solid #64313E",
+                    borderRadius: 6,
+                    padding: "10px 24px",
+                    fontSize: 14,
+                    fontWeight: 500,
+                    cursor: "pointer",
+                  }}
+                >
+                  <Pencil size={14} strokeWidth={1.5} />
+                  Ya escribí, ver el feed
+                </button>
               </div>
             </div>
           )}
