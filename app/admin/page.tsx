@@ -93,7 +93,6 @@ export default function Admin() {
   async function cargarConsignas() {
     const hoy = hoyISO();
 
-    // Programadas: fecha >= hoy, no borrador
     const { data: dataProgramadas } = await supabase
       .from("consignas")
       .select("*")
@@ -102,7 +101,6 @@ export default function Admin() {
       .gte("fecha", hoy)
       .order("fecha", { ascending: true });
 
-    // Banco: fecha IS NULL, no borrador
     const { data: dataBanco } = await supabase
       .from("consignas")
       .select("*")
@@ -111,7 +109,6 @@ export default function Admin() {
       .is("fecha", null)
       .order("created_at", { ascending: true });
 
-    // Borradores: borrador = true
     const { data: dataBorradores } = await supabase
       .from("consignas")
       .select("*")
@@ -164,10 +161,10 @@ export default function Admin() {
       if (data.consigna) {
         setAprobadoMsg(
           programarFecha
-            ? `Consigna programada para el ${formatFechaLegible(fecha)}.`
+            ? `Programada para el ${formatFechaLegible(fecha)}.`
             : agregarAlBancoIA
-            ? "Consigna agregada al banco."
-            : "Consigna guardada como borrador."
+            ? "Agregada al banco."
+            : "Guardada como borrador."
         );
         setSeleccionada(null);
         setConsignasGeneradas([]);
@@ -176,7 +173,7 @@ export default function Admin() {
         setAgregarAlBancoIA(false);
         await cargarConsignas();
       } else {
-        setAprobadoMsg("Ocurrió un error al guardar. Revisá Supabase.");
+        setAprobadoMsg("Error al guardar.");
       }
     } catch (e) {
       console.error(e);
@@ -239,17 +236,17 @@ export default function Admin() {
       if (data.consigna) {
         setGuardadoMsgPropio(
           programarFechaPropia
-            ? `Consigna programada para el ${formatFechaLegible(fechaPropia)}.`
+            ? `Programada para el ${formatFechaLegible(fechaPropia)}.`
             : agregarAlBancoPropias
-            ? "Consigna agregada al banco."
-            : "Consigna guardada como borrador."
+            ? "Agregada al banco."
+            : "Guardada como borrador."
         );
         setTextoPropio("");
         setProgramarFechaPropia(false);
         setAgregarAlBancoPropias(false);
         await cargarConsignas();
       } else {
-        setGuardadoMsgPropio("Ocurrió un error al guardar. Revisá Supabase.");
+        setGuardadoMsgPropio("Error al guardar.");
       }
     } catch (e) {
       console.error(e);
@@ -278,6 +275,31 @@ export default function Admin() {
     }
   }
 
+  async function handlePublicarHoy(id: string) {
+    try {
+      const res = await fetch("/api/aprobar-consigna", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ id, fecha: hoyISO() }),
+      });
+      const data = await res.json();
+      if (data.consigna) await cargarConsignas();
+    } catch (e) {
+      console.error(e);
+    }
+  }
+
+  async function handleEliminar(id: string) {
+    await supabase.from("consignas").delete().eq("id", id);
+    await cargarConsignas();
+  }
+
+  function handleProgramar(id: string) {
+    setProgramandoBancoId((prev) => (prev === id ? null : id));
+    setFechaBancoSeleccionada(hoyISO());
+    setErrorBanco("");
+  }
+
   if (verificando) {
     return (
       <div className="flex min-h-screen items-center justify-center bg-papel">
@@ -286,462 +308,336 @@ export default function Admin() {
     );
   }
 
-  return (
-    <div className="relative min-h-screen bg-papel">
-      {/* Textura de puntos */}
-      <div
-        className="pointer-events-none absolute inset-0"
-        style={{
-          backgroundImage: "radial-gradient(circle, #9e8e7e 1px, transparent 1px)",
-          backgroundSize: "24px 24px",
-          opacity: 0.18,
-        }}
-      />
-      {/* Navbar */}
-      <nav className="w-full border-b border-borde px-6 py-5">
-        <div className="mx-auto flex max-w-[720px] items-center justify-between">
-          <span className="font-display text-xl italic text-tinta">renglón</span>
-          <span className="text-[11px] uppercase tracking-widest text-tinta-suave">
-            admin
+  const inputStyle: React.CSSProperties = {
+    width: "100%",
+    padding: "10px 14px",
+    border: "1px solid rgba(61,53,48,0.15)",
+    borderRadius: 8,
+    fontSize: 14,
+    color: "#3D3530",
+    backgroundColor: "white",
+    outline: "none",
+    boxSizing: "border-box",
+  };
+
+  function SectionHeader({ label, count }: { label: string; count: number }) {
+    return (
+      <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 16, marginTop: 32 }}>
+        <span style={{ fontSize: 11, letterSpacing: "0.12em", color: "#9C8B7E" }}>{label}</span>
+        <span style={{ fontSize: 11, color: "#64313E", backgroundColor: "rgba(100,49,62,0.08)", borderRadius: 12, padding: "2px 8px" }}>
+          {count}
+        </span>
+      </div>
+    );
+  }
+
+  function ConsignaCard({ consigna, showMoverAlBanco }: { consigna: Consigna; showMoverAlBanco?: boolean }) {
+    return (
+      <div style={{
+        backgroundColor: "#FFFFFF",
+        borderRadius: 10,
+        borderLeft: "3px solid #64313E",
+        boxShadow: "0 1px 8px rgba(0,0,0,0.05)",
+        padding: "16px 20px",
+        marginBottom: 12,
+      }}>
+        {/* Fila top: pill categoría + ⋯ */}
+        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+          <span style={{ fontSize: 11, color: "#64313E", backgroundColor: "rgba(100,49,62,0.08)", borderRadius: 12, padding: "2px 10px" }}>
+            {CATEGORIAS.find((c) => c.value === consigna.categoria)?.label ?? consigna.categoria}
           </span>
-        </div>
-      </nav>
-
-      <main className="mx-auto max-w-[720px] px-6 pb-24 pt-10">
-        <h1 className="font-display text-[26px] italic text-tinta" style={{ lineHeight: "1.3" }}>
-          Panel de administración
-        </h1>
-        <p className="mt-2 text-sm text-tinta-suave">
-          Generá y programá consignas de escritura para los usuarios.
-        </p>
-
-        <hr className="my-8 border-borde" />
-
-        {/* Formulario */}
-        <section className="mb-10">
-          <h2 className="mb-6 text-[11px] uppercase tracking-widest text-tinta-suave">
-            Nueva consigna
-          </h2>
-
-          <div className="mb-6">
-            <label className="mb-2 block text-[11px] uppercase tracking-widest text-tinta-suave">
-              Categoría
-            </label>
-            <select
-              value={categoria}
-              onChange={(e) => setCategoria(e.target.value)}
-              className="w-full border-b-[1.5px] border-borde bg-blanco-roto py-2.5 text-sm text-tinta outline-none focus:border-borravino"
-            >
-              {CATEGORIAS.map((c) => (
-                <option key={c.value} value={c.value}>
-                  {c.label}
-                </option>
-              ))}
-            </select>
-          </div>
-
-          <div className="mb-8">
-            <label className="mb-2 block text-[11px] uppercase tracking-widest text-tinta-suave">
-              Contexto
-            </label>
-            <textarea
-              value={contexto}
-              onChange={(e) => setContexto(e.target.value)}
-              placeholder="Contame el contexto o temática que querés explorar"
-              rows={3}
-              className="w-full resize-none border-b-[1.5px] border-borde bg-blanco-roto py-2.5 text-sm text-tinta outline-none placeholder:text-tinta-suave/60 focus:border-borravino"
-            />
-          </div>
-
-          <button
-            onClick={handleGenerar}
-            disabled={generando}
-            className="rounded-[6px] bg-borravino px-7 py-2.5 text-sm font-medium text-blanco-roto transition-opacity hover:opacity-90 disabled:opacity-50"
-          >
-            {generando ? "Generando…" : "Generar consignas"}
-          </button>
-        </section>
-
-        {/* Consignas generadas */}
-        {consignasGeneradas.length > 0 && (
-          <section className="mb-10">
-            <h2 className="mb-4 text-[11px] uppercase tracking-widest text-tinta-suave">
-              Seleccioná una consigna
-            </h2>
-
-            <div className="flex flex-col gap-3">
-              {consignasGeneradas.map((c, i) => (
-                <button
-                  key={i}
-                  onClick={() => setSeleccionada(i === seleccionada ? null : i)}
-                  className={`rounded-[8px] border px-5 py-4 text-left transition-all ${
-                    seleccionada === i
-                      ? "border-borravino bg-papel-oscuro"
-                      : "border-borde bg-papel-oscuro hover:border-borravino/40"
-                  }`}
-                >
-                  <span
-                    className="font-display italic text-tinta"
-                    style={{ fontSize: "17px", lineHeight: "1.5" }}
-                  >
-                    {c}
-                  </span>
-                </button>
-              ))}
-            </div>
-
-            {/* Opciones de fecha y botón aprobar */}
-            {seleccionada !== null && (
-              <div className="mt-6 flex flex-col gap-4">
-                {/* Checkbox programar fecha */}
-                <label className="flex cursor-pointer items-center gap-3">
-                  <input
-                    type="checkbox"
-                    checked={programarFecha}
-                    onChange={(e) => { setProgramarFecha(e.target.checked); if (e.target.checked) setAgregarAlBancoIA(false); }}
-                    className="h-4 w-4 accent-borravino"
-                  />
-                  <span className="text-sm text-tinta">Programar para fecha específica</span>
-                </label>
-
-                {/* Checkbox agregar al banco */}
-                {!programarFecha && (
-                  <label className="flex cursor-pointer items-center gap-3">
-                    <input
-                      type="checkbox"
-                      checked={agregarAlBancoIA}
-                      onChange={(e) => setAgregarAlBancoIA(e.target.checked)}
-                      className="h-4 w-4 accent-borravino"
-                    />
-                    <span className="text-sm text-tinta">Agregar directo al banco</span>
-                  </label>
-                )}
-
-                <div className="flex flex-col gap-4 sm:flex-row sm:items-end">
-                  {programarFecha && (
-                    <div className="flex-1">
-                      <label className="mb-2 block text-[11px] uppercase tracking-widest text-tinta-suave">
-                        Fecha
-                      </label>
-                      <input
-                        type="date"
-                        value={fecha}
-                        min={hoyISO()}
-                        onChange={(e) => setFecha(e.target.value)}
-                        className="w-full border-b-[1.5px] border-borde bg-blanco-roto py-2.5 text-sm text-tinta outline-none focus:border-borravino"
-                      />
-                    </div>
-                  )}
-                  <button
-                    onClick={handleAprobar}
-                    disabled={aprobando}
-                    className="rounded-[6px] bg-borravino px-7 py-2.5 text-sm font-medium text-blanco-roto transition-opacity hover:opacity-90 disabled:opacity-50"
-                  >
-                    {aprobando
-                      ? "Guardando…"
-                      : programarFecha
-                      ? "Programar para fecha específica"
-                      : agregarAlBancoIA
-                      ? "Agregar al banco"
-                      : "Guardar como borrador"}
-                  </button>
-                </div>
-              </div>
-            )}
-          </section>
-        )}
-
-        {/* Confirmación IA */}
-        {aprobadoMsg && (
-          <div className="mb-10 rounded-[8px] border border-borde bg-papel-oscuro px-5 py-4">
-            <p className="text-sm text-tinta">{aprobadoMsg}</p>
-          </div>
-        )}
-
-        {/* Divider */}
-        <div className="my-10 flex items-center gap-4">
-          <div className="h-px flex-1 bg-borde" />
-          <span className="text-[11px] uppercase tracking-widest text-tinta-suave">
-            — o escribí la tuya —
-          </span>
-          <div className="h-px flex-1 bg-borde" />
+          <span style={{ color: "#9C8B7E", fontSize: 18, cursor: "pointer" }}>⋯</span>
         </div>
 
-        {/* Escribir consigna propia */}
-        <section className="mb-10">
-          <h2 className="mb-6 text-[11px] uppercase tracking-widest text-tinta-suave">
-            Escribir consigna propia
-          </h2>
+        {/* Texto consigna */}
+        <p style={{
+          fontFamily: "'Playfair Display', serif",
+          fontStyle: "italic",
+          fontSize: 15,
+          color: "#3D3530",
+          lineHeight: 1.5,
+          margin: "10px 0 0",
+          display: "-webkit-box",
+          WebkitLineClamp: 2,
+          WebkitBoxOrient: "vertical",
+          overflow: "hidden",
+        } as React.CSSProperties}>{consigna.texto}</p>
 
-          <div className="mb-6">
-            <label className="mb-2 block text-[11px] uppercase tracking-widest text-tinta-suave">
-              Consigna
-            </label>
-            <textarea
-              value={textoPropio}
-              onChange={(e) => { setTextoPropio(e.target.value); setErrorPropio(""); }}
-              placeholder="Escribí tu propia consigna..."
-              rows={3}
-              className="w-full resize-none border-b-[1.5px] border-borde bg-blanco-roto py-2.5 text-sm text-tinta outline-none placeholder:text-tinta-suave/60 focus:border-borravino"
-            />
-            {errorPropio && (
-              <p className="mt-1 text-xs text-borravino">{errorPropio}</p>
-            )}
-          </div>
+        {/* Fecha si está programada */}
+        {consigna.fecha && (
+          <p style={{ fontSize: 12, color: "#9C8B7E", margin: "8px 0 0" }}>
+            📅 {new Date(consigna.fecha + "T12:00:00").toLocaleDateString("es-AR", { day: "numeric", month: "short", year: "numeric" })}
+          </p>
+        )}
 
-          <div className="mb-6">
-            <label className="mb-2 block text-[11px] uppercase tracking-widest text-tinta-suave">
-              Categoría
-            </label>
-            <select
-              value={categoriaPropia}
-              onChange={(e) => setCategoriaPropia(e.target.value)}
-              className="w-full border-b-[1.5px] border-borde bg-blanco-roto py-2.5 text-sm text-tinta outline-none focus:border-borravino"
+        {/* Acciones */}
+        <div style={{ display: "flex", gap: 8, marginTop: 14, alignItems: "center" }}>
+          {showMoverAlBanco ? (
+            <button
+              type="button"
+              onClick={() => handleMoverAlBanco(consigna)}
+              disabled={moviendoBorradorId === consigna.id}
+              style={{ fontSize: 12, color: "#3D3530", backgroundColor: "white", border: "1px solid rgba(61,53,48,0.2)", borderRadius: 6, padding: "5px 12px", cursor: "pointer", opacity: moviendoBorradorId === consigna.id ? 0.5 : 1 }}
             >
-              {CATEGORIAS.map((c) => (
-                <option key={c.value} value={c.value}>
-                  {c.label}
-                </option>
-              ))}
-            </select>
-          </div>
-
-          <div className="mb-4">
-            <label className="flex cursor-pointer items-center gap-3">
-              <input
-                type="checkbox"
-                checked={programarFechaPropia}
-                onChange={(e) => { setProgramarFechaPropia(e.target.checked); if (e.target.checked) setAgregarAlBancoPropias(false); }}
-                className="h-4 w-4 accent-borravino"
-              />
-              <span className="text-sm text-tinta">Programar para fecha específica</span>
-            </label>
-          </div>
-
-          {!programarFechaPropia && (
-            <div className="mb-6">
-              <label className="flex cursor-pointer items-center gap-3">
-                <input
-                  type="checkbox"
-                  checked={agregarAlBancoPropias}
-                  onChange={(e) => setAgregarAlBancoPropias(e.target.checked)}
-                  className="h-4 w-4 accent-borravino"
-                />
-                <span className="text-sm text-tinta">Agregar directo al banco</span>
-              </label>
-            </div>
+              {moviendoBorradorId === consigna.id ? "Moviendo…" : "Al banco"}
+            </button>
+          ) : (
+            <button
+              type="button"
+              onClick={() => handleProgramar(consigna.id)}
+              style={{ fontSize: 12, color: "#3D3530", backgroundColor: "white", border: "1px solid rgba(61,53,48,0.2)", borderRadius: 6, padding: "5px 12px", cursor: "pointer" }}
+            >
+              {programandoBancoId === consigna.id ? "Cancelar" : "Programar"}
+            </button>
           )}
 
-          <div className="flex flex-col gap-4 sm:flex-row sm:items-end">
-            {programarFechaPropia && (
-              <div className="flex-1">
-                <label className="mb-2 block text-[11px] uppercase tracking-widest text-tinta-suave">
-                  Fecha
+          <button
+            type="button"
+            onClick={() => handlePublicarHoy(consigna.id)}
+            style={{ fontSize: 12, color: "white", backgroundColor: "#64313E", border: "none", borderRadius: 6, padding: "5px 12px", cursor: "pointer" }}
+          >
+            Publicar hoy
+          </button>
+
+          <button
+            type="button"
+            onClick={() => handleEliminar(consigna.id)}
+            style={{ fontSize: 12, color: "#9C8B7E", background: "none", border: "none", marginLeft: "auto", cursor: "pointer" }}
+          >
+            Eliminar
+          </button>
+        </div>
+
+        {/* Inline date picker para programar */}
+        {programandoBancoId === consigna.id && (
+          <div style={{ marginTop: 14, paddingTop: 14, borderTop: "1px solid rgba(61,53,48,0.1)", display: "flex", gap: 8, alignItems: "flex-end" }}>
+            <input
+              type="date"
+              value={fechaBancoSeleccionada}
+              min={hoyISO()}
+              onChange={(e) => { setFechaBancoSeleccionada(e.target.value); setErrorBanco(""); }}
+              style={{ ...inputStyle, flex: 1, padding: "8px 12px" }}
+            />
+            <button
+              type="button"
+              onClick={() => handleProgramarDesdeBanco(consigna)}
+              disabled={guardandoBancoId === consigna.id}
+              style={{ fontSize: 12, color: "white", backgroundColor: "#64313E", border: "none", borderRadius: 6, padding: "8px 14px", cursor: "pointer", opacity: guardandoBancoId === consigna.id ? 0.5 : 1, whiteSpace: "nowrap" }}
+            >
+              {guardandoBancoId === consigna.id ? "Guardando…" : "Confirmar"}
+            </button>
+          </div>
+        )}
+        {programandoBancoId === consigna.id && errorBanco && (
+          <p style={{ fontSize: 12, color: "#64313E", marginTop: 6 }}>{errorBanco}</p>
+        )}
+      </div>
+    );
+  }
+
+  return (
+    <div style={{ minHeight: "100vh", backgroundColor: "#F5F0E8" }}>
+      <div style={{ maxWidth: 1100, margin: "0 auto", padding: "32px 24px 48px" }}>
+
+        {/* Header */}
+        <div style={{ display: "flex", alignItems: "baseline", justifyContent: "space-between", borderBottom: "1px solid rgba(61,53,48,0.1)", paddingBottom: 16, marginBottom: 32 }}>
+          <span style={{ fontFamily: "'Playfair Display', serif", fontStyle: "italic", fontSize: 24, color: "#64313E" }}>renglón</span>
+          <span style={{ fontSize: 13, color: "#9C8B7E" }}>Panel de administración</span>
+        </div>
+
+        {/* Grid dos columnas */}
+        <div style={{ display: "grid", gridTemplateColumns: "380px 1fr", gap: 32, alignItems: "flex-start" }}>
+
+          {/* COLUMNA IZQUIERDA */}
+          <div style={{ position: "sticky", top: 24 }}>
+            <div style={{ backgroundColor: "#FFFFFF", borderRadius: 12, padding: 24, boxShadow: "0 1px 8px rgba(0,0,0,0.05)" }}>
+              <p style={{ fontSize: 11, letterSpacing: "0.12em", color: "#9C8B7E", marginBottom: 20, margin: "0 0 20px" }}>NUEVA CONSIGNA</p>
+
+              {/* Select categoría IA */}
+              <select
+                value={categoria}
+                onChange={(e) => setCategoria(e.target.value)}
+                style={{ ...inputStyle, marginBottom: 12 }}
+              >
+                {CATEGORIAS.map((c) => (
+                  <option key={c.value} value={c.value}>{c.label}</option>
+                ))}
+              </select>
+
+              {/* Textarea contexto */}
+              <textarea
+                value={contexto}
+                onChange={(e) => setContexto(e.target.value)}
+                placeholder="Contexto o temática a explorar…"
+                rows={4}
+                style={{ ...inputStyle, resize: "none", marginBottom: 16 }}
+              />
+
+              {/* Botón generar */}
+              <button
+                type="button"
+                onClick={handleGenerar}
+                disabled={generando}
+                style={{ width: "100%", backgroundColor: "#64313E", color: "white", borderRadius: 8, padding: "12px", fontSize: 14, border: "none", cursor: "pointer", opacity: generando ? 0.7 : 1 }}
+              >
+                {generando ? "Generando…" : "✨ Generar con IA"}
+              </button>
+
+              {/* Consignas generadas */}
+              {consignasGeneradas.length > 0 && (
+                <div style={{ marginTop: 16 }}>
+                  {consignasGeneradas.map((c, i) => (
+                    <button
+                      key={i}
+                      type="button"
+                      onClick={() => setSeleccionada(i === seleccionada ? null : i)}
+                      style={{
+                        width: "100%",
+                        textAlign: "left",
+                        padding: "10px 14px",
+                        marginBottom: 8,
+                        borderRadius: 8,
+                        border: seleccionada === i ? "1.5px solid #64313E" : "1px solid rgba(61,53,48,0.15)",
+                        backgroundColor: seleccionada === i ? "rgba(100,49,62,0.04)" : "white",
+                        fontSize: 14,
+                        color: "#3D3530",
+                        fontFamily: "'Playfair Display', serif",
+                        fontStyle: "italic",
+                        lineHeight: 1.5,
+                        cursor: "pointer",
+                      }}
+                    >
+                      {c}
+                    </button>
+                  ))}
+
+                  {seleccionada !== null && (
+                    <div style={{ marginTop: 8 }}>
+                      <label style={{ display: "flex", alignItems: "center", gap: 8, fontSize: 13, color: "#3D3530", marginBottom: 8, cursor: "pointer" }}>
+                        <input type="checkbox" checked={programarFecha} onChange={(e) => { setProgramarFecha(e.target.checked); if (e.target.checked) setAgregarAlBancoIA(false); }} style={{ accentColor: "#64313E" }} />
+                        Programar para fecha
+                      </label>
+                      {!programarFecha && (
+                        <label style={{ display: "flex", alignItems: "center", gap: 8, fontSize: 13, color: "#3D3530", marginBottom: 8, cursor: "pointer" }}>
+                          <input type="checkbox" checked={agregarAlBancoIA} onChange={(e) => setAgregarAlBancoIA(e.target.checked)} style={{ accentColor: "#64313E" }} />
+                          Agregar al banco
+                        </label>
+                      )}
+                      {programarFecha && (
+                        <input
+                          type="date"
+                          value={fecha}
+                          min={hoyISO()}
+                          onChange={(e) => setFecha(e.target.value)}
+                          style={{ ...inputStyle, marginBottom: 8 }}
+                        />
+                      )}
+                      <button
+                        type="button"
+                        onClick={handleAprobar}
+                        disabled={aprobando}
+                        style={{ width: "100%", backgroundColor: "#64313E", color: "white", borderRadius: 8, padding: "10px", fontSize: 13, border: "none", cursor: "pointer", opacity: aprobando ? 0.7 : 1 }}
+                      >
+                        {aprobando ? "Guardando…" : programarFecha ? "Programar" : agregarAlBancoIA ? "Agregar al banco" : "Guardar como borrador"}
+                      </button>
+                      {aprobadoMsg && (
+                        <p style={{ fontSize: 12, color: "#64313E", marginTop: 8, textAlign: "center" }}>{aprobadoMsg}</p>
+                      )}
+                    </div>
+                  )}
+                </div>
+              )}
+
+              {/* Divider */}
+              <p style={{ textAlign: "center", fontSize: 12, color: "#9C8B7E", margin: "20px 0" }}>— o escribí la tuya —</p>
+
+              {/* Input consigna propia */}
+              <input
+                type="text"
+                value={textoPropio}
+                onChange={(e) => { setTextoPropio(e.target.value); setErrorPropio(""); }}
+                placeholder="Escribí tu consigna…"
+                style={{ ...inputStyle, marginBottom: 12 }}
+              />
+              {errorPropio && <p style={{ fontSize: 12, color: "#64313E", marginBottom: 8 }}>{errorPropio}</p>}
+
+              {/* Select categoría manual */}
+              <select
+                value={categoriaPropia}
+                onChange={(e) => setCategoriaPropia(e.target.value)}
+                style={{ ...inputStyle, marginBottom: 8 }}
+              >
+                {CATEGORIAS.map((c) => (
+                  <option key={c.value} value={c.value}>{c.label}</option>
+                ))}
+              </select>
+
+              <label style={{ display: "flex", alignItems: "center", gap: 8, fontSize: 13, color: "#3D3530", marginBottom: 8, cursor: "pointer" }}>
+                <input type="checkbox" checked={programarFechaPropia} onChange={(e) => { setProgramarFechaPropia(e.target.checked); if (e.target.checked) setAgregarAlBancoPropias(false); }} style={{ accentColor: "#64313E" }} />
+                Programar para fecha
+              </label>
+              {!programarFechaPropia && (
+                <label style={{ display: "flex", alignItems: "center", gap: 8, fontSize: 13, color: "#3D3530", marginBottom: 8, cursor: "pointer" }}>
+                  <input type="checkbox" checked={agregarAlBancoPropias} onChange={(e) => setAgregarAlBancoPropias(e.target.checked)} style={{ accentColor: "#64313E" }} />
+                  Agregar al banco
                 </label>
+              )}
+              {programarFechaPropia && (
                 <input
                   type="date"
                   value={fechaPropia}
                   min={hoyISO()}
                   onChange={(e) => setFechaPropia(e.target.value)}
-                  className="w-full border-b-[1.5px] border-borde bg-blanco-roto py-2.5 text-sm text-tinta outline-none focus:border-borravino"
+                  style={{ ...inputStyle, marginBottom: 8 }}
                 />
-              </div>
-            )}
-            <button
-              onClick={handleGuardarPropia}
-              disabled={guardandoPropio}
-              className="rounded-[6px] bg-borravino px-7 py-2.5 text-sm font-medium text-blanco-roto transition-opacity hover:opacity-90 disabled:opacity-50"
-            >
-              {guardandoPropio
-                ? "Guardando…"
-                : programarFechaPropia
-                ? "Programar para fecha específica"
-                : agregarAlBancoPropias
-                ? "Agregar al banco"
-                : "Guardar como borrador"}
-            </button>
+              )}
+
+              {/* Botón agregar al banco */}
+              <button
+                type="button"
+                onClick={handleGuardarPropia}
+                disabled={guardandoPropio}
+                style={{ width: "100%", backgroundColor: "transparent", color: "#64313E", border: "1px solid #64313E", borderRadius: 8, padding: "12px", fontSize: 14, cursor: "pointer", marginTop: 8, opacity: guardandoPropio ? 0.7 : 1 }}
+              >
+                {guardandoPropio ? "Guardando…" : programarFechaPropia ? "Programar" : agregarAlBancoPropias ? "Agregar al banco" : "Guardar como borrador"}
+              </button>
+
+              {guardadoMsgPropio && (
+                <p style={{ fontSize: 12, color: "#64313E", marginTop: 10, textAlign: "center" }}>{guardadoMsgPropio}</p>
+              )}
+            </div>
           </div>
 
-          {guardadoMsgPropio && (
-            <div className="mt-6 rounded-[8px] border border-borde bg-papel-oscuro px-5 py-4">
-              <p className="text-sm text-tinta">{guardadoMsgPropio}</p>
-            </div>
-          )}
-        </section>
+          {/* COLUMNA DERECHA */}
+          <div>
 
-        <hr className="my-8 border-borde" />
+            {/* PROGRAMADAS */}
+            <SectionHeader label="PROGRAMADAS" count={programadas.length} />
+            {programadas.length === 0 ? (
+              <p style={{ fontSize: 13, color: "#9C8B7E", fontStyle: "italic", padding: "12px 0" }}>No hay consignas aquí.</p>
+            ) : (
+              programadas.map((c) => <ConsignaCard key={c.id} consigna={c} />)
+            )}
 
-        {/* Consignas programadas */}
-        <section className="mb-10">
-          <h2 className="mb-5 text-[11px] uppercase tracking-widest text-tinta-suave">
-            Programadas
-          </h2>
+            {/* BANCO */}
+            <SectionHeader label="BANCO" count={banco.length} />
+            {banco.length === 0 ? (
+              <p style={{ fontSize: 13, color: "#9C8B7E", fontStyle: "italic", padding: "12px 0" }}>No hay consignas aquí.</p>
+            ) : (
+              banco.map((c) => <ConsignaCard key={c.id} consigna={c} />)
+            )}
 
-          {programadas.length === 0 ? (
-            <p className="text-sm text-tinta-suave">No hay consignas programadas.</p>
-          ) : (
-            <div className="flex flex-col gap-3">
-              {programadas.map((c) => (
-                <div
-                  key={c.id}
-                  className="rounded-[8px] border border-borde bg-papel-oscuro px-5 py-4"
-                >
-                  <div className="flex items-start justify-between gap-6">
-                    <span
-                      className="font-display italic text-tinta"
-                      style={{ fontSize: "16px", lineHeight: "1.5" }}
-                    >
-                      {c.texto}
-                    </span>
-                    <div className="flex shrink-0 flex-col items-end gap-1.5">
-                      <span className="text-xs text-tinta-suave">
-                        {formatFechaLegible(c.fecha!)}
-                      </span>
-                      <span className="rounded-[4px] bg-cielo px-2 py-0.5 text-[11px] text-borravino">
-                        {CATEGORIAS.find((cat) => cat.value === c.categoria)?.label ?? c.categoria}
-                      </span>
-                      {c.asignada_automaticamente && (
-                        <span className="rounded-[4px] border border-borde px-2 py-0.5 text-[11px] text-tinta-suave">
-                          auto
-                        </span>
-                      )}
-                    </div>
-                  </div>
-                </div>
-              ))}
-            </div>
-          )}
-        </section>
+            {/* BORRADORES */}
+            <SectionHeader label="BORRADORES" count={borradores.length} />
+            {borradores.length === 0 ? (
+              <p style={{ fontSize: 13, color: "#9C8B7E", fontStyle: "italic", padding: "12px 0" }}>No hay consignas aquí.</p>
+            ) : (
+              borradores.map((c) => <ConsignaCard key={c.id} consigna={c} showMoverAlBanco />)
+            )}
 
-        {/* Borradores */}
-        <section className="mb-10">
-          <h2 className="mb-5 text-[11px] uppercase tracking-widest text-tinta-suave">
-            Borradores
-          </h2>
-
-          {borradores.length === 0 ? (
-            <p className="text-sm text-tinta-suave">No hay borradores guardados.</p>
-          ) : (
-            <div className="flex flex-col gap-3">
-              {borradores.map((c) => (
-                <div
-                  key={c.id}
-                  className="rounded-[8px] border border-borde bg-papel-oscuro px-5 py-4"
-                >
-                  <div className="flex items-start justify-between gap-6">
-                    <span
-                      className="font-display italic text-tinta"
-                      style={{ fontSize: "16px", lineHeight: "1.5" }}
-                    >
-                      {c.texto}
-                    </span>
-                    <div className="flex shrink-0 flex-col items-end gap-1.5">
-                      <span className="rounded-[4px] bg-cielo px-2 py-0.5 text-[11px] text-borravino">
-                        {CATEGORIAS.find((cat) => cat.value === c.categoria)?.label ?? c.categoria}
-                      </span>
-                      <button
-                        onClick={() => handleMoverAlBanco(c)}
-                        disabled={moviendoBorradorId === c.id}
-                        className="text-[11px] text-tinta-suave underline underline-offset-2 transition-colors hover:text-borravino disabled:opacity-50"
-                      >
-                        {moviendoBorradorId === c.id ? "Moviendo…" : "Mover al banco"}
-                      </button>
-                    </div>
-                  </div>
-                </div>
-              ))}
-            </div>
-          )}
-        </section>
-
-        <hr className="my-8 border-borde" />
-
-        {/* Banco de consignas */}
-        <section>
-          <h2 className="mb-5 text-[11px] uppercase tracking-widest text-tinta-suave">
-            Banco de consignas
-          </h2>
-
-          {banco.length === 0 ? (
-            <p className="text-sm text-tinta-suave">El banco está vacío.</p>
-          ) : (
-            <div className="flex flex-col gap-3">
-              {banco.map((c, idx) => (
-                <div
-                  key={c.id}
-                  className="rounded-[8px] border border-borde bg-papel-oscuro px-5 py-4"
-                >
-                  <div className="flex items-start justify-between gap-6">
-                    <div className="flex items-start gap-3">
-                      <span className="mt-1 text-[11px] tabular-nums text-tinta-suave/60">
-                        {idx + 1}
-                      </span>
-                      <span
-                        className="font-display italic text-tinta"
-                        style={{ fontSize: "16px", lineHeight: "1.5" }}
-                      >
-                        {c.texto}
-                      </span>
-                    </div>
-                    <div className="flex shrink-0 flex-col items-end gap-1.5">
-                      <span className="rounded-[4px] bg-cielo px-2 py-0.5 text-[11px] text-borravino">
-                        {CATEGORIAS.find((cat) => cat.value === c.categoria)?.label ?? c.categoria}
-                      </span>
-                      <button
-                        onClick={() => {
-                          if (programandoBancoId === c.id) {
-                            setProgramandoBancoId(null);
-                            setErrorBanco("");
-                          } else {
-                            setProgramandoBancoId(c.id);
-                            setFechaBancoSeleccionada(hoyISO());
-                            setErrorBanco("");
-                          }
-                        }}
-                        className="text-[11px] text-tinta-suave underline underline-offset-2 transition-colors hover:text-borravino"
-                      >
-                        {programandoBancoId === c.id ? "Cancelar" : "Programar"}
-                      </button>
-                    </div>
-                  </div>
-
-                  {programandoBancoId === c.id && (
-                    <div className="mt-4 border-t border-borde pt-4">
-                      <div className="flex flex-col gap-3 sm:flex-row sm:items-end">
-                        <div className="flex-1">
-                          <label className="mb-2 block text-[11px] uppercase tracking-widest text-tinta-suave">
-                            Fecha
-                          </label>
-                          <input
-                            type="date"
-                            value={fechaBancoSeleccionada}
-                            min={hoyISO()}
-                            onChange={(e) => {
-                              setFechaBancoSeleccionada(e.target.value);
-                              setErrorBanco("");
-                            }}
-                            className="w-full border-b-[1.5px] border-borde bg-blanco-roto py-2.5 text-sm text-tinta outline-none focus:border-borravino"
-                          />
-                        </div>
-                        <button
-                          onClick={() => handleProgramarDesdeBanco(c)}
-                          disabled={guardandoBancoId === c.id}
-                          className="rounded-[6px] bg-borravino px-5 py-2.5 text-sm font-medium text-blanco-roto transition-opacity hover:opacity-90 disabled:opacity-50"
-                        >
-                          {guardandoBancoId === c.id ? "Guardando…" : "Confirmar"}
-                        </button>
-                      </div>
-                      {errorBanco && (
-                        <p className="mt-2 text-xs text-borravino">{errorBanco}</p>
-                      )}
-                    </div>
-                  )}
-                </div>
-              ))}
-            </div>
-          )}
-        </section>
-      </main>
+          </div>
+        </div>
+      </div>
     </div>
   );
 }
