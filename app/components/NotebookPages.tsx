@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import Link from "next/link";
 import { X, ChevronLeft, ChevronRight } from "lucide-react";
 
 interface Texto {
@@ -15,6 +16,8 @@ interface Texto {
 interface NotebookPagesProps {
   texts: Texto[];
   username: string;
+  userId: string;
+  sessionUserId: string;
   onClose: () => void;
 }
 
@@ -26,7 +29,7 @@ function fechaDDMMYYYY(iso: string): string {
   return `${dd}/${mm}/${yyyy}`;
 }
 
-export default function NotebookPages({ texts, username, onClose }: NotebookPagesProps) {
+export default function NotebookPages({ texts, username, userId, sessionUserId, onClose }: NotebookPagesProps) {
   const [page, setPage] = useState(0);
   const total = texts.length;
   const text = texts[page];
@@ -102,17 +105,21 @@ export default function NotebookPages({ texts, username, onClose }: NotebookPage
               paddingRight: "40px",
             }}
           >
-            <span
+            <Link
+              href={userId === sessionUserId ? "/perfil" : `/perfil-publico?id=${userId}`}
               style={{
                 fontFamily: "var(--font-sans)",
-                fontSize: 11,
-                textTransform: "uppercase",
-                letterSpacing: "0.06em",
-                color: "#5C5147",
+                fontSize: 12,
+                textTransform: "lowercase",
+                letterSpacing: "0.08em",
+                color: "#9C8B7E",
+                textDecoration: "none",
+                transition: "color 0.2s",
               }}
+              className="hover:underline hover:text-[#64313E]"
             >
-              {username}
-            </span>
+              @{username}
+            </Link>
             <button
               type="button"
               onClick={onClose}
@@ -133,18 +140,30 @@ export default function NotebookPages({ texts, username, onClose }: NotebookPage
             </button>
           </div>
 
-          {/* Número de página — height 40px */}
-          <div style={{ height: 40, display: "flex", alignItems: "center", flexShrink: 0, paddingLeft: "60px" }}>
+          {/* Fecha + consigna — height 40px */}
+          <div
+            style={{
+              height: 40,
+              display: "flex",
+              alignItems: "center",
+              flexShrink: 0,
+              paddingLeft: "60px",
+              paddingRight: "40px",
+              overflow: "hidden",
+            }}
+          >
             <span
               style={{
-                fontFamily: "var(--font-display)",
-                fontStyle: "italic",
-                fontSize: 13,
-                color: "#5C5147",
-                opacity: 0.5,
+                fontFamily: "var(--font-sans)",
+                fontSize: 12,
+                color: "rgba(61,53,48,0.45)",
+                whiteSpace: "nowrap",
+                overflow: "hidden",
+                textOverflow: "ellipsis",
               }}
             >
-              {page + 1} / {total}
+              {fechaDDMMYYYY(text.created_at)}
+              {text.consigna ? ` — ${text.consigna.length > 50 ? text.consigna.slice(0, 50) + "…" : text.consigna}` : ""}
             </span>
           </div>
 
@@ -169,52 +188,6 @@ export default function NotebookPages({ texts, username, onClose }: NotebookPage
           >
             {text.titulo || "Sin título"}
           </h2>
-
-          {/* Fecha + consigna — una línea */}
-          <div
-            style={{
-              height: 40,
-              minHeight: 40,
-              display: "flex",
-              alignItems: "center",
-              overflow: "hidden",
-              flexShrink: 0,
-              gap: 0,
-              minWidth: 0,
-              paddingLeft: "60px",
-              paddingRight: "40px",
-            }}
-          >
-            <span
-              style={{
-                fontFamily: "var(--font-sans)",
-                fontSize: 12,
-                color: "#5C5147",
-                opacity: 0.65,
-                whiteSpace: "nowrap",
-                flexShrink: 0,
-              }}
-            >
-              {fechaDDMMYYYY(text.created_at)}
-              {text.consigna ? " — " : ""}
-            </span>
-            {text.consigna && (
-              <span
-                style={{
-                  fontFamily: "var(--font-sans)",
-                  fontSize: 12,
-                  color: "#5C5147",
-                  opacity: 0.65,
-                  whiteSpace: "nowrap",
-                  overflow: "hidden",
-                  textOverflow: "ellipsis",
-                  minWidth: 0,
-                }}
-              >
-                {text.consigna}
-              </span>
-            )}
-          </div>
 
           {/* Cuerpo */}
           <div

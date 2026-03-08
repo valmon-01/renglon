@@ -296,6 +296,8 @@ export default function Perfil() {
               <NotebookPages
                 texts={textos}
                 username={username}
+                userId={user?.id ?? ""}
+                sessionUserId={user?.id ?? ""}
                 onClose={() => setLibroAbierto(false)}
               />
             </motion.div>

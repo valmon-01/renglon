@@ -209,20 +209,39 @@ export default function TextoIndividual() {
             }}
           >
 
-            {/* Renglón 1: fecha DD/MM/AAAA — derecha */}
+            {/* Renglón 1: @username */}
+            <Link
+              href={sessionUserId === texto.user_id ? "/perfil" : `/perfil-publico?id=${texto.user_id}`}
+              style={{
+                display: "block",
+                fontFamily: "var(--font-display)",
+                fontStyle: "italic",
+                fontSize: "15px",
+                color: "#64313E",
+                lineHeight: "40px",
+                textDecoration: "none",
+                marginBottom: 8,
+              }}
+              className="hover:underline"
+            >
+              @{username}
+            </Link>
+
+            {/* Renglón 2: fecha + consigna */}
             <p
-              className="select-none text-right font-display italic text-tinta-suave"
-              style={{ fontSize: "1rem", lineHeight: "40px" }}
+              style={{
+                fontSize: "12px",
+                color: "#9C8B7E",
+                lineHeight: "40px",
+                marginBottom: 24,
+                whiteSpace: "nowrap",
+                overflow: "hidden",
+                textOverflow: "ellipsis",
+                fontFamily: "var(--font-sans)",
+              }}
             >
               {fechaCorta(texto.created_at)}
-            </p>
-
-            {/* Renglón 2: consigna */}
-            <p
-              className="select-none font-display italic text-tinta-suave"
-              style={{ fontSize: "1rem", lineHeight: "40px" }}
-            >
-              {texto.consigna}
+              {texto.consigna ? ` — ${texto.consigna.length > 60 ? texto.consigna.slice(0, 60) + "…" : texto.consigna}` : ""}
             </p>
 
             {/* Renglón 3: título (si existe) */}
