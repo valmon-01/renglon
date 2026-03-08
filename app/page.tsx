@@ -143,7 +143,7 @@ export default async function Landing() {
       </main>
 
       {/* ¿Cómo funciona? */}
-      <section className="mx-auto max-w-[680px] px-6 pb-24">
+      <section className="mx-auto max-w-[680px] px-6" style={{ paddingBottom: "48px" }}>
 
         {/* Título de sección */}
         <div className="mb-12 flex flex-col items-center gap-4">
@@ -213,7 +213,7 @@ export default async function Landing() {
       </section>
 
       {/* Cierre */}
-      <section className="mx-auto max-w-[680px] px-6 pb-24">
+      <section className="mx-auto max-w-[680px] px-6" style={{ paddingBottom: "48px" }}>
         <div style={{ height: "1px", backgroundColor: "#D6CFBF" }} className="mb-12" />
         <div className="flex flex-col items-center gap-5 text-center">
           <p
@@ -268,8 +268,36 @@ export default async function Landing() {
                 Registrarse
               </Link>
             </div>
-            <p style={{ marginTop: 20, fontSize: 12, color: "rgba(61,53,48,0.35)", fontFamily: "var(--font-sans)" }}>
-              hecho con amor en Argentina 🧉
+            {/* Íconos de redes sociales */}
+            <div style={{ display: "flex", justifyContent: "center", gap: 20, marginTop: 20, marginBottom: 8 }}>
+              <a
+                href="https://instagram.com/soyrenglon"
+                target="_blank"
+                rel="noopener noreferrer"
+                style={{ color: "#9C8B7E", display: "inline-flex", transition: "color 0.2s" }}
+                className="hover:text-[#3D3530]"
+              >
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                  strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+                  <rect x="2" y="2" width="20" height="20" rx="5" ry="5"/>
+                  <circle cx="12" cy="12" r="4"/>
+                  <circle cx="17.5" cy="6.5" r="0.5" fill="currentColor" stroke="none"/>
+                </svg>
+              </a>
+              <a
+                href="https://tiktok.com/@soyrenglon"
+                target="_blank"
+                rel="noopener noreferrer"
+                style={{ color: "#9C8B7E", display: "inline-flex", transition: "color 0.2s" }}
+                className="hover:text-[#3D3530]"
+              >
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor">
+                  <path d="M19.59 6.69a4.83 4.83 0 0 1-3.77-4.25V2h-3.45v13.67a2.89 2.89 0 0 1-2.88 2.5 2.89 2.89 0 0 1-2.89-2.89 2.89 2.89 0 0 1 2.89-2.89c.28 0 .54.04.79.1V9.01a6.32 6.32 0 0 0-.79-.05 6.34 6.34 0 0 0-6.34 6.34 6.34 6.34 0 0 0 6.34 6.34 6.34 6.34 0 0 0 6.33-6.34V8.69a8.18 8.18 0 0 0 4.78 1.52V6.75a4.85 4.85 0 0 1-1.01-.06z"/>
+                </svg>
+              </a>
+            </div>
+            <p style={{ fontSize: 12, color: "rgba(61,53,48,0.35)", textAlign: "center", fontFamily: "var(--font-sans)" }}>
+              cada renglón cuenta.
             </p>
           </div>
 
