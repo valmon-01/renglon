@@ -3,9 +3,10 @@
 import { useState, useEffect } from "react";
 import Link from "next/link";
 import { useParams } from "next/navigation";
-import { ArrowLeft, Heart } from "lucide-react";
+import { ArrowLeft, Heart, Share2 } from "lucide-react";
 import { supabase } from "@/lib/supabase";
 import TypewriterLoader from "@/app/components/TypewriterLoader";
+import ShareModal from "@/app/components/ShareModal";
 
 type Texto = {
   id: string;
@@ -15,6 +16,7 @@ type Texto = {
   created_at: string;
   consigna: string;
   username: string;
+  publicado: boolean;
 }
 
 function iniciales(nombre: string): string {
@@ -42,6 +44,7 @@ export default function TextoIndividual() {
   const [likeCount, setLikeCount] = useState(0);
   const [likedBy, setLikedBy] = useState<string[]>([]);
   const [sessionUserId, setSessionUserId] = useState<string | null>(null);
+  const [showShare, setShowShare] = useState(false);
 
   useEffect(() => {
     async function cargar() {
@@ -51,7 +54,7 @@ export default function TextoIndividual() {
       ] = await Promise.all([
         supabase
           .from("textos")
-          .select("id, user_id, contenido, titulo, created_at, consigna")
+          .select("id, user_id, contenido, titulo, created_at, consigna, publicado")
           .eq("id", id)
           .single(),
         supabase.auth.getSession(),
@@ -276,32 +279,61 @@ export default function TextoIndividual() {
         </div>
       </div>
 
-      {/* Likes — fuera del cuaderno */}
+      {/* Likes + Share — fuera del cuaderno */}
       <div className="flex flex-col items-center py-6 text-center">
-        <button
-          type="button"
-          onClick={toggleLike}
-          disabled={!sessionUserId}
-          aria-label={liked ? "Quitar me gusta" : "Me gusta"}
-          className={`flex flex-col items-center gap-2 transition-colors disabled:cursor-default ${
-            liked ? "text-borravino" : "text-tinta-suave hover:text-borravino"
-          }`}
-        >
-          <Heart
-            size={28}
-            strokeWidth={1.5}
-            fill={liked ? "currentColor" : "none"}
-          />
-          <span className="text-xs" style={{ fontFamily: "Inter, sans-serif" }}>
-            {likeCount}
-          </span>
-        </button>
+        <div className="flex items-center gap-8">
+          <button
+            type="button"
+            onClick={toggleLike}
+            disabled={!sessionUserId}
+            aria-label={liked ? "Quitar me gusta" : "Me gusta"}
+            className={`flex flex-col items-center gap-2 transition-colors disabled:cursor-default ${
+              liked ? "text-borravino" : "text-tinta-suave hover:text-borravino"
+            }`}
+          >
+            <Heart
+              size={28}
+              strokeWidth={1.5}
+              fill={liked ? "currentColor" : "none"}
+            />
+            <span className="text-xs" style={{ fontFamily: "Inter, sans-serif" }}>
+              {likeCount}
+            </span>
+          </button>
+
+          {texto.publicado && (
+            <button
+              type="button"
+              onClick={() => setShowShare(true)}
+              aria-label="Compartir como imagen"
+              className="flex flex-col items-center gap-2 text-tinta-suave transition-colors hover:text-borravino"
+            >
+              <Share2 size={28} strokeWidth={1.5} />
+              <span className="text-xs" style={{ fontFamily: "Inter, sans-serif" }}>
+                Compartir
+              </span>
+            </button>
+          )}
+        </div>
+
         {sessionUserId === texto.user_id && likedBy.length > 0 && (
           <p className="mt-3 text-xs text-tinta-suave">
             Les gustó a: {likedBy.join(", ")}
           </p>
         )}
       </div>
+
+      {texto.publicado && (
+        <ShareModal
+          open={showShare}
+          onClose={() => setShowShare(false)}
+          titulo={texto.titulo}
+          contenido={texto.contenido}
+          consigna={texto.consigna}
+          username={texto.username}
+          fecha={texto.created_at}
+        />
+      )}
 
     </div>
   );

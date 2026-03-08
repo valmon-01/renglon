@@ -2,7 +2,8 @@
 
 import { useState } from "react";
 import Link from "next/link";
-import { X, ChevronLeft, ChevronRight } from "lucide-react";
+import { X, ChevronLeft, ChevronRight, Share2 } from "lucide-react";
+import ShareModal from "./ShareModal";
 
 interface Texto {
   id: string;
@@ -31,6 +32,7 @@ function fechaDDMMYYYY(iso: string): string {
 
 export default function NotebookPages({ texts, username, userId, sessionUserId, onClose }: NotebookPagesProps) {
   const [page, setPage] = useState(0);
+  const [showShare, setShowShare] = useState(false);
   const total = texts.length;
   const text = texts[page];
 
@@ -45,6 +47,18 @@ export default function NotebookPages({ texts, username, userId, sessionUserId, 
         borderRadius: "4px 10px 10px 4px",
       }}
     >
+      {text.publicado && (
+        <ShareModal
+          open={showShare}
+          onClose={() => setShowShare(false)}
+          titulo={text.titulo}
+          contenido={text.contenido}
+          consigna={text.consigna}
+          username={username}
+          fecha={text.created_at}
+        />
+      )}
+
       {/* Lomo izquierdo */}
       <div
         style={{
@@ -120,24 +134,44 @@ export default function NotebookPages({ texts, username, userId, sessionUserId, 
             >
               @{username}
             </Link>
-            <button
-              type="button"
-              onClick={onClose}
-              style={{
-                display: "flex",
-                alignItems: "center",
-                gap: 4,
-                fontFamily: "var(--font-sans)",
-                fontSize: 12,
-                color: "#5C5147",
-                background: "none",
-                border: "none",
-                cursor: "pointer",
-                padding: 0,
-              }}
-            >
-              <X size={14} strokeWidth={1.5} />
-            </button>
+            <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
+              {text.publicado && (
+                <button
+                  type="button"
+                  onClick={() => setShowShare(true)}
+                  aria-label="Compartir como imagen"
+                  style={{
+                    display: "flex",
+                    alignItems: "center",
+                    background: "none",
+                    border: "none",
+                    cursor: "pointer",
+                    color: "#9C8B7E",
+                    padding: 0,
+                  }}
+                >
+                  <Share2 size={14} strokeWidth={1.5} />
+                </button>
+              )}
+              <button
+                type="button"
+                onClick={onClose}
+                style={{
+                  display: "flex",
+                  alignItems: "center",
+                  gap: 4,
+                  fontFamily: "var(--font-sans)",
+                  fontSize: 12,
+                  color: "#5C5147",
+                  background: "none",
+                  border: "none",
+                  cursor: "pointer",
+                  padding: 0,
+                }}
+              >
+                <X size={14} strokeWidth={1.5} />
+              </button>
+            </div>
           </div>
 
           {/* Fecha + consigna — height 40px */}
