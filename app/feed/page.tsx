@@ -2,12 +2,10 @@
 
 import { useState, useEffect } from "react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { EyeOff, Heart, Pencil } from "lucide-react";
 import { supabase } from "@/lib/supabase";
 import TypewriterLoader from "@/app/components/TypewriterLoader";
-
-const FILTROS = ["Recientes", "Populares"] as const;
-type Filtro = (typeof FILTROS)[number];
 
 interface Texto {
   id: string;
@@ -23,45 +21,22 @@ function getHoy(): string {
   return new Date().toISOString().slice(0, 10);
 }
 
-function formatFecha(): string {
-  return new Date()
-    .toLocaleDateString("es-AR", {
-      weekday: "long",
-      day: "numeric",
-      month: "long",
-      year: "numeric",
-    })
-    .toUpperCase();
+function tiempoRelativo(fecha: string): string {
+  const diff = Date.now() - new Date(fecha).getTime();
+  const h = Math.floor(diff / 3600000);
+  if (h < 1) return "hace menos de 1h";
+  if (h < 24) return `hace ${h}h`;
+  const d = Math.floor(h / 24);
+  return `hace ${d}d`;
 }
-
-function fechaRelativa(iso: string): string {
-  const diff = Date.now() - new Date(iso).getTime();
-  const mins = Math.floor(diff / 60000);
-  if (mins < 1) return "ahora";
-  if (mins < 60) return `hace ${mins} min`;
-  const horas = Math.floor(mins / 60);
-  if (horas < 24) return `hace ${horas} h`;
-  const dias = Math.floor(horas / 24);
-  return `hace ${dias} día${dias > 1 ? "s" : ""}`;
-}
-
-function iniciales(nombre: string): string {
-  return nombre
-    .split(" ")
-    .slice(0, 2)
-    .map((n) => n[0])
-    .join("")
-    .toUpperCase();
-}
-
 
 export default function Feed() {
   const hoy = getHoy();
+  const router = useRouter();
   const [completado, setCompletado] = useState(false);
   const [consigna, setConsigna] = useState<string | null>(null);
   const [textos, setTextos] = useState<Texto[]>([]);
   const [cargando, setCargando] = useState(true);
-  const [filtro, setFiltro] = useState<Filtro>("Recientes");
   const [likes, setLikes] = useState<Set<string>>(new Set());
   const [likesCounts, setLikesCounts] = useState<Record<string, number>>({});
 
@@ -95,17 +70,19 @@ export default function Feed() {
         (profilesData ?? []).map((p) => [p.id, p.username])
       );
 
-      const textosConUsername = textos.map((t) => ({ ...t, username: profileMap[t.user_id] ?? "Autor" }));
+      const textosConUsername = textos.map((t) => ({
+        ...t,
+        username: profileMap[t.user_id] ?? "Autor",
+      }));
       setTextos(textosConUsername);
 
-      // Likes count para Populares
       const textoIds = textos.map((t) => t.id);
       const { data: likesData } = await supabase
         .from("likes")
         .select("texto_id")
         .in("texto_id", textoIds);
       const counts: Record<string, number> = {};
-      for (const like of (likesData ?? [])) {
+      for (const like of likesData ?? []) {
         counts[like.texto_id] = (counts[like.texto_id] ?? 0) + 1;
       }
       setLikesCounts(counts);
@@ -121,21 +98,10 @@ export default function Feed() {
     });
   }
 
-  function textosFiltrados(): Texto[] {
-    if (filtro === "Populares") {
-      return [...textos].sort(
-        (a, b) => (likesCounts[b.id] ?? 0) - (likesCounts[a.id] ?? 0)
-      );
-    }
-    return textos;
-  }
-
-  const lista = textosFiltrados();
-
   if (cargando) return <TypewriterLoader />;
 
   return (
-    <div className="relative min-h-screen bg-papel">
+    <div className="relative min-h-screen" style={{ backgroundColor: "#F5F0E8" }}>
 
       {/* Textura de puntos */}
       <div
@@ -147,175 +113,187 @@ export default function Feed() {
         }}
       />
 
-      {/* Navbar */}
-      <nav className="w-full px-6 py-5">
-        <div className="mx-auto flex max-w-[720px] items-center justify-between">
-          <Link href="/home" className="font-display text-xl italic text-tinta">
-            renglón
-          </Link>
+      {/* Header sticky */}
+      <div style={{
+        position: "sticky",
+        top: 0,
+        zIndex: 10,
+        backgroundColor: "#F5F0EA",
+        borderBottom: "1px solid rgba(61,53,48,0.12)",
+        padding: "20px 20px 16px",
+        textAlign: "center",
+      }}>
+        <h1 style={{
+          fontFamily: "'Playfair Display', serif",
+          fontSize: 28,
+          fontStyle: "italic",
+          fontWeight: 400,
+          color: "#64313E",
+          margin: 0,
+          lineHeight: 1,
+        }}>renglón</h1>
+        <p style={{
+          fontSize: 10,
+          letterSpacing: "0.14em",
+          color: "#9C8B7E",
+          margin: "6px 0 0",
+          textAlign: "center",
+        }}>
+          {new Date().toLocaleDateString("es-AR", { day: "2-digit", month: "2-digit", year: "2-digit" })}
+        </p>
+        <p style={{
+          fontSize: 13,
+          fontStyle: "italic",
+          color: "#3D3530",
+          margin: "10px auto 0",
+          maxWidth: 280,
+          whiteSpace: "nowrap",
+          overflow: "hidden",
+          textOverflow: "ellipsis",
+        }}>
+          {consigna || ""}
+        </p>
+      </div>
+
+      <main style={{ maxWidth: 720, margin: "0 auto", padding: "0 20px 96px" }}>
+
+        {/* Label conteo */}
+        <p style={{ fontSize: 11, color: "#9C8B7E", marginTop: 20, marginBottom: 16 }}>
+          {textos.length} {textos.length === 1 ? "persona respondió" : "personas respondieron"} hoy
+        </p>
+
+        {/* Botón escribir si no completó */}
+        {!completado && (
           <Link
-            href="/perfil"
-            className="text-sm text-tinta-suave transition-colors hover:text-tinta"
+            href="/editor"
+            style={{
+              display: "inline-flex",
+              alignItems: "center",
+              gap: 6,
+              backgroundColor: "#64313E",
+              color: "#FDFAF5",
+              borderRadius: 6,
+              padding: "8px 16px",
+              fontSize: 12,
+              fontWeight: 500,
+              textDecoration: "none",
+              marginBottom: 16,
+            }}
           >
-            Mi perfil
+            <Pencil size={12} strokeWidth={1.5} />
+            Escribir mi versión
           </Link>
-        </div>
-      </nav>
-
-      <main className="mx-auto max-w-[720px] px-6 pb-24">
-
-        {/* Header */}
-        <div className="mb-8">
-          <p className="text-[11px] uppercase tracking-widest text-tinta-suave">
-            Feed del día · {formatFecha()}
-          </p>
-          <h1 className="mt-3 font-display text-2xl italic text-tinta">
-            {consigna ?? "—"}
-          </h1>
-
-          <div className="mt-6 flex items-center justify-between border-t border-borde pt-4">
-            <span className="text-sm text-tinta-suave">
-              {textos.length}{" "}
-              {textos.length === 1 ? "persona respondió" : "personas respondieron"} hoy
-            </span>
-
-            {completado ? (
-              <span className="flex items-center gap-1.5 rounded-full bg-papel-oscuro px-3 py-1.5 text-xs text-tinta-suave">
-                <span className="text-borravino">✓</span> Ya escribiste hoy
-              </span>
-            ) : (
-              <Link
-                href="/editor"
-                className="flex items-center gap-1.5 rounded-[6px] bg-borravino px-4 py-2 text-xs font-medium text-blanco-roto transition-opacity hover:opacity-90"
-              >
-                <Pencil size={12} strokeWidth={1.5} />
-                Escribir mi versión
-              </Link>
-            )}
-          </div>
-        </div>
-
-        {/* Filtros */}
-        <div className="mb-6 flex gap-2">
-          {FILTROS.map((f) => (
-            <button
-              key={f}
-              type="button"
-              onClick={() => setFiltro(f)}
-              className={`rounded-full px-4 py-1.5 text-sm transition-colors ${
-                filtro === f
-                  ? "bg-borravino text-blanco-roto"
-                  : "bg-papel-oscuro text-tinta-suave hover:text-tinta"
-              }`}
-            >
-              {f}
-            </button>
-          ))}
-        </div>
+        )}
 
         {/* Feed */}
         <div className="relative">
 
           {/* Cards */}
-          <div
-            className={`flex flex-col gap-4 ${
-              !completado ? "pointer-events-none select-none blur-sm" : ""
-            }`}
-          >
-            {lista.length === 0 ? (
-              <div className="flex flex-col items-center gap-4 py-20 text-center">
-                <p className="font-display text-xl italic text-tinta">
+          <div style={{ filter: !completado ? "blur(4px)" : undefined, pointerEvents: !completado ? "none" : undefined, userSelect: !completado ? "none" : undefined }}>
+            {textos.length === 0 ? (
+              <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 16, padding: "80px 16px", textAlign: "center" }}>
+                <p style={{ fontFamily: "'Playfair Display', serif", fontSize: 20, fontStyle: "italic", color: "#3D3530" }}>
                   Todavía nadie escribió hoy. ¡Sé el primero!
                 </p>
                 <Link
                   href="/editor"
-                  className="rounded-[6px] bg-borravino px-6 py-2.5 text-sm font-medium text-blanco-roto transition-opacity hover:opacity-90"
+                  style={{
+                    backgroundColor: "#64313E",
+                    color: "#FDFAF5",
+                    borderRadius: 6,
+                    padding: "10px 24px",
+                    fontSize: 14,
+                    fontWeight: 500,
+                    textDecoration: "none",
+                  }}
                 >
                   Ir a escribir
                 </Link>
               </div>
             ) : (
-              lista.map((texto) => {
-                const username = texto.username;
+              textos.map((texto) => {
                 const liked = likes.has(texto.id);
-
                 return (
-                  <article
+                  <div
                     key={texto.id}
-                    className="rounded-[8px] border border-borde bg-papel-oscuro p-6"
+                    style={{
+                      backgroundColor: "#FFFFFF",
+                      borderRadius: "0 12px 12px 0",
+                      borderLeft: "3px solid #64313E",
+                      boxShadow: "0 2px 12px rgba(0,0,0,0.06)",
+                      padding: 24,
+                      marginBottom: 12,
+                      cursor: "pointer",
+                    }}
+                    onClick={() => router.push(`/texto/${texto.id}`)}
                   >
-                    {/* Autor + fecha */}
-                    <div className="mb-4 flex items-center justify-between">
-                      <div className="flex items-center gap-3">
-                        <div
-                          className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full text-xs font-medium"
-                          style={{ backgroundColor: "#C1DBE8", color: "#64313E" }}
-                        >
-                          {iniciales(username)}
-                        </div>
-                        <Link
-                          href={`/perfil-publico?id=${texto.user_id}`}
-                          className="text-sm font-medium text-tinta transition-colors hover:text-borravino"
-                          onClick={(e) => e.stopPropagation()}
-                        >
-                          {username}
-                        </Link>
+                    {/* Fila superior */}
+                    <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+                      <div style={{
+                        width: 36,
+                        height: 36,
+                        borderRadius: "50%",
+                        backgroundColor: "#64313E",
+                        color: "white",
+                        display: "flex",
+                        alignItems: "center",
+                        justifyContent: "center",
+                        fontSize: 13,
+                        fontWeight: 500,
+                        flexShrink: 0,
+                      }}>
+                        {texto.username?.slice(0, 2).toUpperCase()}
                       </div>
-                      <span className="text-xs text-tinta-suave">
-                        {fechaRelativa(texto.created_at)}
+                      <Link
+                        href={`/perfil-publico?id=${texto.user_id}`}
+                        style={{ fontSize: 13, color: "#9C8B7E", textDecoration: "none" }}
+                        onClick={(e) => e.stopPropagation()}
+                      >
+                        @{texto.username}
+                      </Link>
+                      <span style={{ fontSize: 11, color: "#C4B8B0", marginLeft: "auto" }}>
+                        {tiempoRelativo(texto.created_at)}
                       </span>
                     </div>
 
                     {/* Título */}
-                    {texto.titulo && (
-                      <p className="mb-2 font-display italic text-tinta">
-                        {texto.titulo}
-                      </p>
-                    )}
+                    <p style={{
+                      fontFamily: "'Playfair Display', serif",
+                      fontSize: 18,
+                      fontStyle: "italic",
+                      fontWeight: 400,
+                      color: "#3D3530",
+                      margin: "14px 0 0",
+                    }}>{texto.titulo || "Sin título"}</p>
 
-                    {/* Extracto */}
-                    <p className="line-clamp-4 text-sm leading-relaxed text-tinta">
-                      {texto.contenido}
-                    </p>
+                    {/* Preview del cuerpo */}
+                    <p style={{
+                      fontSize: 13,
+                      color: "#6B5E57",
+                      lineHeight: 1.7,
+                      margin: "10px 0 0",
+                      display: "-webkit-box",
+                      WebkitLineClamp: 3,
+                      WebkitBoxOrient: "vertical",
+                      overflow: "hidden",
+                    } as React.CSSProperties}>{texto.contenido}</p>
 
-                    {/* Tags */}
-                    {texto.tags && texto.tags.length > 0 && (
-                      <div className="mt-3 flex flex-wrap gap-1.5">
-                        {texto.tags.map((tag) => (
-                          <span
-                            key={tag}
-                            className="rounded-[4px] bg-cielo px-2 py-0.5 text-xs text-borravino"
-                          >
-                            {tag}
-                          </span>
-                        ))}
-                      </div>
-                    )}
-
-                    {/* Acciones */}
-                    <div className="mt-4 flex items-center justify-between">
-                      <Link
-                        href={`/texto/${texto.id}`}
-                        className="text-xs text-borravino underline underline-offset-2 transition-opacity hover:opacity-70"
-                      >
-                        Leer completo
-                      </Link>
-                      <button
-                        type="button"
-                        onClick={() => toggleLike(texto.id)}
-                        aria-label={liked ? "Quitar me gusta" : "Me gusta"}
-                        className={`transition-colors ${
-                          liked ? "text-borravino" : "text-tinta-suave hover:text-borravino"
-                        }`}
-                      >
-                        <Heart
-                          size={16}
-                          strokeWidth={1.5}
-                          fill={liked ? "currentColor" : "none"}
-                        />
-                      </button>
+                    {/* Likes */}
+                    <div
+                      style={{ display: "flex", alignItems: "center", gap: 6, marginTop: 16 }}
+                      onClick={(e) => { e.stopPropagation(); toggleLike(texto.id); }}
+                    >
+                      <Heart
+                        size={15}
+                        strokeWidth={1.5}
+                        fill={liked ? "#64313E" : "none"}
+                        color={liked ? "#64313E" : "#9C8B7E"}
+                      />
+                      <span style={{ fontSize: 13, color: "#9C8B7E" }}>
+                        {(likesCounts[texto.id] ?? 0) + (liked ? 1 : 0)}
+                      </span>
                     </div>
-                  </article>
+                  </div>
                 );
               })
             )}
@@ -323,23 +301,43 @@ export default function Feed() {
 
           {/* Overlay bloqueado */}
           {!completado && (
-            <div className="absolute inset-0 flex items-center justify-center px-4">
-              <div className="w-full max-w-sm rounded-[8px] border border-borde bg-blanco-roto px-8 py-10 text-center">
-                <EyeOff
-                  size={28}
-                  strokeWidth={1.5}
-                  className="mx-auto mb-4 text-tinta-suave"
-                />
-                <p className="font-display text-lg italic text-tinta">
+            <div style={{
+              position: "absolute",
+              inset: 0,
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              padding: "0 16px",
+            }}>
+              <div style={{
+                width: "100%",
+                maxWidth: 360,
+                backgroundColor: "#FDFAF5",
+                border: "1px solid #D6CFBF",
+                borderRadius: 8,
+                padding: "40px 32px",
+                textAlign: "center",
+              }}>
+                <EyeOff size={28} strokeWidth={1.5} style={{ margin: "0 auto 16px", color: "#5C5147", display: "block" }} />
+                <p style={{ fontFamily: "'Playfair Display', serif", fontSize: 18, fontStyle: "italic", color: "#1C1917", margin: 0 }}>
                   Escribí tu versión para leer la de otros
                 </p>
-                <p className="mt-2 text-sm leading-relaxed text-tinta-suave">
-                  En <em>renglón</em>, primero escribís vos. Así la experiencia
-                  es más honesta para todos.
+                <p style={{ fontSize: 14, color: "#5C5147", lineHeight: 1.6, margin: "8px 0 0" }}>
+                  En <em>renglón</em>, primero escribís vos. Así la experiencia es más honesta para todos.
                 </p>
                 <Link
                   href="/editor"
-                  className="mt-6 inline-block rounded-[6px] bg-borravino px-6 py-2.5 text-sm font-medium text-blanco-roto transition-opacity hover:opacity-90"
+                  style={{
+                    display: "inline-block",
+                    marginTop: 24,
+                    backgroundColor: "#64313E",
+                    color: "#FDFAF5",
+                    borderRadius: 6,
+                    padding: "10px 24px",
+                    fontSize: 14,
+                    fontWeight: 500,
+                    textDecoration: "none",
+                  }}
                 >
                   Ir a escribir
                 </Link>
