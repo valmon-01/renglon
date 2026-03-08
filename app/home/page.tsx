@@ -2,20 +2,12 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
-import { UserCircle, Flame } from "lucide-react";
+import { Flame } from "lucide-react";
 import { supabase } from "@/lib/supabase";
 import type { Session } from "@supabase/supabase-js";
 import TypewriterLoader from "@/app/components/TypewriterLoader";
 import OnboardingModal from "@/app/components/OnboardingModal";
 
-function formatFecha(): string {
-  return new Date().toLocaleDateString("es-AR", {
-    weekday: "long",
-    day: "numeric",
-    month: "long",
-    year: "numeric",
-  }).toUpperCase();
-}
 
 export default function Home() {
   const [session, setSession] = useState<Session | null>(null);
@@ -68,23 +60,38 @@ export default function Home() {
         }}
       />
 
-      {/* Navbar */}
-      <nav className="w-full px-6 py-5">
-        <div className="mx-auto flex max-w-[600px] items-center justify-between">
-          <span className="font-display text-xl italic text-tinta">renglón</span>
-          <Link href="/perfil" aria-label="Perfil" className="text-tinta-suave transition-colors hover:text-tinta">
-            <UserCircle size={22} strokeWidth={1.5} />
-          </Link>
-        </div>
-      </nav>
+      {/* Header sticky */}
+      <div style={{
+        position: "sticky",
+        top: 0,
+        zIndex: 10,
+        backgroundColor: "#F5F0EA",
+        borderBottom: "1px solid rgba(61,53,48,0.12)",
+        padding: "20px 20px 16px",
+        textAlign: "center",
+      }}>
+        <h1 style={{
+          fontFamily: "'Playfair Display', serif",
+          fontSize: 28,
+          fontStyle: "italic",
+          fontWeight: 400,
+          color: "#64313E",
+          margin: 0,
+          lineHeight: 1,
+        }}>renglón</h1>
+        <p style={{
+          fontSize: 10,
+          letterSpacing: "0.14em",
+          color: "#9C8B7E",
+          margin: "6px 0 0",
+          textAlign: "center",
+        }}>
+          {new Date().toLocaleDateString("es-AR", { day: "2-digit", month: "2-digit", year: "2-digit" })}
+        </p>
+      </div>
 
       {/* Contenido principal */}
       <main className="mx-auto flex max-w-[600px] flex-col items-center px-6 pb-24 pt-10 text-center">
-
-        {/* Fecha */}
-        <p className="text-[13px] uppercase tracking-wide text-tinta-suave" style={{ fontFamily: "Inter, sans-serif" }}>
-          {formatFecha()}
-        </p>
 
         {/* Label consigna */}
         <p className="mt-8 text-[11px] uppercase tracking-widest text-tinta-suave">

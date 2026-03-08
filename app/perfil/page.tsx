@@ -3,7 +3,7 @@
 import { useState, useEffect } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { LogOut, PenLine } from "lucide-react";
+import { PenLine } from "lucide-react";
 import { AnimatePresence, motion } from "framer-motion";
 import { supabase } from "@/lib/supabase";
 import TypewriterLoader from "@/app/components/TypewriterLoader";
@@ -84,22 +84,35 @@ export default function Perfil() {
         }}
       />
 
-      {/* Navbar */}
-      <nav className="w-full px-6 py-5">
-        <div className="mx-auto flex max-w-[720px] items-center justify-between">
-          <Link href="/home" className="font-display text-xl italic text-tinta">
-            renglón
-          </Link>
-          <button
-            type="button"
-            onClick={cerrarSesion}
-            aria-label="Cerrar sesión"
-            className="text-tinta-suave transition-colors hover:text-tinta"
-          >
-            <LogOut size={18} strokeWidth={1.5} />
-          </button>
-        </div>
-      </nav>
+      {/* Header sticky */}
+      <div style={{
+        position: "sticky",
+        top: 0,
+        zIndex: 10,
+        backgroundColor: "#F5F0EA",
+        borderBottom: "1px solid rgba(61,53,48,0.12)",
+        padding: "20px 20px 16px",
+        textAlign: "center",
+      }}>
+        <h1 style={{
+          fontFamily: "'Playfair Display', serif",
+          fontSize: 28,
+          fontStyle: "italic",
+          fontWeight: 400,
+          color: "#64313E",
+          margin: 0,
+          lineHeight: 1,
+        }}>renglón</h1>
+        <p style={{
+          fontSize: 10,
+          letterSpacing: "0.14em",
+          color: "#9C8B7E",
+          margin: "6px 0 0",
+          textAlign: "center",
+        }}>
+          {new Date().toLocaleDateString("es-AR", { day: "2-digit", month: "2-digit", year: "2-digit" })}
+        </p>
+      </div>
 
       {/* Contenedor central */}
       <main
