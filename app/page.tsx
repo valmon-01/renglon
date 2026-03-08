@@ -1,28 +1,69 @@
+"use client";
+
+import { useState, useEffect } from "react";
 import Link from "next/link";
-import { createClient } from "@supabase/supabase-js";
+import { motion } from "framer-motion";
 
 const FALLBACK = "Escribí sobre un objeto que alguien te dejó y que no pediste.";
 
-async function getConsignaHoy(): Promise<string> {
-  const supabase = createClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
-  );
-  const hoy = new Date().toISOString().slice(0, 10);
-  const { data } = await supabase
-    .from("consignas")
-    .select("texto")
-    .eq("fecha", hoy)
-    .eq("aprobada", true)
-    .single();
-  return data?.texto ?? FALLBACK;
-}
+export default function Landing() {
+  const [consigna, setConsigna] = useState<string>(FALLBACK);
+  const [displayLinea1, setDisplayLinea1] = useState("");
+  const [displayLinea2, setDisplayLinea2] = useState("");
+  const [fase, setFase] = useState<1 | 2 | 3>(1);
 
-export default async function Landing() {
-  const consigna = await getConsignaHoy();
+  const textoLinea1 = "El hábito de escribir,";
+  const textoLinea2 = "un renglón a la vez.";
+
+  // Fetch consigna
+  useEffect(() => {
+    fetch("/api/asignar-consigna-diaria")
+      .then((r) => r.json())
+      .then((data) => {
+        if (data.consigna?.texto) setConsigna(data.consigna.texto);
+      })
+      .catch(() => {});
+  }, []);
+
+  // Typewriter
+  useEffect(() => {
+    if (fase === 1) {
+      if (displayLinea1.length < textoLinea1.length) {
+        const t = setTimeout(() => {
+          setDisplayLinea1(textoLinea1.slice(0, displayLinea1.length + 1));
+        }, 55);
+        return () => clearTimeout(t);
+      } else {
+        const t = setTimeout(() => setFase(2), 500);
+        return () => clearTimeout(t);
+      }
+    }
+    if (fase === 2) {
+      if (displayLinea2.length < textoLinea2.length) {
+        const t = setTimeout(() => {
+          setDisplayLinea2(textoLinea2.slice(0, displayLinea2.length + 1));
+        }, 55);
+        return () => clearTimeout(t);
+      } else {
+        const t = setTimeout(() => setFase(3), 200);
+        return () => clearTimeout(t);
+      }
+    }
+  }, [fase, displayLinea1, displayLinea2]);
 
   return (
     <div className="relative min-h-screen bg-papel">
+
+      <style>{`
+        @keyframes blink {
+          0%, 100% { opacity: 1; }
+          50% { opacity: 0; }
+        }
+        .cursor-blink {
+          animation: blink 0.8s step-end infinite;
+          color: #64313E;
+        }
+      `}</style>
 
       {/* Textura de puntos */}
       <div
@@ -59,18 +100,24 @@ export default async function Landing() {
       {/* Hero */}
       <main className="relative mx-auto max-w-[680px] px-6 pb-24 pt-12">
 
-        {/* Título principal */}
+        {/* Título principal con typewriter */}
         <h1
           className="mb-6 text-center font-display italic leading-tight text-tinta"
           style={{ fontSize: "clamp(36px, 6vw, 56px)" }}
         >
-          El hábito de escribir,
+          <span>
+            {displayLinea1}
+            {fase === 1 && <span className="cursor-blink">|</span>}
+          </span>
           <br />
-          <span style={{ color: "#64313E" }}>un renglón a la vez.</span>
+          <span style={{ color: "#64313E" }}>
+            {displayLinea2}
+            {fase === 2 && <span className="cursor-blink">|</span>}
+          </span>
         </h1>
 
-        {/* 3. Subtítulo */}
-        <p
+        {/* Subtítulo con fade in */}
+        <motion.p
           className="mx-auto mb-12 text-center font-display italic"
           style={{
             fontSize: "17px",
@@ -78,12 +125,15 @@ export default async function Landing() {
             maxWidth: "520px",
             color: "#5C5147",
           }}
+          initial={{ opacity: 0, y: 8 }}
+          animate={{ opacity: fase >= 3 ? 1 : 0, y: fase >= 3 ? 0 : 8 }}
+          transition={{ duration: 0.7 }}
         >
           Cada día una consigna nueva te invita a recordar, imaginar o crear. Escribís lo tuyo, lo compartís si querés, y después leés lo que crearon los demás.
-        </p>
+        </motion.p>
 
-        {/* 4. Preview de consigna — cuaderno */}
-        <div
+        {/* Preview de consigna — cuaderno con slide up */}
+        <motion.div
           className="relative mx-auto mb-12 overflow-hidden"
           style={{
             maxWidth: "460px",
@@ -94,6 +144,9 @@ export default async function Landing() {
               "repeating-linear-gradient(to bottom, transparent, transparent 39px, #D6CFBF 39px, #D6CFBF 40px)",
             backgroundPositionY: "24px",
           }}
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: fase >= 3 ? 1 : 0, y: fase >= 3 ? 0 : 20 }}
+          transition={{ duration: 0.6, delay: 0.3 }}
         >
           {/* Línea de margen */}
           <div
@@ -108,7 +161,6 @@ export default async function Landing() {
               paddingBottom: "24px",
             }}
           >
-            {/* Label ocupa exactamente un renglón */}
             <p
               className="text-center uppercase tracking-widest text-tinta-suave"
               style={{
@@ -119,7 +171,6 @@ export default async function Landing() {
             >
               Consigna de hoy
             </p>
-            {/* Consigna alineada a los renglones */}
             <p
               className="text-center font-display italic text-tinta"
               style={{ fontSize: "20px", lineHeight: "40px" }}
@@ -127,25 +178,31 @@ export default async function Landing() {
               {consigna}
             </p>
           </div>
-        </div>
+        </motion.div>
 
-        {/* 5. CTA único */}
-        <div className="flex justify-center">
-          <Link
-            href="/registro"
-            className="rounded-[6px] bg-borravino text-sm font-medium text-blanco-roto transition-opacity hover:opacity-90"
-            style={{ padding: "14px 40px" }}
-          >
-            Empezar a escribir
-          </Link>
-        </div>
+        {/* CTA con fade in */}
+        <motion.div
+          className="flex justify-center"
+          initial={{ opacity: 0 }}
+          animate={{ opacity: fase >= 3 ? 1 : 0 }}
+          transition={{ duration: 0.5, delay: 0.6 }}
+        >
+          <motion.div whileHover={{ scale: 1.02 }}>
+            <Link
+              href="/registro"
+              className="rounded-[6px] bg-borravino text-sm font-medium text-blanco-roto transition-opacity hover:opacity-90"
+              style={{ padding: "14px 40px", display: "inline-block" }}
+            >
+              Empezar a escribir
+            </Link>
+          </motion.div>
+        </motion.div>
 
       </main>
 
       {/* ¿Cómo funciona? */}
       <section className="mx-auto max-w-[680px] px-6" style={{ paddingBottom: "48px" }}>
 
-        {/* Título de sección */}
         <div className="mb-12 flex flex-col items-center gap-4">
           <h2
             className="text-center font-display text-tinta"
@@ -156,7 +213,7 @@ export default async function Landing() {
           <div style={{ width: "60px", height: "1px", backgroundColor: "#C1DBE8" }} />
         </div>
 
-        {/* Pasos */}
+        {/* Pasos con scroll reveal */}
         <div className="flex flex-col">
           {[
             {
@@ -174,8 +231,15 @@ export default async function Landing() {
               title: "Lo compartís y leés",
               desc: "Publicás si querés. Y entonces se abre el feed: lo que escribieron los demás sobre la misma consigna, hoy.",
             },
-          ].map(({ num, title, desc }, i, arr) => (
-            <div key={num} className="flex gap-6">
+          ].map(({ num, title, desc }, index, arr) => (
+            <motion.div
+              key={num}
+              className="flex gap-6"
+              initial={{ opacity: 0, y: 16 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
+              transition={{ duration: 0.5, delay: index * 0.15 }}
+            >
               {/* Línea conectora + número */}
               <div className="flex flex-col items-center">
                 <p
@@ -184,7 +248,7 @@ export default async function Landing() {
                 >
                   {num}
                 </p>
-                {i < arr.length - 1 && (
+                {index < arr.length - 1 && (
                   <div
                     className="mt-3 flex-1"
                     style={{ width: "1px", backgroundColor: "#D6CFBF", minHeight: "40px" }}
@@ -193,7 +257,7 @@ export default async function Landing() {
               </div>
 
               {/* Contenido */}
-              <div className={i < arr.length - 1 ? "pb-10" : ""}>
+              <div className={index < arr.length - 1 ? "pb-10" : ""}>
                 <p
                   className="font-medium text-tinta"
                   style={{ fontSize: "16px", fontFamily: "Inter, sans-serif" }}
@@ -207,7 +271,7 @@ export default async function Landing() {
                   {desc}
                 </p>
               </div>
-            </div>
+            </motion.div>
           ))}
         </div>
       </section>
@@ -242,7 +306,6 @@ export default async function Landing() {
       <footer style={{ borderTop: "1px solid rgba(61,53,48,0.08)", padding: "40px 24px 48px" }}>
         <div style={{ maxWidth: 480, margin: "0 auto", textAlign: "center" }}>
 
-          {/* Logo + tagline */}
           <p style={{ fontFamily: "var(--font-display)", fontStyle: "italic", fontSize: 20, color: "#3D3530" }}>
             renglón
           </p>
@@ -250,7 +313,6 @@ export default async function Landing() {
             El hábito de escribir, un renglón a la vez.
           </p>
 
-          {/* Links + crédito */}
           <div style={{ marginTop: 32 }}>
             <div style={{ display: "flex", justifyContent: "center", gap: 24 }}>
               <Link
@@ -268,7 +330,6 @@ export default async function Landing() {
                 Registrarse
               </Link>
             </div>
-            {/* Íconos de redes sociales */}
             <div style={{ display: "flex", justifyContent: "center", gap: 20, marginTop: 20, marginBottom: 8 }}>
               <a
                 href="https://instagram.com/soyrenglon"
