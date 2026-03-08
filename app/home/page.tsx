@@ -67,7 +67,7 @@ export default function Home() {
         zIndex: 10,
         backgroundColor: "#F5F0EA",
         borderBottom: "1px solid rgba(61,53,48,0.12)",
-        padding: "20px 20px 16px",
+        padding: "16px 20px 14px",
         textAlign: "center",
       }}>
         <h1 style={{
