@@ -19,8 +19,8 @@ function formatFecha(iso: string): string {
 // ~48 chars per line at 1080px card width (content area ~870px, font 39px)
 const CHARS_PER_LINE = 48;
 const LINE_HEIGHT_PX = 84;
-// padding_top(96) + header(120) + titulo(100) + gap(60) + gap(60) + footer(120) + padding_bottom(72)
-const FIXED_HEIGHT = 628;
+// padding_top(54) + header(120) + titulo(100) + gap(60) + gap(60) + footer(200) + padding_bottom(84)
+const FIXED_HEIGHT = 678;
 
 // All inline styles — required for html2canvas compatibility
 const ShareCard = React.forwardRef<HTMLDivElement, ShareCardProps>(
@@ -82,9 +82,9 @@ const ShareCard = React.forwardRef<HTMLDivElement, ShareCardProps>(
             flex: 1,
             display: "flex",
             flexDirection: "column",
-            paddingTop: 96,
+            paddingTop: 54,
             paddingRight: 84,
-            paddingBottom: 72,
+            paddingBottom: 84,
             paddingLeft: 72,
             background:
               "linear-gradient(170deg, #FFFFFF 0%, #FDFAF5 50%, #F5F0E8 100%)",
@@ -164,6 +164,7 @@ const ShareCard = React.forwardRef<HTMLDivElement, ShareCardProps>(
           <div
             style={{
               flex: 1,
+              minHeight: 0,
               position: "relative",
             }}
           >
@@ -182,9 +183,10 @@ const ShareCard = React.forwardRef<HTMLDivElement, ShareCardProps>(
             </p>
           </div>
 
-          {/* Footer: consigna + @username */}
+          {/* Footer: consigna + @username — flexShrink:0 para que nunca se comprima */}
           <div
             style={{
+              flexShrink: 0,
               borderTop: "2px solid rgba(28,25,23,0.08)",
               paddingTop: 24,
               display: "flex",
