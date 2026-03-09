@@ -30,6 +30,7 @@ interface Consigna {
   borrador: boolean;
   asignada_automaticamente: boolean;
   created_at: string;
+  texto_motivacional?: string | null;
 }
 
 function hoyISO(): string {
@@ -61,6 +62,12 @@ export default function Admin() {
   const [programadas, setProgramadas] = useState<Consigna[]>([]);
   const [banco, setBanco] = useState<Consigna[]>([]);
   const [borradores, setBorradores] = useState<Consigna[]>([]);
+
+  // Estado para texto motivacional por consigna
+  const [motivacionalMap, setMotivacionalMap] = useState<Record<string, string>>({});
+  const [motivacionalGenerando, setMotivacionalGenerando] = useState<Record<string, boolean>>({});
+  const [motivacionalGuardando, setMotivacionalGuardando] = useState<Record<string, boolean>>({});
+  const [motivacionalGuardado, setMotivacionalGuardado] = useState<Record<string, boolean>>({});
 
   const [agregarAlBancoIA, setAgregarAlBancoIA] = useState(false);
   const [agregarAlBancoPropias, setAgregarAlBancoPropias] = useState(false);
@@ -118,6 +125,49 @@ export default function Admin() {
     if (dataProgramadas) setProgramadas(dataProgramadas);
     if (dataBanco) setBanco(dataBanco);
     if (dataBorradores) setBorradores(dataBorradores);
+
+    // Inicializar mapa de motivacional con valores existentes
+    const todas = [...(dataProgramadas ?? []), ...(dataBanco ?? []), ...(dataBorradores ?? [])];
+    const map: Record<string, string> = {};
+    todas.forEach((c) => { map[c.id] = c.texto_motivacional ?? ''; });
+    setMotivacionalMap(map);
+  }
+
+  async function handleGenerarMotivacional(consignaId: string, textoConsigna: string) {
+    setMotivacionalGenerando((prev) => ({ ...prev, [consignaId]: true }));
+    setMotivacionalGuardado((prev) => ({ ...prev, [consignaId]: false }));
+    try {
+      const res = await fetch('/api/generar-motivacional', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ consigna: textoConsigna }),
+      });
+      const data = await res.json();
+      if (data.texto) {
+        setMotivacionalMap((prev) => ({ ...prev, [consignaId]: data.texto }));
+      }
+    } catch (e) {
+      console.error(e);
+    } finally {
+      setMotivacionalGenerando((prev) => ({ ...prev, [consignaId]: false }));
+    }
+  }
+
+  async function handleGuardarMotivacional(consignaId: string) {
+    setMotivacionalGuardando((prev) => ({ ...prev, [consignaId]: true }));
+    setMotivacionalGuardado((prev) => ({ ...prev, [consignaId]: false }));
+    try {
+      await supabase
+        .from('consignas')
+        .update({ texto_motivacional: motivacionalMap[consignaId] ?? '' })
+        .eq('id', consignaId);
+      setMotivacionalGuardado((prev) => ({ ...prev, [consignaId]: true }));
+      setTimeout(() => setMotivacionalGuardado((prev) => ({ ...prev, [consignaId]: false })), 2000);
+    } catch (e) {
+      console.error(e);
+    } finally {
+      setMotivacionalGuardando((prev) => ({ ...prev, [consignaId]: false }));
+    }
   }
 
   async function handleGenerar() {
@@ -406,6 +456,38 @@ export default function Admin() {
           >
             Eliminar
           </button>
+        </div>
+
+        {/* Texto motivacional */}
+        <div style={{ marginTop: 14, paddingTop: 14, borderTop: "1px solid rgba(61,53,48,0.08)" }}>
+          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 8 }}>
+            <span style={{ fontSize: 11, letterSpacing: "0.1em", color: "#9C8B7E" }}>TEXTO MOTIVACIONAL</span>
+            <button
+              type="button"
+              onClick={() => handleGenerarMotivacional(consigna.id, consigna.texto)}
+              disabled={motivacionalGenerando[consigna.id]}
+              style={{ fontSize: 11, color: "#64313E", background: "none", border: "none", cursor: "pointer", opacity: motivacionalGenerando[consigna.id] ? 0.5 : 1 }}
+            >
+              {motivacionalGenerando[consigna.id] ? "Generando…" : "✨ Generar con IA"}
+            </button>
+          </div>
+          <textarea
+            rows={3}
+            value={motivacionalMap[consigna.id] ?? ''}
+            onChange={(e) => setMotivacionalMap((prev) => ({ ...prev, [consigna.id]: e.target.value }))}
+            placeholder="Texto motivacional que acompaña la consigna en el mail…"
+            style={{ ...inputStyle, resize: "vertical", fontSize: 13, lineHeight: 1.6 }}
+          />
+          <div style={{ display: "flex", justifyContent: "flex-end", marginTop: 6 }}>
+            <button
+              type="button"
+              onClick={() => handleGuardarMotivacional(consigna.id)}
+              disabled={motivacionalGuardando[consigna.id]}
+              style={{ fontSize: 12, color: "white", backgroundColor: "#64313E", border: "none", borderRadius: 6, padding: "5px 14px", cursor: "pointer", opacity: motivacionalGuardando[consigna.id] ? 0.5 : 1 }}
+            >
+              {motivacionalGuardado[consigna.id] ? "✓ Guardado" : motivacionalGuardando[consigna.id] ? "Guardando…" : "Guardar"}
+            </button>
+          </div>
         </div>
 
         {/* Inline date picker para programar */}

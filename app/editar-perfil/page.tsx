@@ -23,6 +23,7 @@ export default function EditarPerfil() {
   const [user, setUser] = useState<User | null>(null);
   const [nombre, setNombre] = useState("");
   const [bio, setBio] = useState("");
+  const [emailSuscrito, setEmailSuscrito] = useState(true);
   const [guardando, setGuardando] = useState(false);
   const [guardado, setGuardado] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -44,11 +45,12 @@ export default function EditarPerfil() {
 
       const { data: prof } = await supabase
         .from("profiles")
-        .select("bio")
+        .select("bio, email_suscrito")
         .eq("id", user.id)
         .single();
 
       setBio(prof?.bio ?? "");
+      setEmailSuscrito(prof?.email_suscrito ?? true);
       setCargando(false);
     }
 
@@ -68,6 +70,7 @@ export default function EditarPerfil() {
         id: user.id,
         username: nombre.trim(),
         bio: bio.trim() || null,
+        email_suscrito: emailSuscrito,
       }),
     ]);
 
@@ -178,6 +181,27 @@ export default function EditarPerfil() {
             <p className="mt-1 text-xs text-tinta-suave/50">
               No se puede cambiar
             </p>
+          </div>
+
+          {/* Suscripción al mail diario */}
+          <div className="flex items-center justify-between gap-4">
+            <div>
+              <p className="text-sm text-tinta">Recibir la consigna por mail cada día</p>
+              <p className="mt-0.5 text-xs text-tinta-suave/60">Te llega todas las mañanas con el texto del día.</p>
+            </div>
+            <button
+              type="button"
+              onClick={() => setEmailSuscrito(!emailSuscrito)}
+              className="relative inline-flex h-6 w-11 shrink-0 cursor-pointer rounded-full transition-colors duration-200"
+              style={{ backgroundColor: emailSuscrito ? "#64313E" : "#D6CFBF" }}
+              aria-checked={emailSuscrito}
+              role="switch"
+            >
+              <span
+                className="pointer-events-none inline-block h-5 w-5 translate-x-0.5 rounded-full bg-white shadow transition-transform duration-200"
+                style={{ transform: emailSuscrito ? "translateX(20px)" : "translateX(2px)", marginTop: "2px" }}
+              />
+            </button>
           </div>
 
           {/* Error */}
