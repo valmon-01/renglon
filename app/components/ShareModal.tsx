@@ -22,8 +22,6 @@ function slugify(text: string): string {
 }
 
 const CARD_WIDTH = 1080;
-const PREVIEW_WIDTH = 320;
-const SCALE = PREVIEW_WIDTH / CARD_WIDTH;
 
 export default function ShareModal({
   open,
@@ -38,6 +36,13 @@ export default function ShareModal({
   const [cardHeight, setCardHeight] = useState(1350);
   const [generating, setGenerating] = useState(false);
   const [canShare, setCanShare] = useState(false);
+
+  // Scale so preview fits the screen: min(window.innerWidth * 0.85, 380) / 1080
+  const previewDisplayWidth =
+    typeof window !== "undefined"
+      ? Math.min(window.innerWidth * 0.85, 380)
+      : 320;
+  const scale = previewDisplayWidth / CARD_WIDTH;
 
   useEffect(() => {
     if (!open) return;
@@ -110,10 +115,7 @@ export default function ShareModal({
     }
   }
 
-  const previewContainerHeight = Math.min(
-    Math.round(cardHeight * SCALE),
-    420
-  );
+  const previewContainerHeight = Math.round(cardHeight * scale);
 
   return (
     <>
@@ -215,7 +217,7 @@ export default function ShareModal({
               {/* Preview escalada */}
               <div
                 style={{
-                  width: PREVIEW_WIDTH,
+                  width: previewDisplayWidth,
                   height: previewContainerHeight,
                   overflow: "hidden",
                   borderRadius: 8,
@@ -227,7 +229,7 @@ export default function ShareModal({
                 <div
                   style={{
                     transformOrigin: "top left",
-                    transform: `scale(${SCALE})`,
+                    transform: `scale(${scale})`,
                     width: CARD_WIDTH,
                     position: "absolute",
                     top: 0,
