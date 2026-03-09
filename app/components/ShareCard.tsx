@@ -113,10 +113,10 @@ const ShareCard = React.forwardRef<HTMLDivElement, ShareCardProps>(
             </span>
             <span
               style={{
-                fontFamily: "Inter, sans-serif",
-                fontSize: 36,
-                fontWeight: 500,
-                color: "#64313E",
+                fontFamily: "'Playfair Display', serif",
+                fontStyle: "italic",
+                fontSize: 45,
+                color: "rgba(100,49,62,0.70)",
               }}
             >
               @{username}
@@ -147,7 +147,7 @@ const ShareCard = React.forwardRef<HTMLDivElement, ShareCardProps>(
               position: "relative",
             }}
           >
-            {/* Renglones alineados al cuerpo del texto — arrancan desde la primera línea */}
+            {/* Renglones alineados al cuerpo del texto — línea a 74px (84-10) = justo debajo de la baseline */}
             <div
               style={{
                 position: "absolute",
@@ -156,7 +156,9 @@ const ShareCard = React.forwardRef<HTMLDivElement, ShareCardProps>(
                 top: 0,
                 bottom: 0,
                 backgroundImage:
-                  "repeating-linear-gradient(to bottom, transparent, transparent 83px, rgba(28,25,23,0.05) 83px, rgba(28,25,23,0.05) 84px)",
+                  "repeating-linear-gradient(to bottom, transparent, transparent 73px, rgba(28,25,23,0.05) 73px, rgba(28,25,23,0.05) 74px, transparent 74px, transparent 84px)",
+                backgroundPositionY: 0,
+                backgroundSize: "100% 84px",
                 pointerEvents: "none",
               }}
             />
