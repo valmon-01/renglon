@@ -186,26 +186,28 @@ export default function TextoIndividual() {
       />
 
       {/* Navbar */}
-      <nav className="sticky top-0 z-20 flex items-center justify-between border-b border-borde bg-papel px-6 py-4">
-        <Link
-          href="/feed"
-          className="flex items-center gap-2 text-sm text-tinta-suave transition-colors hover:text-tinta"
-        >
-          <ArrowLeft size={18} strokeWidth={1.5} />
-          Feed
-        </Link>
-        <Link
-          href={`/perfil-publico?id=${texto.user_id}`}
-          className="flex items-center gap-2.5 transition-opacity hover:opacity-70"
-        >
-          <span className="text-sm text-tinta">{username}</span>
-          <div
-            className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full text-xs font-medium"
-            style={{ backgroundColor: "#C1DBE8", color: "#64313E" }}
+      <nav className="sticky top-0 z-20 border-b border-borde bg-papel">
+        <div style={{ maxWidth: 720, margin: "0 auto", padding: "16px 24px", display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+          <Link
+            href="/feed"
+            className="flex items-center gap-2 text-sm text-tinta-suave transition-colors hover:text-tinta"
           >
-            {iniciales(username)}
-          </div>
-        </Link>
+            <ArrowLeft size={18} strokeWidth={1.5} />
+            Feed
+          </Link>
+          <Link
+            href={`/perfil-publico?id=${texto.user_id}`}
+            className="flex items-center gap-2.5 transition-opacity hover:opacity-70"
+          >
+            <span className="text-sm text-tinta">{username}</span>
+            <div
+              className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full text-xs font-medium"
+              style={{ backgroundColor: "#C1DBE8", color: "#64313E" }}
+            >
+              {iniciales(username)}
+            </div>
+          </Link>
+        </div>
       </nav>
 
       {/* Cuaderno */}
@@ -307,12 +309,13 @@ export default function TextoIndividual() {
 
       {/* Likes + Share + acciones owner — fuera del cuaderno */}
       <div className="flex flex-col items-center py-6 text-center">
-        <div className="flex items-center gap-8">
+        <div className="flex flex-wrap items-center justify-center gap-5">
           <button
             type="button"
             onClick={toggleLike}
             disabled={!sessionUserId}
             aria-label={liked ? "Quitar me gusta" : "Me gusta"}
+            title={liked ? "Quitar me gusta" : "Me gusta"}
             className={`flex flex-col items-center gap-2 transition-colors disabled:cursor-default ${
               liked ? "text-borravino" : "text-tinta-suave hover:text-borravino"
             }`}
@@ -332,6 +335,7 @@ export default function TextoIndividual() {
               type="button"
               onClick={() => setShowShare(true)}
               aria-label="Compartir como imagen"
+              title="Compartir"
               className="flex flex-col items-center gap-2 text-tinta-suave transition-colors hover:text-borravino"
             >
               <Share2 size={28} strokeWidth={1.5} />
@@ -347,7 +351,8 @@ export default function TextoIndividual() {
                 type="button"
                 onClick={togglePublicado}
                 disabled={toggleLoading}
-                aria-label={texto.publicado ? "Pasar a privado" : "Publicar"}
+                aria-label={texto.publicado ? "Cambiar a privado" : "Cambiar a público"}
+                title={texto.publicado ? "Cambiar a privado" : "Cambiar a público"}
                 className="flex flex-col items-center gap-2 text-tinta-suave transition-colors hover:text-borravino disabled:opacity-50"
               >
                 {texto.publicado ? (
@@ -364,6 +369,7 @@ export default function TextoIndividual() {
                 type="button"
                 onClick={() => setShowDeleteConfirm(true)}
                 aria-label="Eliminar escrito"
+                title="Eliminar escrito"
                 className="flex flex-col items-center gap-2 text-tinta-suave transition-colors hover:text-borravino"
               >
                 <Trash2 size={28} strokeWidth={1.5} />

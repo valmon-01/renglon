@@ -166,7 +166,7 @@ export default function NotebookPages({
             position: "relative",
           }}
         >
-          {/* Barra superior — height 40px */}
+          {/* Fila 1: @username + cerrar — height 40px */}
           <div
             style={{
               height: 40,
@@ -188,21 +188,62 @@ export default function NotebookPages({
                 color: "#9C8B7E",
                 textDecoration: "none",
                 transition: "color 0.2s",
+                overflow: "hidden",
+                textOverflow: "ellipsis",
+                whiteSpace: "nowrap",
+                minWidth: 0,
+                flexShrink: 1,
               }}
               className="hover:underline hover:text-[#64313E]"
             >
               @{username}
             </Link>
-            <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
+            <button
+              type="button"
+              onClick={onClose}
+              title="Cerrar"
+              aria-label="Cerrar"
+              style={{
+                display: "flex",
+                alignItems: "center",
+                color: "#9C8B7E",
+                background: "none",
+                border: "none",
+                cursor: "pointer",
+                padding: 0,
+                flexShrink: 0,
+                marginLeft: 12,
+              }}
+            >
+              <X size={18} strokeWidth={1.5} />
+            </button>
+          </div>
+
+          {/* Fila 2: botones de acción con labels */}
+          {(text.publicado || isOwner) && (
+            <div
+              style={{
+                display: "flex",
+                alignItems: "flex-end",
+                justifyContent: "flex-end",
+                gap: 16,
+                flexShrink: 0,
+                paddingLeft: "60px",
+                paddingRight: "40px",
+                paddingBottom: 8,
+              }}
+            >
               {text.publicado && (
                 <button
                   type="button"
                   onClick={() => setShowShare(true)}
                   aria-label="Compartir como imagen"
-                  style={iconButtonStyle}
+                  title="Compartir"
+                  style={{ ...iconButtonStyle, flexDirection: "column", gap: 3 }}
                   className="hover:!text-[#64313E]"
                 >
-                  <Share2 size={14} strokeWidth={1.5} />
+                  <Share2 size={18} strokeWidth={1.5} />
+                  <span style={{ fontFamily: "var(--font-sans)", fontSize: 10 }}>Compartir</span>
                 </button>
               )}
 
@@ -212,16 +253,19 @@ export default function NotebookPages({
                     type="button"
                     onClick={handleToggle}
                     disabled={toggleLoading}
-                    aria-label={text.publicado ? "Pasar a privado" : "Publicar"}
-                    title={text.publicado ? "Pasar a privado" : "Publicar"}
-                    style={{ ...iconButtonStyle, opacity: toggleLoading ? 0.5 : 1 }}
+                    aria-label={text.publicado ? "Cambiar a privado" : "Cambiar a público"}
+                    title={text.publicado ? "Cambiar a privado" : "Cambiar a público"}
+                    style={{ ...iconButtonStyle, flexDirection: "column", gap: 3, opacity: toggleLoading ? 0.5 : 1 }}
                     className="hover:!text-[#64313E]"
                   >
                     {text.publicado ? (
-                      <Eye size={14} strokeWidth={1.5} />
+                      <Eye size={18} strokeWidth={1.5} />
                     ) : (
-                      <EyeOff size={14} strokeWidth={1.5} />
+                      <EyeOff size={18} strokeWidth={1.5} />
                     )}
+                    <span style={{ fontFamily: "var(--font-sans)", fontSize: 10 }}>
+                      {text.publicado ? "Público" : "Privado"}
+                    </span>
                   </button>
 
                   <button
@@ -229,34 +273,16 @@ export default function NotebookPages({
                     onClick={() => setShowDeleteConfirm(true)}
                     aria-label="Eliminar escrito"
                     title="Eliminar escrito"
-                    style={iconButtonStyle}
+                    style={{ ...iconButtonStyle, flexDirection: "column", gap: 3 }}
                     className="hover:!text-[#64313E]"
                   >
-                    <Trash2 size={14} strokeWidth={1.5} />
+                    <Trash2 size={18} strokeWidth={1.5} />
+                    <span style={{ fontFamily: "var(--font-sans)", fontSize: 10 }}>Eliminar</span>
                   </button>
                 </>
               )}
-
-              <button
-                type="button"
-                onClick={onClose}
-                style={{
-                  display: "flex",
-                  alignItems: "center",
-                  gap: 4,
-                  fontFamily: "var(--font-sans)",
-                  fontSize: 12,
-                  color: "#5C5147",
-                  background: "none",
-                  border: "none",
-                  cursor: "pointer",
-                  padding: 0,
-                }}
-              >
-                <X size={14} strokeWidth={1.5} />
-              </button>
             </div>
-          </div>
+          )}
 
           {/* Fecha + consigna — height 40px */}
           <div

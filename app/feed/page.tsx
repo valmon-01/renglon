@@ -155,7 +155,7 @@ export default function Feed() {
         </p>
       </div>
 
-      <main style={{ maxWidth: 720, margin: "0 auto", padding: "0 20px 96px" }}>
+      <main style={{ maxWidth: 640, margin: "0 auto", padding: "0 20px 96px" }}>
 
         {/* Label conteo */}
         <p style={{ fontSize: 11, color: "#9C8B7E", marginTop: 20, marginBottom: 16 }}>

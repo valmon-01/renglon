@@ -20,16 +20,22 @@ export default function BottomNav() {
         bottom: 0,
         left: 0,
         right: 0,
-        height: 64,
         backgroundColor: "#F5F0EA",
         borderTop: "1px solid rgba(61,53,48,0.08)",
-        display: "flex",
-        justifyContent: "space-around",
-        alignItems: "center",
         paddingBottom: "env(safe-area-inset-bottom)",
         zIndex: 50,
       }}
     >
+      <div
+        style={{
+          maxWidth: 720,
+          margin: "0 auto",
+          height: 64,
+          display: "flex",
+          justifyContent: "space-around",
+          alignItems: "center",
+        }}
+      >
       {ITEMS.map(({ label, href, Icon }) => {
         const active = pathname === href;
         const color = active ? "#64313E" : "#9C8B7E";
@@ -74,6 +80,7 @@ export default function BottomNav() {
           </div>
         );
       })}
+      </div>
     </div>
   );
 }
