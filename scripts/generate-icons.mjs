@@ -27,6 +27,26 @@ function iconSvg(size) {
 </svg>`;
 }
 
+function iconSvgLarge(size) {
+  const radius = Math.round(size * 0.18);
+  const fontSize = Math.round(size * 0.64);
+  // centrar la "r" usando dominant-baseline="central"
+  const textY = Math.round(size * 0.5);
+  // línea justo debajo de la baseline (baseline ≈ centro + 22% del font-size)
+  const lineY = Math.round(textY + fontSize * 0.22);
+  const lineX1 = Math.round(size * 0.2);
+  const lineX2 = Math.round(size * 0.8);
+  const strokeWidth = Math.max(1, Math.round(size / 128));
+  return `<svg width="${size}" height="${size}" xmlns="http://www.w3.org/2000/svg">
+  <rect width="${size}" height="${size}" fill="${PAPEL}" rx="${radius}"/>
+  <text x="${size / 2}" y="${textY}" font-family="Georgia, serif" font-style="italic"
+    font-size="${fontSize}" fill="${BORRAVINO}" text-anchor="middle"
+    dominant-baseline="central" font-weight="400">r</text>
+  <line x1="${lineX1}" y1="${lineY}" x2="${lineX2}" y2="${lineY}"
+    stroke="${BORRAVINO}" stroke-width="${strokeWidth}" opacity="0.3"/>
+</svg>`;
+}
+
 function ogImageSvg() {
   const W = 1200, H = 630;
   // puntos de fondo sutiles
@@ -111,17 +131,17 @@ async function run() {
   console.log('  ✓ favicon-16x16.png');
 
   // apple-touch-icon 180x180
-  const png180 = await toPng(iconSvg(180));
+  const png180 = await toPng(iconSvgLarge(180));
   writeFileSync(`${PUBLIC}/apple-touch-icon.png`, png180);
   console.log('  ✓ apple-touch-icon.png');
 
   // PWA 192x192
-  const png192 = await toPng(iconSvg(192));
+  const png192 = await toPng(iconSvgLarge(192));
   writeFileSync(`${PUBLIC}/icon-192x192.png`, png192);
   console.log('  ✓ icon-192x192.png');
 
   // PWA 512x512
-  const png512 = await toPng(iconSvg(512));
+  const png512 = await toPng(iconSvgLarge(512));
   writeFileSync(`${PUBLIC}/icon-512x512.png`, png512);
   console.log('  ✓ icon-512x512.png');
 
