@@ -19,8 +19,8 @@ function formatFecha(iso: string): string {
 // ~48 chars per line at 1080px card width (content area ~870px, font 39px)
 const CHARS_PER_LINE = 48;
 const LINE_HEIGHT_PX = 84;
-// padding_top(54) + header(120) + titulo(100) + gap(60) + gap(60) + footer(200) + padding_bottom(84)
-const FIXED_HEIGHT = 678;
+// padding_top(54) + header(120) + titulo(100) + gap(40) + gap(60) + footer(200) + padding_bottom(84)
+const FIXED_HEIGHT = 658;
 
 // All inline styles — required for html2canvas compatibility
 const ShareCard = React.forwardRef<HTMLDivElement, ShareCardProps>(
@@ -91,18 +91,7 @@ const ShareCard = React.forwardRef<HTMLDivElement, ShareCardProps>(
             position: "relative",
           }}
         >
-          {/* Renglones de cuaderno — cada 84px, alineados al line-height del texto */}
-          <div
-            style={{
-              position: "absolute",
-              inset: 0,
-              backgroundImage:
-                "repeating-linear-gradient(to bottom, transparent, transparent 83px, rgba(28,25,23,0.05) 83px, rgba(28,25,23,0.05) 84px)",
-              pointerEvents: "none",
-            }}
-          />
-
-          {/* Header: renglón + fecha */}
+          {/* Header: renglón (izquierda) + @username (derecha) */}
           <div
             style={{
               display: "flex",
@@ -125,11 +114,12 @@ const ShareCard = React.forwardRef<HTMLDivElement, ShareCardProps>(
             <span
               style={{
                 fontFamily: "Inter, sans-serif",
-                fontSize: 32,
-                color: "rgba(28,25,23,0.38)",
+                fontSize: 36,
+                fontWeight: 500,
+                color: "#64313E",
               }}
             >
-              {formatFecha(fecha)}
+              @{username}
             </span>
           </div>
 
@@ -142,23 +132,12 @@ const ShareCard = React.forwardRef<HTMLDivElement, ShareCardProps>(
               fontWeight: 400,
               color: "#1C1917",
               lineHeight: 1.15,
-              margin: "0 0 48px 0",
+              margin: "0 0 40px 0",
               position: "relative",
             }}
           >
             {titulo || "Sin título"}
           </h1>
-
-          {/* Divisoria */}
-          <div
-            style={{
-              width: 108,
-              height: 3,
-              backgroundColor: "rgba(100,49,62,0.20)",
-              marginBottom: 60,
-              position: "relative",
-            }}
-          />
 
           {/* Texto del escrito — flex:1 para distribuir espacio en cards cortas */}
           <div
@@ -168,6 +147,19 @@ const ShareCard = React.forwardRef<HTMLDivElement, ShareCardProps>(
               position: "relative",
             }}
           >
+            {/* Renglones alineados al cuerpo del texto — arrancan desde la primera línea */}
+            <div
+              style={{
+                position: "absolute",
+                left: -72,
+                right: -84,
+                top: 0,
+                bottom: 0,
+                backgroundImage:
+                  "repeating-linear-gradient(to bottom, transparent, transparent 83px, rgba(28,25,23,0.05) 83px, rgba(28,25,23,0.05) 84px)",
+                pointerEvents: "none",
+              }}
+            />
             <p
               style={{
                 fontFamily: "Inter, sans-serif",
@@ -177,62 +169,32 @@ const ShareCard = React.forwardRef<HTMLDivElement, ShareCardProps>(
                 margin: 0,
                 whiteSpace: "pre-wrap",
                 wordBreak: "break-word",
+                position: "relative",
               }}
             >
               {contenido}
             </p>
           </div>
 
-          {/* Footer: consigna + @username — flexShrink:0 para que nunca se comprima */}
+          {/* Footer: fecha — consigna — flexShrink:0 para que nunca se comprima */}
           <div
             style={{
               flexShrink: 0,
               borderTop: "2px solid rgba(28,25,23,0.08)",
               paddingTop: 24,
-              display: "flex",
-              justifyContent: "space-between",
-              alignItems: "flex-start",
-              gap: 24,
               position: "relative",
             }}
           >
-            <div style={{ flex: 1, minWidth: 0 }}>
-              <span
-                style={{
-                  fontFamily: "Inter, sans-serif",
-                  fontSize: 28,
-                  letterSpacing: "0.10em",
-                  textTransform: "uppercase",
-                  color: "rgba(28,25,23,0.38)",
-                  display: "block",
-                  marginBottom: 12,
-                }}
-              >
-                Consigna
-              </span>
-              <span
-                style={{
-                  fontFamily: "'Playfair Display', serif",
-                  fontStyle: "italic",
-                  fontSize: 34,
-                  color: "#1C1917",
-                  lineHeight: 1.5,
-                }}
-              >
-                {consigna}
-              </span>
-            </div>
             <span
               style={{
-                fontFamily: "Inter, sans-serif",
-                fontSize: 36,
-                fontWeight: 500,
-                color: "#64313E",
-                flexShrink: 0,
-                paddingTop: 36,
+                fontFamily: "'Playfair Display', serif",
+                fontStyle: "italic",
+                fontSize: 34,
+                color: "rgba(28,25,23,0.50)",
+                lineHeight: 1.5,
               }}
             >
-              @{username}
+              {formatFecha(fecha)} — {consigna}
             </span>
           </div>
         </div>
