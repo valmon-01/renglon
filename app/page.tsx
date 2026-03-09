@@ -293,12 +293,6 @@ export default function Landing() {
           >
             Empezar a escribir
           </Link>
-          <p
-            className="text-tinta-suave"
-            style={{ fontSize: "13px", fontFamily: "Inter, sans-serif" }}
-          >
-            Es gratis. No hace falta experiencia previa.
-          </p>
         </div>
       </section>
 
@@ -306,60 +300,39 @@ export default function Landing() {
       <footer style={{ borderTop: "1px solid rgba(61,53,48,0.08)", padding: "40px 24px 48px" }}>
         <div style={{ maxWidth: 480, margin: "0 auto", textAlign: "center" }}>
 
-          <p style={{ fontFamily: "var(--font-display)", fontStyle: "italic", fontSize: 20, color: "#3D3530" }}>
+          <p style={{ fontFamily: "var(--font-display)", fontStyle: "italic", fontSize: 32, color: "#3D3530" }}>
             renglón
           </p>
-          <p style={{ fontSize: 13, color: "#9C8B7E", marginTop: 8, fontStyle: "italic", fontFamily: "var(--font-sans)" }}>
+          <p style={{ fontSize: 16, color: "#9C8B7E", marginTop: 8, fontStyle: "italic", fontFamily: "var(--font-display)" }}>
             El hábito de escribir, un renglón a la vez.
           </p>
 
-          <div style={{ marginTop: 32 }}>
-            <div style={{ display: "flex", justifyContent: "center", gap: 24 }}>
-              <Link
-                href="/login"
-                className="transition-colors duration-200 hover:text-tinta"
-                style={{ fontSize: 13, color: "#9C8B7E", textDecoration: "none", fontFamily: "var(--font-sans)" }}
-              >
-                Iniciar sesión
-              </Link>
-              <Link
-                href="/registro"
-                className="transition-colors duration-200 hover:text-tinta"
-                style={{ fontSize: 13, color: "#9C8B7E", textDecoration: "none", fontFamily: "var(--font-sans)" }}
-              >
-                Registrarse
-              </Link>
-            </div>
-            <div style={{ display: "flex", justifyContent: "center", gap: 20, marginTop: 20, marginBottom: 8 }}>
-              <a
-                href="https://instagram.com/soyrenglon"
-                target="_blank"
-                rel="noopener noreferrer"
-                style={{ color: "#9C8B7E", display: "inline-flex", transition: "color 0.2s" }}
-                className="hover:text-[#3D3530]"
-              >
-                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor"
-                  strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
-                  <rect x="2" y="2" width="20" height="20" rx="5" ry="5"/>
-                  <circle cx="12" cy="12" r="4"/>
-                  <circle cx="17.5" cy="6.5" r="0.5" fill="currentColor" stroke="none"/>
-                </svg>
-              </a>
-              <a
-                href="https://tiktok.com/@soyrenglon"
-                target="_blank"
-                rel="noopener noreferrer"
-                style={{ color: "#9C8B7E", display: "inline-flex", transition: "color 0.2s" }}
-                className="hover:text-[#3D3530]"
-              >
-                <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor">
-                  <path d="M19.59 6.69a4.83 4.83 0 0 1-3.77-4.25V2h-3.45v13.67a2.89 2.89 0 0 1-2.88 2.5 2.89 2.89 0 0 1-2.89-2.89 2.89 2.89 0 0 1 2.89-2.89c.28 0 .54.04.79.1V9.01a6.32 6.32 0 0 0-.79-.05 6.34 6.34 0 0 0-6.34 6.34 6.34 6.34 0 0 0 6.34 6.34 6.34 6.34 0 0 0 6.33-6.34V8.69a8.18 8.18 0 0 0 4.78 1.52V6.75a4.85 4.85 0 0 1-1.01-.06z"/>
-                </svg>
-              </a>
-            </div>
-            <p style={{ fontSize: 12, color: "rgba(61,53,48,0.35)", textAlign: "center", fontFamily: "var(--font-sans)" }}>
-              cada renglón cuenta.
-            </p>
+          <div style={{ display: "flex", justifyContent: "center", gap: 20, marginTop: 12 }}>
+            <a
+              href="https://instagram.com/soyrenglon"
+              target="_blank"
+              rel="noopener noreferrer"
+              style={{ color: "#9C8B7E", display: "inline-flex", transition: "color 0.2s" }}
+              className="hover:text-[#3D3530]"
+            >
+              <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+                <rect x="2" y="2" width="20" height="20" rx="5" ry="5"/>
+                <circle cx="12" cy="12" r="4"/>
+                <circle cx="17.5" cy="6.5" r="0.5" fill="currentColor" stroke="none"/>
+              </svg>
+            </a>
+            <a
+              href="https://tiktok.com/@soyrenglon"
+              target="_blank"
+              rel="noopener noreferrer"
+              style={{ color: "#9C8B7E", display: "inline-flex", transition: "color 0.2s" }}
+              className="hover:text-[#3D3530]"
+            >
+              <svg width="28" height="28" viewBox="0 0 24 24" fill="currentColor">
+                <path d="M19.59 6.69a4.83 4.83 0 0 1-3.77-4.25V2h-3.45v13.67a2.89 2.89 0 0 1-2.88 2.5 2.89 2.89 0 0 1-2.89-2.89 2.89 2.89 0 0 1 2.89-2.89c.28 0 .54.04.79.1V9.01a6.32 6.32 0 0 0-.79-.05 6.34 6.34 0 0 0-6.34 6.34 6.34 6.34 0 0 0 6.34 6.34 6.34 6.34 0 0 0 6.33-6.34V8.69a8.18 8.18 0 0 0 4.78 1.52V6.75a4.85 4.85 0 0 1-1.01-.06z"/>
+              </svg>
+            </a>
           </div>
 
         </div>
