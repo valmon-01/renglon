@@ -1,9 +1,10 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Link from "next/link";
-import { X, ChevronLeft, ChevronRight, Share2 } from "lucide-react";
+import { X, ChevronLeft, ChevronRight, Share2, Trash2, Eye, EyeOff } from "lucide-react";
 import ShareModal from "./ShareModal";
+import ConfirmDeleteModal from "./ConfirmDeleteModal";
 
 interface Texto {
   id: string;
@@ -20,6 +21,8 @@ interface NotebookPagesProps {
   userId: string;
   sessionUserId: string;
   onClose: () => void;
+  onDelete: (id: string) => Promise<void>;
+  onTogglePublicado: (id: string, current: boolean) => Promise<void>;
 }
 
 function fechaDDMMYYYY(iso: string): string {
@@ -30,13 +33,62 @@ function fechaDDMMYYYY(iso: string): string {
   return `${dd}/${mm}/${yyyy}`;
 }
 
-export default function NotebookPages({ texts, username, userId, sessionUserId, onClose }: NotebookPagesProps) {
+export default function NotebookPages({
+  texts,
+  username,
+  userId,
+  sessionUserId,
+  onClose,
+  onDelete,
+  onTogglePublicado,
+}: NotebookPagesProps) {
   const [page, setPage] = useState(0);
   const [showShare, setShowShare] = useState(false);
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
+  const [deleteLoading, setDeleteLoading] = useState(false);
+  const [toggleLoading, setToggleLoading] = useState(false);
+
+  const isOwner = userId === sessionUserId;
   const total = texts.length;
   const text = texts[page];
 
+  // Ajustar página cuando se elimina un texto
+  useEffect(() => {
+    if (texts.length === 0) {
+      onClose();
+      return;
+    }
+    if (page >= texts.length) {
+      setPage(texts.length - 1);
+    }
+  }, [texts.length, page, onClose]);
+
   if (!text) return null;
+
+  async function handleDeleteConfirm() {
+    setDeleteLoading(true);
+    await onDelete(text.id);
+    setDeleteLoading(false);
+    setShowDeleteConfirm(false);
+  }
+
+  async function handleToggle() {
+    if (toggleLoading) return;
+    setToggleLoading(true);
+    await onTogglePublicado(text.id, text.publicado);
+    setToggleLoading(false);
+  }
+
+  const iconButtonStyle: React.CSSProperties = {
+    display: "flex",
+    alignItems: "center",
+    background: "none",
+    border: "none",
+    cursor: "pointer",
+    color: "#9C8B7E",
+    padding: 0,
+    transition: "color 0.2s",
+  };
 
   return (
     <div
@@ -58,6 +110,13 @@ export default function NotebookPages({ texts, username, userId, sessionUserId, 
           fecha={text.created_at}
         />
       )}
+
+      <ConfirmDeleteModal
+        open={showDeleteConfirm}
+        onClose={() => setShowDeleteConfirm(false)}
+        onConfirm={handleDeleteConfirm}
+        loading={deleteLoading}
+      />
 
       {/* Lomo izquierdo */}
       <div
@@ -140,19 +199,44 @@ export default function NotebookPages({ texts, username, userId, sessionUserId, 
                   type="button"
                   onClick={() => setShowShare(true)}
                   aria-label="Compartir como imagen"
-                  style={{
-                    display: "flex",
-                    alignItems: "center",
-                    background: "none",
-                    border: "none",
-                    cursor: "pointer",
-                    color: "#9C8B7E",
-                    padding: 0,
-                  }}
+                  style={iconButtonStyle}
+                  className="hover:!text-[#64313E]"
                 >
                   <Share2 size={14} strokeWidth={1.5} />
                 </button>
               )}
+
+              {isOwner && (
+                <>
+                  <button
+                    type="button"
+                    onClick={handleToggle}
+                    disabled={toggleLoading}
+                    aria-label={text.publicado ? "Pasar a privado" : "Publicar"}
+                    title={text.publicado ? "Pasar a privado" : "Publicar"}
+                    style={{ ...iconButtonStyle, opacity: toggleLoading ? 0.5 : 1 }}
+                    className="hover:!text-[#64313E]"
+                  >
+                    {text.publicado ? (
+                      <Eye size={14} strokeWidth={1.5} />
+                    ) : (
+                      <EyeOff size={14} strokeWidth={1.5} />
+                    )}
+                  </button>
+
+                  <button
+                    type="button"
+                    onClick={() => setShowDeleteConfirm(true)}
+                    aria-label="Eliminar escrito"
+                    title="Eliminar escrito"
+                    style={iconButtonStyle}
+                    className="hover:!text-[#64313E]"
+                  >
+                    <Trash2 size={14} strokeWidth={1.5} />
+                  </button>
+                </>
+              )}
+
               <button
                 type="button"
                 onClick={onClose}
@@ -197,7 +281,9 @@ export default function NotebookPages({ texts, username, userId, sessionUserId, 
               }}
             >
               {fechaDDMMYYYY(text.created_at)}
-              {text.consigna ? ` — ${text.consigna.length > 50 ? text.consigna.slice(0, 50) + "…" : text.consigna}` : ""}
+              {text.consigna
+                ? ` — ${text.consigna.length > 50 ? text.consigna.slice(0, 50) + "…" : text.consigna}`
+                : ""}
             </span>
           </div>
 
@@ -264,7 +350,6 @@ export default function NotebookPages({ texts, username, userId, sessionUserId, 
               flexShrink: 0,
             }}
           >
-            {/* Anterior */}
             <button
               type="button"
               onClick={() => setPage((p) => Math.max(0, p - 1))}
@@ -286,7 +371,6 @@ export default function NotebookPages({ texts, username, userId, sessionUserId, 
               Anterior
             </button>
 
-            {/* Puntos de página */}
             <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
               {texts.map((_, i) => (
                 <button
@@ -307,7 +391,6 @@ export default function NotebookPages({ texts, username, userId, sessionUserId, 
               ))}
             </div>
 
-            {/* Siguiente */}
             <button
               type="button"
               onClick={() => setPage((p) => Math.min(total - 1, p + 1))}

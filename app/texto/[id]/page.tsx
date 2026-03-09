@@ -2,11 +2,12 @@
 
 import { useState, useEffect } from "react";
 import Link from "next/link";
-import { useParams } from "next/navigation";
-import { ArrowLeft, Heart, Share2 } from "lucide-react";
+import { useParams, useRouter } from "next/navigation";
+import { ArrowLeft, Heart, Share2, Trash2, Eye, EyeOff } from "lucide-react";
 import { supabase } from "@/lib/supabase";
 import TypewriterLoader from "@/app/components/TypewriterLoader";
 import ShareModal from "@/app/components/ShareModal";
+import ConfirmDeleteModal from "@/app/components/ConfirmDeleteModal";
 
 type Texto = {
   id: string;
@@ -38,6 +39,7 @@ function fechaCorta(iso: string): string {
 
 export default function TextoIndividual() {
   const { id } = useParams<{ id: string }>();
+  const router = useRouter();
   const [texto, setTexto] = useState<Texto | null>(null);
   const [cargando, setCargando] = useState(true);
   const [liked, setLiked] = useState(false);
@@ -45,6 +47,9 @@ export default function TextoIndividual() {
   const [likedBy, setLikedBy] = useState<string[]>([]);
   const [sessionUserId, setSessionUserId] = useState<string | null>(null);
   const [showShare, setShowShare] = useState(false);
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
+  const [deleteLoading, setDeleteLoading] = useState(false);
+  const [toggleLoading, setToggleLoading] = useState(false);
 
   useEffect(() => {
     async function cargar() {
@@ -113,6 +118,27 @@ export default function TextoIndividual() {
 
     cargar();
   }, [id]);
+
+  async function handleDelete() {
+    setDeleteLoading(true);
+    await supabase.from("textos").delete().eq("id", id).eq("user_id", sessionUserId!);
+    setDeleteLoading(false);
+    setShowDeleteConfirm(false);
+    router.push("/perfil");
+  }
+
+  async function togglePublicado() {
+    if (!texto || toggleLoading) return;
+    setToggleLoading(true);
+    const next = !texto.publicado;
+    await supabase
+      .from("textos")
+      .update({ publicado: next })
+      .eq("id", id)
+      .eq("user_id", sessionUserId!);
+    setTexto({ ...texto, publicado: next });
+    setToggleLoading(false);
+  }
 
   async function toggleLike() {
     if (!sessionUserId) return;
@@ -279,7 +305,7 @@ export default function TextoIndividual() {
         </div>
       </div>
 
-      {/* Likes + Share — fuera del cuaderno */}
+      {/* Likes + Share + acciones owner — fuera del cuaderno */}
       <div className="flex flex-col items-center py-6 text-center">
         <div className="flex items-center gap-8">
           <button
@@ -314,6 +340,39 @@ export default function TextoIndividual() {
               </span>
             </button>
           )}
+
+          {sessionUserId === texto.user_id && (
+            <>
+              <button
+                type="button"
+                onClick={togglePublicado}
+                disabled={toggleLoading}
+                aria-label={texto.publicado ? "Pasar a privado" : "Publicar"}
+                className="flex flex-col items-center gap-2 text-tinta-suave transition-colors hover:text-borravino disabled:opacity-50"
+              >
+                {texto.publicado ? (
+                  <Eye size={28} strokeWidth={1.5} />
+                ) : (
+                  <EyeOff size={28} strokeWidth={1.5} />
+                )}
+                <span className="text-xs" style={{ fontFamily: "Inter, sans-serif" }}>
+                  {texto.publicado ? "Público" : "Privado"}
+                </span>
+              </button>
+
+              <button
+                type="button"
+                onClick={() => setShowDeleteConfirm(true)}
+                aria-label="Eliminar escrito"
+                className="flex flex-col items-center gap-2 text-tinta-suave transition-colors hover:text-borravino"
+              >
+                <Trash2 size={28} strokeWidth={1.5} />
+                <span className="text-xs" style={{ fontFamily: "Inter, sans-serif" }}>
+                  Eliminar
+                </span>
+              </button>
+            </>
+          )}
         </div>
 
         {sessionUserId === texto.user_id && likedBy.length > 0 && (
@@ -334,6 +393,13 @@ export default function TextoIndividual() {
           fecha={texto.created_at}
         />
       )}
+
+      <ConfirmDeleteModal
+        open={showDeleteConfirm}
+        onClose={() => setShowDeleteConfirm(false)}
+        onConfirm={handleDelete}
+        loading={deleteLoading}
+      />
 
     </div>
   );

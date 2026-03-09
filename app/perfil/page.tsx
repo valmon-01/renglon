@@ -65,6 +65,22 @@ export default function Perfil() {
     router.push("/");
   }
 
+  async function handleDelete(id: string) {
+    await supabase.from("textos").delete().eq("id", id).eq("user_id", user!.id);
+    setTextos((prev) => prev.filter((t) => t.id !== id));
+  }
+
+  async function handleTogglePublicado(id: string, current: boolean) {
+    await supabase
+      .from("textos")
+      .update({ publicado: !current })
+      .eq("id", id)
+      .eq("user_id", user!.id);
+    setTextos((prev) =>
+      prev.map((t) => (t.id === id ? { ...t, publicado: !current } : t))
+    );
+  }
+
   if (cargando) return <TypewriterLoader />;
 
   const username = user?.user_metadata?.username ?? "Usuario";
@@ -333,6 +349,8 @@ export default function Perfil() {
                   userId={user?.id ?? ""}
                   sessionUserId={user?.id ?? ""}
                   onClose={() => setLibroAbierto(false)}
+                  onDelete={handleDelete}
+                  onTogglePublicado={handleTogglePublicado}
                 />
               )}
             </motion.div>
