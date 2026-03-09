@@ -218,18 +218,18 @@ export default function Landing() {
           {[
             {
               num: "01",
-              title: "Recibís la consigna",
-              desc: "Cada día hay una consigna nueva: un objeto, un recuerdo, una escena. Tu punto de partida está listo.",
+              title: "La consigna",
+              desc: "Cada día hay una consigna nueva. Es el punto de partida para escribir.",
             },
             {
               num: "02",
-              title: "Escribís lo tuyo",
-              desc: "Un espacio limpio, sin distracciones. Solo vos y el renglón en blanco. Escribís desde donde podás.",
+              title: "Tu escrito",
+              desc: "Escribís sobre la consigna. Puede ser largo o corto, no hay reglas. Tu escrito es privado por defecto.",
             },
             {
               num: "03",
-              title: "Lo compartís y leés",
-              desc: "Publicás si querés. Y entonces se abre el feed: lo que escribieron los demás sobre la misma consigna, hoy.",
+              title: "El feed",
+              desc: "Si querés, lo hacés público. Ahí podés leer lo que escribieron otros sobre la misma consigna.",
             },
           ].map(({ num, title, desc }, index, arr) => (
             <motion.div
@@ -309,7 +309,7 @@ export default function Landing() {
 
           <div style={{ display: "flex", justifyContent: "center", gap: 20, marginTop: 12 }}>
             <a
-              href="https://instagram.com/soyrenglon"
+              href="https://instagram.com/renglon.app"
               target="_blank"
               rel="noopener noreferrer"
               style={{ color: "#9C8B7E", display: "inline-flex", transition: "color 0.2s" }}
@@ -323,7 +323,7 @@ export default function Landing() {
               </svg>
             </a>
             <a
-              href="https://tiktok.com/@soyrenglon"
+              href="https://tiktok.com/@renglon.app"
               target="_blank"
               rel="noopener noreferrer"
               style={{ color: "#9C8B7E", display: "inline-flex", transition: "color 0.2s" }}
