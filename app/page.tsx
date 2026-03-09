@@ -78,18 +78,19 @@ export default function Landing() {
       {/* Navbar */}
       <nav className="w-full px-6 py-5">
         <div className="mx-auto flex max-w-[680px] items-center justify-between">
-          <span className="font-display text-xl italic text-tinta">renglón</span>
+          <span className="font-display italic text-borravino" style={{ fontSize: "24px" }}>renglón</span>
           <div className="flex items-center gap-3">
             <Link
               href="/login"
-              className="rounded-[6px] border border-borravino px-4 py-2 text-sm text-borravino transition-colors hover:bg-borravino hover:text-blanco-roto"
-              style={{ borderWidth: "1.5px" }}
+              className="rounded-[6px] border border-borravino text-borravino transition-colors hover:bg-borravino hover:text-blanco-roto"
+              style={{ borderWidth: "1.5px", fontSize: "14px", padding: "6px 14px" }}
             >
               Iniciar sesión
             </Link>
             <Link
               href="/registro"
-              className="rounded-[6px] bg-borravino px-4 py-2 text-sm text-blanco-roto transition-colors hover:opacity-90"
+              className="rounded-[6px] bg-borravino text-blanco-roto transition-colors hover:opacity-90"
+              style={{ fontSize: "14px", padding: "6px 14px" }}
             >
               Registrarse
             </Link>
@@ -300,7 +301,7 @@ export default function Landing() {
       <footer style={{ borderTop: "1px solid rgba(61,53,48,0.08)", padding: "40px 24px 48px" }}>
         <div style={{ maxWidth: 480, margin: "0 auto", textAlign: "center" }}>
 
-          <p style={{ fontFamily: "var(--font-display)", fontStyle: "italic", fontSize: 32, color: "#3D3530" }}>
+          <p style={{ fontFamily: "var(--font-display)", fontStyle: "italic", fontSize: 32, color: "#64313E" }}>
             renglón
           </p>
           <p style={{ fontSize: 16, color: "#9C8B7E", marginTop: 8, fontStyle: "italic", fontFamily: "var(--font-display)" }}>
@@ -334,6 +335,19 @@ export default function Landing() {
               </svg>
             </a>
           </div>
+
+          <p style={{ fontFamily: "Inter, sans-serif", fontSize: 12, color: "var(--color-tinta-suave)", opacity: 0.6, marginTop: 16 }}>
+            creado por{" "}
+            <a
+              href="https://www.linkedin.com/in/montivalentina/?locale=en"
+              target="_blank"
+              rel="noopener noreferrer"
+              style={{ textDecoration: "none", color: "inherit" }}
+              className="hover:underline"
+            >
+              valentina monti
+            </a>
+          </p>
 
         </div>
       </footer>
