@@ -309,7 +309,7 @@ export default function Landing() {
 
           <div style={{ display: "flex", justifyContent: "center", gap: 20, marginTop: 12 }}>
             <a
-              href="https://instagram.com/renglon.app"
+              href="https://www.instagram.com/renglon.app/"
               target="_blank"
               rel="noopener noreferrer"
               style={{ color: "#9C8B7E", display: "inline-flex", transition: "color 0.2s" }}
@@ -323,7 +323,7 @@ export default function Landing() {
               </svg>
             </a>
             <a
-              href="https://tiktok.com/@renglon.app"
+              href="https://www.tiktok.com/@renglon.app?is_from_webapp=1&sender_device=pc"
               target="_blank"
               rel="noopener noreferrer"
               style={{ color: "#9C8B7E", display: "inline-flex", transition: "color 0.2s" }}
