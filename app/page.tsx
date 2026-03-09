@@ -78,23 +78,14 @@ export default function Landing() {
       {/* Navbar */}
       <nav className="w-full px-6 py-5">
         <div className="mx-auto flex max-w-[680px] items-center justify-between">
-          <span className="font-display italic text-borravino" style={{ fontSize: "24px" }}>renglón</span>
-          <div className="flex items-center gap-3">
-            <Link
-              href="/login"
-              className="rounded-[6px] border border-borravino text-borravino transition-colors hover:bg-borravino hover:text-blanco-roto"
-              style={{ borderWidth: "1.5px", fontSize: "14px", padding: "6px 14px" }}
-            >
-              Iniciar sesión
-            </Link>
-            <Link
-              href="/registro"
-              className="rounded-[6px] bg-borravino text-blanco-roto transition-colors hover:opacity-90"
-              style={{ fontSize: "14px", padding: "6px 14px" }}
-            >
-              Registrarse
-            </Link>
-          </div>
+          <span className="font-display italic text-borravino" style={{ fontSize: "22px", fontWeight: 400 }}>renglón</span>
+          <Link
+            href="/login"
+            className="text-tinta-suave transition-colors hover:underline"
+            style={{ fontFamily: "Inter, sans-serif", fontSize: "13px" }}
+          >
+            Iniciar sesión
+          </Link>
         </div>
       </nav>
 
