@@ -4,22 +4,20 @@ import { Resend } from 'resend'
 import Groq from 'groq-sdk'
 import DailyConsignaEmail from '@/emails/DailyConsignaEmail'
 
-const resend = new Resend(process.env.RESEND_API_KEY)
-const groq = new Groq({ apiKey: process.env.GROQ_API_KEY })
-
-// Admin client para leer auth.users y profiles sin RLS
-const supabaseAdmin = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL!,
-  process.env.SUPABASE_SERVICE_ROLE_KEY!,
-  { auth: { autoRefreshToken: false, persistSession: false } }
-)
-
 export async function POST(req: NextRequest) {
   // Validar CRON_SECRET
   const authHeader = req.headers.get('authorization')
   if (authHeader !== `Bearer ${process.env.CRON_SECRET}`) {
     return NextResponse.json({ error: 'No autorizado' }, { status: 401 })
   }
+
+  const resend = new Resend(process.env.RESEND_API_KEY)
+  const groq = new Groq({ apiKey: process.env.GROQ_API_KEY })
+  const supabaseAdmin = createClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.SUPABASE_SERVICE_ROLE_KEY!,
+    { auth: { autoRefreshToken: false, persistSession: false } }
+  )
 
   try {
     const hoy = new Date().toISOString().split('T')[0]
