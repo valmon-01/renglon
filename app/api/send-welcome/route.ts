@@ -12,19 +12,21 @@ export async function POST(req: NextRequest) {
 
     const resend = new Resend(process.env.RESEND_API_KEY)
 
-    const { error } = await resend.emails.send({
+    const result = await resend.emails.send({
       from: 'renglón <onboarding@resend.dev>',
       to: email,
       subject: 'Bienvenido/a a renglón',
       react: WelcomeEmail({ username }),
     })
 
-    if (error) {
-      console.error('Error enviando welcome email:', error)
-      return NextResponse.json({ error: 'Error al enviar el email' }, { status: 500 })
+    console.log('send-welcome result:', JSON.stringify(result))
+
+    if (result.error) {
+      console.error('Error enviando welcome email:', result.error)
+      return NextResponse.json({ error: 'Error al enviar el email', detail: result.error }, { status: 500 })
     }
 
-    return NextResponse.json({ ok: true })
+    return NextResponse.json({ ok: true, id: result.data?.id })
   } catch (error) {
     console.error('Error en send-welcome:', error)
     return NextResponse.json({ error: 'Error interno' }, { status: 500 })
