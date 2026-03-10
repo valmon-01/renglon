@@ -32,13 +32,6 @@ export default function Registro() {
       return;
     }
 
-    // Enviar email de bienvenida antes de redirigir
-    await fetch("/api/send-welcome", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ email, username: nombre }),
-    }).catch(() => {});
-
     router.push("/home");
   }
 

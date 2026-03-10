@@ -26,7 +26,7 @@ export default function Home() {
       if (data.session?.user.id) {
         const { data: perfil } = await supabase
           .from("profiles")
-          .select("racha_actual, onboarding_completado")
+          .select("racha_actual, onboarding_completado, welcome_email_sent")
           .eq("id", data.session.user.id)
           .single();
         const hoy = new Date().toISOString().slice(0, 10);
@@ -34,6 +34,16 @@ export default function Home() {
         const rachaBase = perfil?.racha_actual ?? 0;
         setRacha(yaEscribioHoy ? rachaBase + 1 : rachaBase);
         if (perfil?.onboarding_completado === false) setShowOnboarding(true);
+        if (perfil?.welcome_email_sent === false) {
+          const userEmail = data.session.user.email;
+          const username = data.session.user.user_metadata?.username ?? "";
+          supabase.from("profiles").update({ welcome_email_sent: true }).eq("id", data.session.user.id);
+          fetch("/api/send-welcome", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ email: userEmail, username }),
+          }).catch(() => {});
+        }
       }
       setCargando(false);
     });
