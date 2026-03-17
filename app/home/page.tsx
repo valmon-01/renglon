@@ -12,6 +12,7 @@ import OnboardingModal from "@/app/components/OnboardingModal";
 export default function Home() {
   const [session, setSession] = useState<Session | null>(null);
   const [consigna, setConsigna] = useState<string | null>(null);
+  const [ultimaConsigna, setUltimaConsigna] = useState<string | null>(null);
   const [racha, setRacha] = useState<number>(0);
   const [cargando, setCargando] = useState(true);
   const [showOnboarding, setShowOnboarding] = useState(false);
@@ -22,7 +23,20 @@ export default function Home() {
       fetch("/api/asignar-consigna-diaria").then((r) => r.json()),
     ]).then(async ([{ data }, consignaData]) => {
       setSession(data.session);
-      setConsigna(consignaData.consigna?.texto ?? null);
+      const consignaHoy = consignaData.consigna?.texto ?? null;
+      setConsigna(consignaHoy);
+      if (!consignaHoy) {
+        const { data: ultima } = await supabase
+          .from("consignas")
+          .select("texto")
+          .eq("aprobada", true)
+          .eq("borrador", false)
+          .not("fecha", "is", null)
+          .order("fecha", { ascending: false })
+          .limit(1)
+          .maybeSingle();
+        setUltimaConsigna(ultima?.texto ?? null);
+      }
       if (data.session?.user.id) {
         const { data: perfil } = await supabase
           .from("profiles")
@@ -100,12 +114,55 @@ export default function Home() {
               <div style={{ width: 64, height: 1, backgroundColor: "rgba(61,53,48,0.15)" }} />
               <div style={{ width: 48, height: 1, backgroundColor: "rgba(61,53,48,0.15)" }} />
             </div>
-            <p style={{ fontFamily: "'Playfair Display', serif", fontStyle: "italic", fontSize: 20, color: "#3D3530", margin: "0 0 12px" }}>
-              Hoy todavía no hay consigna.
-            </p>
-            <p style={{ fontSize: 14, color: "#9C8B7E", margin: 0 }}>
-              Volvé más tarde, que vale la pena.
-            </p>
+            {ultimaConsigna ? (
+              <>
+                <p style={{ fontSize: 11, letterSpacing: "0.14em", textTransform: "uppercase", color: "#9C8B7E", margin: "0 0 12px" }}>
+                  La consigna de ayer:
+                </p>
+                <p style={{ fontFamily: "'Playfair Display', serif", fontStyle: "italic", fontSize: 22, color: "#3D3530", margin: "0 0 32px", lineHeight: 1.5 }}>
+                  {ultimaConsigna}
+                </p>
+                <Link
+                  href={session ? "/editor" : "/login"}
+                  style={{
+                    display: "inline-block",
+                    backgroundColor: "#64313E",
+                    color: "#FDFAF5",
+                    padding: "12px 32px",
+                    borderRadius: 6,
+                    fontSize: 14,
+                    fontWeight: 500,
+                    textDecoration: "none",
+                  }}
+                >
+                  Escribir sobre esta consigna
+                </Link>
+              </>
+            ) : (
+              <>
+                <p style={{ fontFamily: "'Playfair Display', serif", fontStyle: "italic", fontSize: 20, color: "#3D3530", margin: "0 0 12px" }}>
+                  Las consignas llegan cada mañana.
+                </p>
+                <p style={{ fontSize: 14, color: "#9C8B7E", margin: "0 0 24px" }}>
+                  Mientras tanto, podés explorar el feed.
+                </p>
+                <Link
+                  href="/feed"
+                  style={{
+                    display: "inline-block",
+                    backgroundColor: "#64313E",
+                    color: "#FDFAF5",
+                    padding: "12px 32px",
+                    borderRadius: 6,
+                    fontSize: 14,
+                    fontWeight: 500,
+                    textDecoration: "none",
+                  }}
+                >
+                  Ver el feed
+                </Link>
+              </>
+            )}
           </div>
         ) : (
           <>

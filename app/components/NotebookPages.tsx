@@ -23,6 +23,7 @@ interface NotebookPagesProps {
   onClose: () => void;
   onDelete: (id: string) => Promise<void>;
   onTogglePublicado: (id: string, current: boolean) => Promise<void>;
+  readOnly?: boolean;
 }
 
 function fechaDDMMYYYY(iso: string): string {
@@ -41,6 +42,7 @@ export default function NotebookPages({
   onClose,
   onDelete,
   onTogglePublicado,
+  readOnly = false,
 }: NotebookPagesProps) {
   const [page, setPage] = useState(0);
   const [showShare, setShowShare] = useState(false);
@@ -220,7 +222,7 @@ export default function NotebookPages({
           </div>
 
           {/* Fila 2: botones de acción con labels */}
-          {(text.publicado || isOwner) && (
+          {!readOnly && (text.publicado || isOwner) && (
             <div
               style={{
                 display: "flex",

@@ -4,8 +4,10 @@ import { useState, useEffect, Suspense } from "react";
 import Link from "next/link";
 import { useSearchParams, useRouter } from "next/navigation";
 import { ArrowLeft } from "lucide-react";
+import { AnimatePresence, motion } from "framer-motion";
 import { supabase } from "@/lib/supabase";
 import TypewriterLoader from "@/app/components/TypewriterLoader";
+import NotebookPages from "@/app/components/NotebookPages";
 
 interface Texto {
   id: string;
@@ -13,6 +15,8 @@ interface Texto {
   titulo: string | null;
   tags: string[] | null;
   created_at: string;
+  consigna: string;
+  publicado: boolean;
 }
 
 function iniciales(nombre: string): string {
@@ -50,6 +54,8 @@ function PerfilPublicoContenido() {
   const [sessionUserId, setSessionUserId] = useState<string | null>(null);
   const [siguiendo, setSiguiendo] = useState(false);
   const [toggling, setToggling] = useState(false);
+  const [libroAbierto, setLibroAbierto] = useState(false);
+  const containerWidth = libroAbierto ? 660 : 720;
 
   useEffect(() => {
     if (!userId) return;
@@ -63,7 +69,7 @@ function PerfilPublicoContenido() {
         supabase.from("profiles").select("username, bio").eq("id", userId).single(),
         supabase
           .from("textos")
-          .select("id, contenido, titulo, tags, created_at")
+          .select("id, contenido, titulo, tags, created_at, consigna, publicado")
           .eq("user_id", userId)
           .eq("publicado", true)
           .order("created_at", { ascending: false }),
@@ -131,7 +137,7 @@ function PerfilPublicoContenido() {
 
       {/* Navbar */}
       <nav className="w-full border-b border-borde px-6 py-4">
-        <div className="mx-auto flex max-w-[720px] items-center justify-between">
+        <div className="mx-auto flex max-w-[720px] items-center justify-between" style={{ maxWidth: containerWidth, transition: "max-width 0.3s ease" }}>
           <button
             type="button"
             onClick={() => router.back()}
@@ -144,7 +150,30 @@ function PerfilPublicoContenido() {
         </div>
       </nav>
 
-      <main className="mx-auto max-w-[720px] px-6 pb-24 pt-10">
+      <main style={{ maxWidth: containerWidth, margin: "0 auto", transition: "max-width 0.3s ease", padding: "40px 24px 80px" }}>
+
+        <AnimatePresence mode="wait">
+        {libroAbierto ? (
+          <motion.div
+            key="libro"
+            initial={{ opacity: 0, rotateY: 8, x: 20 }}
+            animate={{ opacity: 1, rotateY: 0, x: 0 }}
+            transition={{ duration: 0.35, ease: [0.16, 1, 0.3, 1] }}
+            style={{ transformPerspective: 800 }}
+          >
+            <NotebookPages
+              texts={textos}
+              username={username}
+              userId={userId ?? ""}
+              sessionUserId={sessionUserId ?? ""}
+              onClose={() => setLibroAbierto(false)}
+              onDelete={async () => {}}
+              onTogglePublicado={async () => {}}
+              readOnly
+            />
+          </motion.div>
+        ) : (
+          <motion.div key="perfil" exit={{ opacity: 0 }}>
 
         {/* Cabecera */}
         <div className="mb-10 flex flex-col items-center gap-4 text-center">
@@ -191,36 +220,52 @@ function PerfilPublicoContenido() {
             Todavía no hay textos publicados.
           </p>
         ) : (
-          <div className="flex flex-col gap-4">
-            {textos.map((texto) => (
-              <Link
-                key={texto.id}
-                href={`/texto/${texto.id}`}
-                className="block rounded-[8px] border border-borde bg-papel-oscuro p-5 transition-opacity hover:opacity-80"
+          <>
+            <div className="flex flex-col gap-4 mb-6">
+              {textos.slice(0, 3).map((texto) => (
+                <Link
+                  key={texto.id}
+                  href={`/texto/${texto.id}`}
+                  className="block rounded-[8px] border border-borde bg-papel-oscuro p-5 transition-opacity hover:opacity-80"
+                >
+                  {texto.titulo && (
+                    <p className="mb-1 font-display italic text-tinta">{texto.titulo}</p>
+                  )}
+                  <p className="text-sm leading-relaxed text-tinta-suave">
+                    {extracto(texto.contenido)}
+                  </p>
+                  {texto.tags && texto.tags.length > 0 && (
+                    <div className="mt-3 flex flex-wrap gap-1.5">
+                      {texto.tags.map((tag) => (
+                        <span
+                          key={tag}
+                          className="rounded-[4px] bg-cielo px-2 py-0.5 text-xs text-borravino"
+                        >
+                          {tag}
+                        </span>
+                      ))}
+                    </div>
+                  )}
+                  <p className="mt-3 text-xs text-tinta-suave">{fechaCorta(texto.created_at)}</p>
+                </Link>
+              ))}
+            </div>
+            <div className="flex justify-center">
+              <button
+                type="button"
+                onClick={() => setLibroAbierto(true)}
+                className="font-display italic text-borravino transition-opacity hover:opacity-70"
+                style={{ fontSize: 16, background: "none", border: "none", cursor: "pointer" }}
               >
-                {texto.titulo && (
-                  <p className="mb-1 font-display italic text-tinta">{texto.titulo}</p>
-                )}
-                <p className="text-sm leading-relaxed text-tinta-suave">
-                  {extracto(texto.contenido)}
-                </p>
-                {texto.tags && texto.tags.length > 0 && (
-                  <div className="mt-3 flex flex-wrap gap-1.5">
-                    {texto.tags.map((tag) => (
-                      <span
-                        key={tag}
-                        className="rounded-[4px] bg-cielo px-2 py-0.5 text-xs text-borravino"
-                      >
-                        {tag}
-                      </span>
-                    ))}
-                  </div>
-                )}
-                <p className="mt-3 text-xs text-tinta-suave">{fechaCorta(texto.created_at)}</p>
-              </Link>
-            ))}
-          </div>
+                Leer escritos →
+              </button>
+            </div>
+          </>
         )}
+
+          </motion.div>
+        )}
+        </AnimatePresence>
 
       </main>
     </div>

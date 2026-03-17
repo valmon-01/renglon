@@ -1,9 +1,10 @@
 "use client";
 
-import { useState, useRef, useEffect } from "react";
+import { useState, useRef, useEffect, Suspense } from "react";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { ArrowLeft, Check, Globe, Lock } from "lucide-react";
+import { motion, AnimatePresence } from "framer-motion";
 import { supabase } from "@/lib/supabase";
 import { calcularYActualizarRacha } from "@/utils/dailyProgress";
 
@@ -21,19 +22,45 @@ function contarPalabras(texto: string): number {
   return texto.trim() === "" ? 0 : texto.trim().split(/\s+/).length;
 }
 
-export default function Editor() {
+function EditorContenido() {
   const router = useRouter();
+  const searchParams = useSearchParams();
+  const editId = searchParams.get("edit");
   const textareaRef = useRef<HTMLTextAreaElement>(null);
 
   const [consigna, setConsigna] = useState<string | null>(null);
   const [titulo, setTitulo] = useState("");
   const [contenido, setContenido] = useState("");
+  const [isEditMode, setIsEditMode] = useState(false);
 
   useEffect(() => {
     fetch("/api/asignar-consigna-diaria")
       .then((r) => r.json())
       .then((data) => setConsigna(data.consigna?.texto ?? null));
   }, []);
+
+  useEffect(() => {
+    if (!editId) return;
+    setIsEditMode(true);
+    supabase
+      .from("textos")
+      .select("titulo, contenido, consigna")
+      .eq("id", editId)
+      .single()
+      .then(({ data }) => {
+        if (data) {
+          setTitulo(data.titulo ?? "");
+          setContenido(data.contenido ?? "");
+          if (data.consigna) setConsigna(data.consigna);
+          const el = textareaRef.current;
+          if (el) {
+            el.style.height = "auto";
+            el.style.height = el.scrollHeight + "px";
+          }
+        }
+      });
+  }, [editId]);
+
   const [showModal, setShowModal] = useState(false);
   const [guardando, setGuardando] = useState(false);
   const [confirmacion, setConfirmacion] = useState<"publicado" | "privado" | null>(null);
@@ -65,26 +92,44 @@ export default function Editor() {
         data: { session },
       } = await supabase.auth.getSession();
 
-      await supabase.from("textos").insert({
-        user_id: session?.user.id ?? null,
-        contenido,
-        titulo: titulo.trim() || null,
-        consigna: consigna ?? "",
-        publicado,
-      });
+      if (isEditMode && editId) {
+        await supabase
+          .from("textos")
+          .update({
+            contenido,
+            titulo: titulo.trim() || null,
+            publicado,
+          })
+          .eq("id", editId)
+          .eq("user_id", session?.user.id ?? "");
+      } else {
+        await supabase.from("textos").insert({
+          user_id: session?.user.id ?? null,
+          contenido,
+          titulo: titulo.trim() || null,
+          consigna: consigna ?? "",
+          publicado,
+        });
+      }
 
-      if (session?.user.id) {
+      if (!isEditMode && session?.user.id) {
         await calcularYActualizarRacha(session.user.id);
       }
 
-      const hoy = new Date().toISOString().slice(0, 10);
-      localStorage.setItem(`renglon_completed_${hoy}`, "1");
+      if (!isEditMode) {
+        const hoy = new Date().toISOString().slice(0, 10);
+        localStorage.setItem(`renglon_completed_${hoy}`, "1");
+      }
 
       setShowModal(false);
       setConfirmacion(publicado ? "publicado" : "privado");
 
       setTimeout(() => {
-        router.push(publicado ? "/feed" : "/perfil");
+        if (isEditMode && editId) {
+          router.push(`/texto/${editId}`);
+        } else {
+          router.push(publicado ? "/feed" : "/perfil");
+        }
       }, 1800);
     } catch {
       setGuardando(false);
@@ -276,47 +321,66 @@ export default function Editor() {
       </div>
 
       {/* Modal */}
-      {showModal && (
-        <div
-          className="fixed inset-0 z-50 flex items-end justify-center bg-tinta/30 px-4 pb-4 sm:items-center sm:pb-0"
-          onClick={() => !guardando && setShowModal(false)}
-        >
-          <div
-            className="w-full max-w-[400px] rounded-[8px] border border-borde bg-blanco-roto p-8"
-            onClick={(e) => e.stopPropagation()}
+      <AnimatePresence>
+        {showModal && (
+          <motion.div
+            className="fixed inset-0 z-50 flex items-end justify-center px-4 pb-4 sm:items-center sm:pb-0"
+            style={{ backgroundColor: "rgba(28,25,23,0.4)", backdropFilter: "blur(6px)" }}
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 0.2 }}
+            onClick={() => !guardando && setShowModal(false)}
           >
-            <h2 className="font-display text-xl italic text-tinta">
-              ¿Qué querés hacer con tu texto?
-            </h2>
-            <p className="mt-3 text-sm leading-relaxed text-tinta-suave">
-              Solo quienes ya escribieron hoy pueden leer los textos publicados.
-            </p>
+            <motion.div
+              className="w-full max-w-[400px] rounded-[8px] border border-borde bg-blanco-roto p-8"
+              initial={{ opacity: 0, scale: 0.95, y: 8 }}
+              animate={{ opacity: 1, scale: 1, y: 0 }}
+              exit={{ opacity: 0, scale: 0.95, y: 8 }}
+              transition={{ duration: 0.2, ease: [0.16, 1, 0.3, 1] }}
+              onClick={(e) => e.stopPropagation()}
+            >
+              <h2 className="font-display text-xl italic text-tinta">
+                ¿Querés compartirlo?
+              </h2>
+              <p className="mt-3 text-sm leading-relaxed text-tinta-suave">
+                Solo quienes ya escribieron hoy pueden leer los textos publicados.
+              </p>
 
-            <div className="mt-8 flex flex-col gap-3">
-              <button
-                type="button"
-                onClick={() => guardar(true)}
-                disabled={guardando}
-                className="flex items-center justify-center gap-2 rounded-[6px] bg-borravino py-3 text-sm font-medium text-blanco-roto transition-opacity hover:opacity-90 disabled:opacity-50"
-              >
-                <Globe size={16} strokeWidth={1.5} />
-                {guardando ? "Publicando…" : "Publicar"}
-              </button>
-              <button
-                type="button"
-                onClick={() => guardar(false)}
-                disabled={guardando}
-                className="flex items-center justify-center gap-2 rounded-[6px] border border-borravino py-3 text-sm font-medium text-borravino transition-colors hover:bg-borravino hover:text-blanco-roto disabled:opacity-50"
-                style={{ borderWidth: "1.5px" }}
-              >
-                <Lock size={16} strokeWidth={1.5} />
-                {guardando ? "Guardando…" : "Guardar en privado"}
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
+              <div className="mt-8 flex flex-col gap-3">
+                <button
+                  type="button"
+                  onClick={() => guardar(true)}
+                  disabled={guardando}
+                  className="flex items-center justify-center gap-2 rounded-[6px] bg-borravino py-3 text-sm font-medium text-blanco-roto transition-opacity hover:opacity-90 disabled:opacity-50"
+                >
+                  <Globe size={16} strokeWidth={1.5} />
+                  {guardando ? "Publicando…" : "Publicar"}
+                </button>
+                <button
+                  type="button"
+                  onClick={() => guardar(false)}
+                  disabled={guardando}
+                  className="flex items-center justify-center gap-2 rounded-[6px] border border-borravino py-3 text-sm font-medium text-borravino transition-colors hover:bg-borravino hover:text-blanco-roto disabled:opacity-50"
+                  style={{ borderWidth: "1.5px" }}
+                >
+                  <Lock size={16} strokeWidth={1.5} />
+                  {guardando ? "Guardando…" : "Guardar privado"}
+                </button>
+              </div>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
 
     </div>
+  );
+}
+
+export default function Editor() {
+  return (
+    <Suspense fallback={null}>
+      <EditorContenido />
+    </Suspense>
   );
 }

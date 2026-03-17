@@ -216,20 +216,19 @@ export default function Perfil() {
                 </span>
 
                 {/* Bio */}
-                {bio && (
-                  <p
-                    style={{
-                      fontFamily: "var(--font-sans)",
-                      fontSize: 14,
-                      color: "rgba(245,240,232,0.5)",
-                      textAlign: "center",
-                      lineHeight: 1.5,
-                      marginTop: 8,
-                    }}
-                  >
-                    {bio}
-                  </p>
-                )}
+                <p
+                  style={{
+                    fontFamily: "var(--font-sans)",
+                    fontSize: 14,
+                    fontStyle: bio ? "normal" : "italic",
+                    color: "rgba(245,240,232,0.5)",
+                    textAlign: "center",
+                    lineHeight: 1.5,
+                    marginTop: 8,
+                  }}
+                >
+                  {bio || "Agregá una bio desde Editar perfil"}
+                </p>
 
                 {/* Separador */}
                 <div
@@ -277,30 +276,56 @@ export default function Perfil() {
                   ))}
                 </div>
 
-                {/* Botón Leer escritos */}
-                <button
-                  type="button"
-                  onClick={() => setLibroAbierto(true)}
-                  style={{
-                    marginTop: 24,
-                    width: "100%",
-                    padding: "14px 0",
-                    backgroundColor: "rgba(245,240,232,0.1)",
-                    border: "1px solid rgba(245,240,232,0.2)",
-                    borderRadius: 8,
-                    color: "#F5F0E8",
-                    fontFamily: "var(--font-display)",
-                    fontStyle: "italic",
-                    fontSize: 16,
-                    cursor: "pointer",
-                    display: "flex",
-                    alignItems: "center",
-                    justifyContent: "center",
-                    gap: 8,
-                  }}
-                >
-                  Leer escritos →
-                </button>
+                {/* Botón Leer escritos / Escribir primer texto */}
+                {textos.length === 0 ? (
+                  <Link
+                    href="/home"
+                    style={{
+                      marginTop: 24,
+                      width: "100%",
+                      padding: "14px 0",
+                      backgroundColor: "rgba(245,240,232,0.1)",
+                      border: "1px solid rgba(245,240,232,0.2)",
+                      borderRadius: 8,
+                      color: "#F5F0E8",
+                      fontFamily: "var(--font-display)",
+                      fontStyle: "italic",
+                      fontSize: 16,
+                      cursor: "pointer",
+                      display: "flex",
+                      alignItems: "center",
+                      justifyContent: "center",
+                      gap: 8,
+                      textDecoration: "none",
+                    }}
+                  >
+                    Escribí tu primer texto →
+                  </Link>
+                ) : (
+                  <button
+                    type="button"
+                    onClick={() => setLibroAbierto(true)}
+                    style={{
+                      marginTop: 24,
+                      width: "100%",
+                      padding: "14px 0",
+                      backgroundColor: "rgba(245,240,232,0.1)",
+                      border: "1px solid rgba(245,240,232,0.2)",
+                      borderRadius: 8,
+                      color: "#F5F0E8",
+                      fontFamily: "var(--font-display)",
+                      fontStyle: "italic",
+                      fontSize: 16,
+                      cursor: "pointer",
+                      display: "flex",
+                      alignItems: "center",
+                      justifyContent: "center",
+                      gap: 8,
+                    }}
+                  >
+                    Leer escritos →
+                  </button>
+                )}
               </div>
 
               {/* Editar perfil */}

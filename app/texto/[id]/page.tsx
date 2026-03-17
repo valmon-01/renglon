@@ -3,7 +3,7 @@
 import { useState, useEffect } from "react";
 import Link from "next/link";
 import { useParams, useRouter } from "next/navigation";
-import { ArrowLeft, Heart, Share2, Trash2, Eye, EyeOff } from "lucide-react";
+import { ArrowLeft, Heart, Share2, Trash2, Eye, EyeOff, Pencil } from "lucide-react";
 import { supabase } from "@/lib/supabase";
 import TypewriterLoader from "@/app/components/TypewriterLoader";
 import ShareModal from "@/app/components/ShareModal";
@@ -347,6 +347,18 @@ export default function TextoIndividual() {
 
           {sessionUserId === texto.user_id && (
             <>
+              <Link
+                href={`/editor?edit=${texto.id}`}
+                aria-label="Editar escrito"
+                title="Editar"
+                className="flex flex-col items-center gap-2 text-tinta-suave transition-colors hover:text-borravino"
+              >
+                <Pencil size={28} strokeWidth={1.5} />
+                <span className="text-xs" style={{ fontFamily: "Inter, sans-serif" }}>
+                  Editar
+                </span>
+              </Link>
+
               <button
                 type="button"
                 onClick={togglePublicado}

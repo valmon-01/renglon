@@ -158,8 +158,19 @@ export default function Feed() {
       <main style={{ maxWidth: 640, margin: "0 auto", padding: "0 20px 96px" }}>
 
         {/* Label conteo */}
-        <p style={{ fontSize: 11, color: "#9C8B7E", marginTop: 20, marginBottom: 16 }}>
-          {textos.length} {textos.length === 1 ? "persona respondió" : "personas respondieron"} hoy
+        <p style={{
+          fontSize: 11,
+          color: textos.length === 0 ? "var(--color-borravino, #64313E)" : "#9C8B7E",
+          fontFamily: textos.length === 0 ? "'Playfair Display', serif" : "inherit",
+          fontStyle: textos.length === 0 ? "italic" : "normal",
+          marginTop: 20,
+          marginBottom: 16,
+        }}>
+          {textos.length === 0
+            ? "Sé el primero en responder hoy"
+            : textos.length === 1
+            ? "1 persona respondió hoy"
+            : `${textos.length} personas respondieron hoy`}
         </p>
 
 
