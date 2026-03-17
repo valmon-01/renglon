@@ -78,11 +78,11 @@ export default function Landing() {
       {/* Navbar */}
       <nav className="w-full px-6 py-5">
         <div className="mx-auto flex max-w-[680px] items-center justify-between">
-          <span className="font-display italic text-borravino" style={{ fontSize: "22px", fontWeight: 400 }}>renglón</span>
+          <span className="font-display italic text-borravino" style={{ fontSize: "26px", fontWeight: 400 }}>renglón</span>
           <Link
             href="/login"
             className="text-tinta-suave transition-colors hover:underline"
-            style={{ fontFamily: "Inter, sans-serif", fontSize: "13px" }}
+            style={{ fontFamily: "Inter, sans-serif", fontSize: "15px" }}
           >
             Iniciar sesión
           </Link>
