@@ -148,7 +148,7 @@ function PerfilPublicoContenido() {
             <ArrowLeft size={18} strokeWidth={1.5} />
             Volver
           </button>
-          <span className="font-display text-xl italic text-tinta">renglón</span>
+          <span className="font-display text-xl italic text-borravino">renglón</span>
         </div>
       </nav>
 

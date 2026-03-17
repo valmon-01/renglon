@@ -63,7 +63,7 @@ export default function OnboardingModal({ onClose, userId }: Props) {
             fontFamily: "var(--font-display)",
             fontStyle: "italic",
             fontSize: 13,
-            color: "#9C8B7E",
+            color: "#64313E",
             textAlign: "center",
             marginBottom: 32,
           }}

@@ -56,7 +56,7 @@ export default function Registro() {
       <div className="relative w-full max-w-[400px]">
 
         {/* Header */}
-        <h1 className="mb-8 text-center font-display text-4xl italic text-tinta">
+        <h1 className="mb-8 text-center font-display text-4xl italic text-borravino">
           renglón
         </h1>
 
