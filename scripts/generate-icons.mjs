@@ -29,11 +29,12 @@ function iconSvg(size) {
 
 function iconSvgLarge(size) {
   const radius = Math.round(size * 0.18);
-  const fontSize = Math.round(size * 0.64);
-  // centrar la "r" usando dominant-baseline="central"
-  const textY = Math.round(size * 0.5);
-  // línea justo debajo de la baseline (baseline ≈ centro + 22% del font-size)
-  const lineY = Math.round(textY + fontSize * 0.22);
+  const fontSize = Math.round(size * 1.3);
+  // y = baseline; xheight ≈ 47% del fontSize → "r" ocupa ~61% del alto
+  // baseline en 70% para centrar el glifo visualmente (~9% top, ~70% bottom)
+  const textY = Math.round(size * 0.70);
+  // gap de 15% del alto entre baseline y línea
+  const lineY = Math.round(textY + size * 0.15);
   const lineX1 = Math.round(size * 0.2);
   const lineX2 = Math.round(size * 0.8);
   const strokeWidth = Math.max(1, Math.round(size / 128));
@@ -41,7 +42,7 @@ function iconSvgLarge(size) {
   <rect width="${size}" height="${size}" fill="${PAPEL}" rx="${radius}"/>
   <text x="${size / 2}" y="${textY}" font-family="Georgia, serif" font-style="italic"
     font-size="${fontSize}" fill="${BORRAVINO}" text-anchor="middle"
-    dominant-baseline="central" font-weight="400">r</text>
+    font-weight="400">r</text>
   <line x1="${lineX1}" y1="${lineY}" x2="${lineX2}" y2="${lineY}"
     stroke="${BORRAVINO}" stroke-width="${strokeWidth}" opacity="0.3"/>
 </svg>`;
