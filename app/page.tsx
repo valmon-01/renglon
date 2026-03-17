@@ -2,12 +2,21 @@
 
 import { useState, useEffect } from "react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { motion } from "framer-motion";
+import { supabase } from "@/lib/supabase";
 
 const FALLBACK = "Escribí sobre un objeto que alguien te dejó y que no pediste.";
 
 export default function Landing() {
+  const router = useRouter();
   const [consigna, setConsigna] = useState<string>(FALLBACK);
+
+  useEffect(() => {
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      if (session) router.replace("/home");
+    });
+  }, [router]);
   const [displayLinea1, setDisplayLinea1] = useState("");
   const [displayLinea2, setDisplayLinea2] = useState("");
   const [fase, setFase] = useState<1 | 2 | 3>(1);
