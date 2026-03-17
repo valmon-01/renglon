@@ -22,6 +22,7 @@ export default function EditarPerfil() {
   const router = useRouter();
   const [user, setUser] = useState<User | null>(null);
   const [nombre, setNombre] = useState("");
+  const [displayName, setDisplayName] = useState("");
   const [bio, setBio] = useState("");
   const [guardando, setGuardando] = useState(false);
   const [guardado, setGuardado] = useState(false);
@@ -44,11 +45,12 @@ export default function EditarPerfil() {
 
       const { data: prof } = await supabase
         .from("profiles")
-        .select("bio")
+        .select("bio, display_name")
         .eq("id", user.id)
         .single();
 
       setBio(prof?.bio ?? "");
+      setDisplayName(prof?.display_name ?? "");
       setCargando(false);
     }
 
@@ -68,6 +70,7 @@ export default function EditarPerfil() {
         id: user.id,
         username: nombre.trim(),
         bio: bio.trim() || null,
+        display_name: displayName.trim() || null,
       }),
     ]);
 
@@ -143,6 +146,22 @@ export default function EditarPerfil() {
               onChange={(e) => setNombre(e.target.value)}
               className="border-0 border-b border-borde bg-transparent py-2 text-base text-tinta outline-none transition-colors focus:border-borravino"
               style={{ borderBottomWidth: "1.5px" }}
+            />
+          </div>
+
+          {/* Display name */}
+          <div className="flex flex-col gap-1">
+            <label className="text-sm text-tinta-suave" htmlFor="displayName">
+              ¿Cómo querés que te llamen?
+            </label>
+            <input
+              id="displayName"
+              type="text"
+              value={displayName}
+              onChange={(e) => setDisplayName(e.target.value)}
+              className="border-0 border-b border-borde bg-transparent py-2 text-base text-tinta outline-none transition-colors focus:border-borravino"
+              style={{ borderBottomWidth: "1.5px" }}
+              placeholder="Nombre que aparecerá en tu perfil"
             />
           </div>
 

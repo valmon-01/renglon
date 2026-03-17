@@ -63,11 +63,11 @@ export default function Feed() {
       const userIds = [...new Set(textos.map((t) => t.user_id))];
       const { data: profilesData } = await supabase
         .from("profiles")
-        .select("id, username")
+        .select("id, username, display_name")
         .in("id", userIds);
 
       const profileMap = Object.fromEntries(
-        (profilesData ?? []).map((p) => [p.id, p.username])
+        (profilesData ?? []).map((p) => [p.id, p.display_name || p.username])
       );
 
       const textosConUsername = textos.map((t) => ({

@@ -24,6 +24,7 @@ export default function Perfil() {
   const router = useRouter();
   const [user, setUser] = useState<User | null>(null);
   const [bio, setBio] = useState<string | null>(null);
+  const [displayName, setDisplayName] = useState<string | null>(null);
   const [racha, setRacha] = useState<number>(0);
   const [textos, setTextos] = useState<Texto[]>([]);
   const [libroAbierto, setLibroAbierto] = useState(false);
@@ -43,7 +44,7 @@ export default function Perfil() {
       setUser(user);
 
       const [{ data: prof }, { data: texs }] = await Promise.all([
-        supabase.from("profiles").select("bio, racha_actual").eq("id", user.id).single(),
+        supabase.from("profiles").select("bio, racha_actual, display_name").eq("id", user.id).single(),
         supabase
           .from("textos")
           .select("id, contenido, titulo, tags, created_at, publicado, consigna")
@@ -52,6 +53,7 @@ export default function Perfil() {
       ]);
 
       setBio(prof?.bio ?? null);
+      setDisplayName(prof?.display_name ?? null);
       setRacha(prof?.racha_actual ?? 0);
       setTextos((texs as Texto[]) ?? []);
       setCargando(false);
@@ -200,7 +202,7 @@ export default function Perfil() {
                   </span>
                 </div>
 
-                {/* Username */}
+                {/* Display name / Username */}
                 <span
                   style={{
                     fontFamily: "var(--font-display)",
@@ -209,11 +211,25 @@ export default function Perfil() {
                     color: "#F5F0E8",
                     textAlign: "center",
                     display: "block",
-                    marginBottom: 6,
+                    marginBottom: 2,
                   }}
                 >
-                  {username}
+                  {displayName || username}
                 </span>
+                {displayName && (
+                  <span
+                    style={{
+                      fontFamily: "var(--font-sans)",
+                      fontSize: 12,
+                      color: "rgba(245,240,232,0.4)",
+                      textAlign: "center",
+                      display: "block",
+                      marginBottom: 4,
+                    }}
+                  >
+                    @{username}
+                  </span>
+                )}
 
                 {/* Bio */}
                 <p

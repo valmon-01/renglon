@@ -47,13 +47,14 @@ export default function ShareModal({
   useEffect(() => {
     if (!open) return;
     setCanShare(typeof navigator !== "undefined" && "share" in navigator);
-    // Measure actual card height after paint
-    const id = requestAnimationFrame(() => {
+    const measure = () => {
       if (hiddenRef.current) {
-        setCardHeight(hiddenRef.current.scrollHeight);
+        const h = hiddenRef.current.scrollHeight;
+        if (h > 100) setCardHeight(h);
+        else requestAnimationFrame(measure);
       }
-    });
-    return () => cancelAnimationFrame(id);
+    };
+    document.fonts.ready.then(() => requestAnimationFrame(measure));
   }, [open]);
 
   async function generateBlob(): Promise<Blob | null> {

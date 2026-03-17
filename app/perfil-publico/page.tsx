@@ -48,6 +48,7 @@ function PerfilPublicoContenido() {
   const userId = searchParams.get("id");
 
   const [username, setUsername] = useState("");
+  const [displayName, setDisplayName] = useState<string | null>(null);
   const [bio, setBio] = useState<string | null>(null);
   const [textos, setTextos] = useState<Texto[]>([]);
   const [cargando, setCargando] = useState(true);
@@ -66,7 +67,7 @@ function PerfilPublicoContenido() {
         { data: texs },
         { data: { session } },
       ] = await Promise.all([
-        supabase.from("profiles").select("username, bio").eq("id", userId).single(),
+        supabase.from("profiles").select("username, bio, display_name").eq("id", userId).single(),
         supabase
           .from("textos")
           .select("id, contenido, titulo, tags, created_at, consigna, publicado")
@@ -77,6 +78,7 @@ function PerfilPublicoContenido() {
       ]);
 
       setUsername(perfil?.username ?? "Usuario");
+      setDisplayName(perfil?.display_name ?? null);
       setBio(perfil?.bio ?? null);
       setTextos((texs as Texto[]) ?? []);
 
@@ -185,7 +187,10 @@ function PerfilPublicoContenido() {
           </div>
 
           <div>
-            <h1 className="text-xl font-medium text-tinta">{username}</h1>
+            <h1 className="text-xl font-medium text-tinta">{displayName || username}</h1>
+            {displayName && (
+              <p className="mt-0.5 text-sm text-tinta-suave/60">@{username}</p>
+            )}
             {bio && (
               <p className="mt-2 max-w-sm text-sm leading-relaxed text-tinta-suave">
                 {bio}

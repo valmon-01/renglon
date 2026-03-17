@@ -69,10 +69,10 @@ export default function TextoIndividual() {
       if (textoData?.user_id) {
         const { data: perfil } = await supabase
           .from("profiles")
-          .select("username")
+          .select("username, display_name")
           .eq("id", textoData.user_id)
           .single();
-        username = perfil?.username ?? "Autor";
+        username = perfil?.display_name || perfil?.username || "Autor";
       }
 
       setTexto(textoData ? { ...textoData, username } as Texto : null);
@@ -280,7 +280,7 @@ export default function TextoIndividual() {
               <p
                 className="italic text-tinta"
                 style={{
-                  fontSize: "1rem",
+                  fontSize: "0.9375rem",
                   lineHeight: "40px",
                   fontFamily: "Inter, sans-serif",
                 }}
@@ -293,7 +293,7 @@ export default function TextoIndividual() {
             <div
               className="text-tinta"
               style={{
-                fontSize: "1rem",
+                fontSize: "0.9375rem",
                 lineHeight: "40px",
                 fontFamily: "Inter, sans-serif",
               }}

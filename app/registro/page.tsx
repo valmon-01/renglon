@@ -8,6 +8,7 @@ import { supabase } from "@/lib/supabase";
 export default function Registro() {
   const router = useRouter();
   const [nombre, setNombre] = useState("");
+  const [displayName, setDisplayName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState<string | null>(null);
@@ -18,7 +19,7 @@ export default function Registro() {
     setError(null);
     setCargando(true);
 
-    const { error } = await supabase.auth.signUp({
+    const { data, error } = await supabase.auth.signUp({
       email,
       password,
       options: {
@@ -30,6 +31,12 @@ export default function Registro() {
       setError(error.message);
       setCargando(false);
       return;
+    }
+
+    if (data.user && displayName.trim()) {
+      await supabase
+        .from("profiles")
+        .upsert({ id: data.user.id, display_name: displayName.trim() });
     }
 
     router.push("/home");
@@ -70,6 +77,22 @@ export default function Registro() {
               className="border-0 border-b border-borde bg-transparent py-2 text-base text-tinta outline-none transition-colors placeholder:text-tinta-suave/50 focus:border-borravino"
               style={{ borderBottomWidth: "1.5px" }}
               placeholder="Tu nombre"
+            />
+          </div>
+
+          {/* Display name */}
+          <div className="flex flex-col gap-1">
+            <label className="text-sm text-tinta-suave" htmlFor="displayName">
+              ¿Cómo querés que te llamen?
+            </label>
+            <input
+              id="displayName"
+              type="text"
+              value={displayName}
+              onChange={(e) => setDisplayName(e.target.value)}
+              className="border-0 border-b border-borde bg-transparent py-2 text-base text-tinta outline-none transition-colors placeholder:text-tinta-suave/50 focus:border-borravino"
+              style={{ borderBottomWidth: "1.5px" }}
+              placeholder="Nombre que aparecerá en tu perfil"
             />
           </div>
 
