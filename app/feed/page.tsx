@@ -3,7 +3,7 @@
 import { useState, useEffect } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { EyeOff, Heart, Pencil } from "lucide-react";
+import { EyeOff, Heart } from "lucide-react";
 import { supabase } from "@/lib/supabase";
 import TypewriterLoader from "@/app/components/TypewriterLoader";
 
@@ -158,20 +158,18 @@ export default function Feed() {
       <main style={{ maxWidth: 640, margin: "0 auto", padding: "0 20px 96px" }}>
 
         {/* Label conteo */}
-        <p style={{
-          fontSize: 11,
-          color: textos.length === 0 ? "var(--color-borravino, #64313E)" : "#9C8B7E",
-          fontFamily: textos.length === 0 ? "'Playfair Display', serif" : "inherit",
-          fontStyle: textos.length === 0 ? "italic" : "normal",
-          marginTop: 20,
-          marginBottom: 16,
-        }}>
-          {textos.length === 0
-            ? "Sé el primero en responder hoy"
-            : textos.length === 1
-            ? "1 persona respondió hoy"
-            : `${textos.length} personas respondieron hoy`}
-        </p>
+        {textos.length > 0 && (
+          <p style={{
+            fontSize: 11,
+            color: "#9C8B7E",
+            marginTop: 20,
+            marginBottom: 16,
+          }}>
+            {textos.length === 1
+              ? "1 persona respondió hoy"
+              : `${textos.length} personas respondieron hoy`}
+          </p>
+        )}
 
 
         {/* Feed */}
@@ -332,31 +330,6 @@ export default function Feed() {
                 >
                   Ir a escribir
                 </Link>
-                <br />
-                <button
-                  type="button"
-                  onClick={() => {
-                    localStorage.setItem(`renglon_completed_${hoy}`, "1");
-                    setCompletado(true);
-                  }}
-                  style={{
-                    display: "inline-flex",
-                    alignItems: "center",
-                    gap: 6,
-                    marginTop: 12,
-                    backgroundColor: "transparent",
-                    color: "#64313E",
-                    border: "1.5px solid #64313E",
-                    borderRadius: 6,
-                    padding: "10px 24px",
-                    fontSize: 14,
-                    fontWeight: 500,
-                    cursor: "pointer",
-                  }}
-                >
-                  <Pencil size={14} strokeWidth={1.5} />
-                  Ya escribí, ver el feed
-                </button>
               </div>
             </div>
           )}

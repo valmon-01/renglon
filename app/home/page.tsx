@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { Flame } from "lucide-react";
 import { supabase } from "@/lib/supabase";
 import type { Session } from "@supabase/supabase-js";
@@ -10,6 +11,7 @@ import OnboardingModal from "@/app/components/OnboardingModal";
 
 
 export default function Home() {
+  const router = useRouter();
   const [session, setSession] = useState<Session | null>(null);
   const [consigna, setConsigna] = useState<string | null>(null);
   const [ultimaConsigna, setUltimaConsigna] = useState<string | null>(null);
@@ -18,6 +20,12 @@ export default function Home() {
   const [showOnboarding, setShowOnboarding] = useState(false);
 
   useEffect(() => {
+    const hoy = new Date().toISOString().slice(0, 10);
+    if (localStorage.getItem(`renglon_completed_${hoy}`)) {
+      router.push("/feed");
+      return;
+    }
+
     Promise.all([
       supabase.auth.getSession(),
       fetch("/api/asignar-consigna-diaria").then((r) => r.json()),

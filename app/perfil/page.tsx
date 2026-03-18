@@ -87,6 +87,13 @@ export default function Perfil() {
 
   const username = user?.user_metadata?.username ?? "Usuario";
   const publicados = textos.filter((t) => t.publicado);
+  const nombreParaIniciales = displayName || username;
+  const iniciales = nombreParaIniciales
+    .trim()
+    .split(/\s+/)
+    .slice(0, 2)
+    .map((p: string) => p[0]?.toUpperCase() ?? "")
+    .join("");
   const containerWidth = libroAbierto ? 660 : 480;
 
   return (
@@ -171,6 +178,7 @@ export default function Perfil() {
                     color: "rgba(245,240,232,0.4)",
                     marginBottom: 20,
                     display: "block",
+                    textAlign: "center",
                   }}
                 >
                   renglón
@@ -187,18 +195,18 @@ export default function Perfil() {
                     display: "flex",
                     alignItems: "center",
                     justifyContent: "center",
-                    margin: "24px auto",
+                    margin: "16px auto 12px",
                   }}
                 >
                   <span
                     style={{
                       fontFamily: "var(--font-display)",
                       fontStyle: "italic",
-                      fontSize: 22,
+                      fontSize: 20,
                       color: "#F5F0E8",
                     }}
                   >
-                    {username[0]?.toUpperCase() ?? "U"}
+                    {iniciales}
                   </span>
                 </div>
 
@@ -224,7 +232,7 @@ export default function Perfil() {
                       color: "rgba(245,240,232,0.4)",
                       textAlign: "center",
                       display: "block",
-                      marginBottom: 4,
+                      marginBottom: 0,
                     }}
                   >
                     @{username}
@@ -240,7 +248,7 @@ export default function Perfil() {
                     color: "rgba(245,240,232,0.5)",
                     textAlign: "center",
                     lineHeight: 1.5,
-                    marginTop: 8,
+                    marginTop: 16,
                   }}
                 >
                   {bio || "Agregá una bio desde Editar perfil"}
