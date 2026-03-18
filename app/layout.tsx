@@ -3,40 +3,36 @@ import "./globals.css";
 import ClientLayout from "@/app/components/ClientLayout";
 
 export const metadata: Metadata = {
-  metadataBase: new URL("https://renglon.vercel.app"),
-  title: "renglón",
+  title: "renglón — escritura creativa diaria",
   description:
-    "El hábito de escribir, un renglón a la vez. Cada día una consigna nueva te invita a escribir.",
+    "Una consigna nueva cada día. Escribí, publicá, leé lo que escribieron otros. El hábito de crear, un renglón a la vez.",
+  metadataBase: new URL("https://renglon.vercel.app"),
   openGraph: {
-    title: "renglón — el hábito de escribir",
+    title: "renglón — escritura creativa diaria",
     description:
-      "Cada día una consigna nueva. Escribís, y si querés, leés lo que escribieron otros.",
+      "Una consigna nueva cada día. Escribí, publicá, leé lo que escribieron otros.",
     url: "https://renglon.vercel.app",
     siteName: "renglón",
-    locale: "es_AR",
-    type: "website",
     images: [
       {
         url: "/og-image.png",
         width: 1200,
         height: 630,
-        alt: "renglón — el hábito de escribir, un renglón a la vez",
+        alt: "renglón — escritura creativa diaria",
       },
     ],
+    locale: "es_AR",
+    type: "website",
   },
   twitter: {
     card: "summary_large_image",
-    title: "renglón — el hábito de escribir",
+    title: "renglón — escritura creativa diaria",
     description:
-      "Cada día una consigna nueva. Escribís, y si querés, leés lo que escribieron otros.",
+      "Una consigna nueva cada día. Escribí, publicá, leé lo que escribieron otros.",
     images: ["/og-image.png"],
   },
   icons: {
-    icon: [
-      { url: "/favicon.ico", sizes: "any" },
-      { url: "/favicon-32x32.png", sizes: "32x32", type: "image/png" },
-      { url: "/favicon-16x16.png", sizes: "16x16", type: "image/png" },
-    ],
+    icon: "/favicon.ico",
     apple: "/icon-192.png",
   },
 };

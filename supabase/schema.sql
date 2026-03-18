@@ -10,12 +10,14 @@
 
 -- Perfiles de usuario (extiende auth.users)
 create table if not exists public.profiles (
-  id          uuid primary key references auth.users(id) on delete cascade,
-  username    text,
-  bio         text,
-  racha_actual    int4 not null default 0,
-  ultima_escritura date,
-  created_at  timestamptz not null default now()
+  id                    uuid primary key references auth.users(id) on delete cascade,
+  username              text,
+  bio                   text,
+  display_name          text,
+  onboarding_completado boolean not null default false,
+  racha_actual          int4 not null default 0,
+  ultima_escritura      date,
+  created_at            timestamptz not null default now()
 );
 
 -- Consignas diarias (generadas con IA, aprobadas por admin)
@@ -23,10 +25,15 @@ create table if not exists public.consignas (
   id          uuid primary key default gen_random_uuid(),
   texto       text not null,
   categoria   text not null,
-  fecha       date not null unique,
+  fecha       date,
   aprobada    boolean not null default false,
+  borrador    boolean not null default true,
+  publicado   boolean not null default false,
   created_at  timestamptz not null default now()
 );
+
+-- Índice parcial único en fecha (solo para valores no null)
+CREATE UNIQUE INDEX IF NOT EXISTS consignas_fecha_unique ON public.consignas(fecha) WHERE fecha IS NOT NULL;
 
 -- Textos escritos por los usuarios
 create table if not exists public.textos (
@@ -35,8 +42,8 @@ create table if not exists public.textos (
   contenido   text not null,
   titulo      text,
   consigna    text,
+  consigna_id uuid references public.consignas(id) on delete set null,
   publicado   boolean not null default false,
-  tags        text[],
   created_at  timestamptz not null default now()
 );
 
@@ -111,9 +118,21 @@ create policy "Consignas aprobadas son visibles para todos"
   on public.consignas for select
   using (aprobada = true);
 
-create policy "Solo autenticados pueden insertar consignas"
+create policy "Admin puede ver todas las consignas"
+  on public.consignas for select
+  using (auth.jwt() ->> 'email' = 'valenmonti01@gmail.com');
+
+create policy "Solo admin puede insertar consignas"
   on public.consignas for insert
-  with check (auth.role() = 'authenticated');
+  with check (auth.jwt() ->> 'email' = 'valenmonti01@gmail.com');
+
+create policy "Solo admin puede actualizar consignas"
+  on public.consignas for update
+  using (auth.jwt() ->> 'email' = 'valenmonti01@gmail.com');
+
+create policy "Solo admin puede eliminar consignas"
+  on public.consignas for delete
+  using (auth.jwt() ->> 'email' = 'valenmonti01@gmail.com');
 
 
 -- textos

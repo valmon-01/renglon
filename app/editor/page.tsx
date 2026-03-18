@@ -39,6 +39,27 @@ function EditorContenido() {
       .then((data) => setConsigna(data.consigna?.texto ?? null));
   }, []);
 
+  // Cargar draft desde localStorage al montar (solo si no es editMode)
+  useEffect(() => {
+    if (editId) return;
+    const draftTitulo = localStorage.getItem("renglon_draft_titulo");
+    const draftContenido = localStorage.getItem("renglon_draft_contenido");
+    if (draftTitulo) setTitulo(draftTitulo);
+    if (draftContenido) setContenido(draftContenido);
+  }, [editId]);
+
+  // Autosave cada 30 segundos
+  useEffect(() => {
+    if (isEditMode) return;
+    const interval = setInterval(() => {
+      if (contenido.trim() !== "") {
+        localStorage.setItem("renglon_draft_titulo", titulo);
+        localStorage.setItem("renglon_draft_contenido", contenido);
+      }
+    }, 30000);
+    return () => clearInterval(interval);
+  }, [isEditMode, titulo, contenido]);
+
   useEffect(() => {
     if (!editId) return;
     setIsEditMode(true);
@@ -119,6 +140,8 @@ function EditorContenido() {
       if (!isEditMode) {
         const hoy = new Date().toISOString().slice(0, 10);
         localStorage.setItem(`renglon_completed_${hoy}`, "1");
+        localStorage.removeItem("renglon_draft_titulo");
+        localStorage.removeItem("renglon_draft_contenido");
       }
 
       setShowModal(false);
