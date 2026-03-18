@@ -195,7 +195,7 @@ export default function Perfil() {
                     display: "flex",
                     alignItems: "center",
                     justifyContent: "center",
-                    margin: "16px auto 12px",
+                    margin: "16px auto 6px",
                   }}
                 >
                   <span
@@ -248,7 +248,7 @@ export default function Perfil() {
                     color: "rgba(245,240,232,0.5)",
                     textAlign: "center",
                     lineHeight: 1.5,
-                    marginTop: 16,
+                    marginTop: 32,
                   }}
                 >
                   {bio || "Agregá una bio desde Editar perfil"}
