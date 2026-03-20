@@ -49,6 +49,7 @@ export default function Perfil() {
           .from("textos")
           .select("id, contenido, titulo, tags, created_at, publicado, consigna")
           .eq("user_id", user.id)
+          .eq("borrador", false)
           .order("created_at", { ascending: false }),
       ]);
 

@@ -44,8 +44,12 @@ create table if not exists public.textos (
   consigna    text,
   consigna_id uuid references public.consignas(id) on delete set null,
   publicado   boolean not null default false,
+  borrador    boolean not null default false,
   created_at  timestamptz not null default now()
 );
+
+-- Migración: agregar campo borrador si la tabla ya existe
+-- ALTER TABLE public.textos ADD COLUMN IF NOT EXISTS borrador boolean NOT NULL DEFAULT false;
 
 -- Likes de textos
 create table if not exists public.likes (

@@ -32,6 +32,8 @@ function EditorContenido() {
   const [titulo, setTitulo] = useState("");
   const [contenido, setContenido] = useState("");
   const [isEditMode, setIsEditMode] = useState(false);
+  const [borradorId, setBorradorId] = useState<string | null>(null);
+  const [guardandoBorrador, setGuardandoBorrador] = useState(false);
 
   useEffect(() => {
     fetch("/api/asignar-consigna-diaria")
@@ -39,14 +41,36 @@ function EditorContenido() {
       .then((data) => setConsigna(data.consigna?.texto ?? null));
   }, []);
 
-  // Cargar draft desde localStorage al montar (solo si no es editMode)
+  // Cargar borrador (Supabase tiene prioridad sobre localStorage)
   useEffect(() => {
     if (editId) return;
-    const draftTitulo = localStorage.getItem("renglon_draft_titulo");
-    const draftContenido = localStorage.getItem("renglon_draft_contenido");
-    if (draftTitulo) setTitulo(draftTitulo);
-    if (draftContenido) setContenido(draftContenido);
-  }, [editId]);
+    async function cargarBorrador() {
+      const { data: { session } } = await supabase.auth.getSession();
+      if (session?.user && consigna) {
+        const { data } = await supabase
+          .from("textos")
+          .select("id, titulo, contenido")
+          .eq("user_id", session.user.id)
+          .eq("borrador", true)
+          .eq("consigna", consigna)
+          .maybeSingle();
+        if (data) {
+          setBorradorId(data.id);
+          setTitulo(data.titulo ?? "");
+          setContenido(data.contenido);
+          const el = textareaRef.current;
+          if (el) { el.style.height = "auto"; el.style.height = el.scrollHeight + "px"; }
+          return;
+        }
+      }
+      // Fallback: localStorage
+      const draftTitulo = localStorage.getItem("renglon_draft_titulo");
+      const draftContenido = localStorage.getItem("renglon_draft_contenido");
+      if (draftTitulo) setTitulo(draftTitulo);
+      if (draftContenido) setContenido(draftContenido);
+    }
+    cargarBorrador();
+  }, [editId, consigna]);
 
   // Autosave cada 30 segundos
   useEffect(() => {
@@ -106,6 +130,38 @@ function EditorContenido() {
     }
   }
 
+  async function guardarBorrador() {
+    if (contenido.trim() === "") return;
+    setGuardandoBorrador(true);
+    try {
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session?.user) return;
+      if (borradorId) {
+        await supabase
+          .from("textos")
+          .update({ contenido, titulo: titulo.trim() || null })
+          .eq("id", borradorId)
+          .eq("user_id", session.user.id);
+      } else {
+        const { data } = await supabase
+          .from("textos")
+          .insert({
+            user_id: session.user.id,
+            contenido,
+            titulo: titulo.trim() || null,
+            consigna: consigna ?? "",
+            publicado: false,
+            borrador: true,
+          })
+          .select("id")
+          .single();
+        if (data) setBorradorId(data.id);
+      }
+    } finally {
+      setGuardandoBorrador(false);
+    }
+  }
+
   async function guardar(publicado: boolean) {
     setGuardando(true);
     try {
@@ -113,7 +169,18 @@ function EditorContenido() {
         data: { session },
       } = await supabase.auth.getSession();
 
-      if (isEditMode && editId) {
+      if (borradorId) {
+        await supabase
+          .from("textos")
+          .update({
+            contenido,
+            titulo: titulo.trim() || null,
+            publicado,
+            borrador: false,
+          })
+          .eq("id", borradorId)
+          .eq("user_id", session?.user.id ?? "");
+      } else if (isEditMode && editId) {
         await supabase
           .from("textos")
           .update({
@@ -259,20 +326,13 @@ function EditorContenido() {
             }}
           >
 
-            {/* Fecha — no editable */}
+            {/* Consigna + Fecha en la misma línea — no editables */}
             <p
-              className="select-none text-right font-display italic text-tinta-suave"
+              className="flex items-baseline justify-between gap-4 select-none font-display italic text-tinta-suave"
               style={{ fontSize: "1rem", lineHeight: "40px" }}
             >
-              {formatFechaCorta()}
-            </p>
-
-            {/* Consigna — no editable */}
-            <p
-              className="select-none font-display italic text-tinta"
-              style={{ fontSize: "17px", lineHeight: "40px" }}
-            >
-              {consigna ?? "—"}
+              <span className="truncate min-w-0">{consigna ?? "—"}</span>
+              <span className="shrink-0">{formatFechaCorta()}</span>
             </p>
 
             {/* Título */}
@@ -332,6 +392,17 @@ function EditorContenido() {
           >
             Cancelar
           </Link>
+          {!isEditMode && (
+            <button
+              type="button"
+              onClick={guardarBorrador}
+              disabled={contenido.trim() === "" || guardandoBorrador}
+              className="rounded-[6px] border px-4 py-2 text-sm text-borravino transition-opacity hover:opacity-70 disabled:opacity-40"
+              style={{ borderWidth: "1.5px", borderColor: "#64313E" }}
+            >
+              {guardandoBorrador ? "Guardando…" : "Guardar borrador"}
+            </button>
+          )}
           <button
             type="button"
             onClick={() => setShowModal(true)}
