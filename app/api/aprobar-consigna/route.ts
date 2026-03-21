@@ -1,22 +1,19 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { createClient } from '@supabase/supabase-js'
+import { supabaseAdmin } from '@/lib/supabase-admin'
 
-const supabase = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL!,
-  process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
-)
+const supabase = supabaseAdmin
 
 export async function POST(request: NextRequest) {
   try {
-    const { id, texto, categoria, fecha, borrador } = await request.json()
+    const { id, texto, categoria, fecha, estado } = await request.json()
 
     // UPDATE: modificar una consigna existente
     if (id) {
-      // Mover de borrador al banco: id + borrador:false
-      if (borrador === false) {
+      // Mover al banco: id + estado = 'banco'
+      if (estado === 'banco') {
         const { data, error } = await supabase
           .from('consignas')
-          .update({ borrador: false })
+          .update({ estado: 'banco' })
           .eq('id', id)
           .select()
           .single()
@@ -25,7 +22,7 @@ export async function POST(request: NextRequest) {
         return NextResponse.json({ consigna: data })
       }
 
-      // Asignar fecha a una consigna del banco: id + fecha
+      // Asignar fecha: id + fecha → programada
       const { data: existente } = await supabase
         .from('consignas')
         .select('id')
@@ -42,7 +39,7 @@ export async function POST(request: NextRequest) {
 
       const { data, error } = await supabase
         .from('consignas')
-        .update({ fecha })
+        .update({ fecha, estado: 'programada' })
         .eq('id', id)
         .select()
         .single()
@@ -52,10 +49,10 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ consigna: data })
     }
 
-    // INSERT: nueva consigna (borrador por defecto)
+    // INSERT: nueva consigna
     const { data, error } = await supabase
       .from('consignas')
-      .insert({ texto, categoria, fecha: fecha ?? null, aprobada: true, borrador: borrador ?? true })
+      .insert({ texto, categoria, fecha: fecha ?? null, estado: estado ?? 'borrador' })
       .select()
       .single()
 

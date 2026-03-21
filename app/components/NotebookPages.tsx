@@ -12,6 +12,7 @@ interface Texto {
   contenido: string;
   consigna: string;
   created_at: string;
+  fecha_consigna: string | null;
   publicado: boolean;
 }
 
@@ -308,7 +309,7 @@ export default function NotebookPages({
                 textOverflow: "ellipsis",
               }}
             >
-              {fechaDDMMYYYY(text.created_at)}
+              {fechaDDMMYYYY(text.fecha_consigna ?? text.created_at.slice(0, 10))}
               {text.consigna
                 ? ` — ${text.consigna.length > 50 ? text.consigna.slice(0, 50) + "…" : text.consigna}`
                 : ""}

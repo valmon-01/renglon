@@ -13,8 +13,8 @@ interface Texto {
   id: string;
   contenido: string;
   titulo: string | null;
-  tags: string[] | null;
   created_at: string;
+  fecha_consigna: string | null;
   consigna: string;
   publicado: boolean;
 }
@@ -70,7 +70,7 @@ function PerfilPublicoContenido() {
         supabase.from("profiles").select("username, bio, display_name").eq("id", userId).single(),
         supabase
           .from("textos")
-          .select("id, contenido, titulo, tags, created_at, consigna, publicado")
+          .select("id, contenido, titulo, created_at, fecha_consigna, consigna, publicado")
           .eq("user_id", userId)
           .eq("publicado", true)
           .order("created_at", { ascending: false }),
@@ -239,18 +239,7 @@ function PerfilPublicoContenido() {
                   <p className="text-sm leading-relaxed text-tinta-suave">
                     {extracto(texto.contenido)}
                   </p>
-                  {texto.tags && texto.tags.length > 0 && (
-                    <div className="mt-3 flex flex-wrap gap-1.5">
-                      {texto.tags.map((tag) => (
-                        <span
-                          key={tag}
-                          className="rounded-[4px] bg-cielo px-2 py-0.5 text-xs text-borravino"
-                        >
-                          {tag}
-                        </span>
-                      ))}
-                    </div>
-                  )}
+
                   <p className="mt-3 text-xs text-tinta-suave">{fechaCorta(texto.created_at)}</p>
                 </Link>
               ))}

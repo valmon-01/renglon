@@ -7,6 +7,7 @@ import { ArrowLeft, Check, Globe, Lock } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { supabase } from "@/lib/supabase";
 import { calcularYActualizarRacha } from "@/utils/dailyProgress";
+import { getFechaLocal } from "@/utils/fecha";
 
 const META_PALABRAS = 300;
 
@@ -26,9 +27,12 @@ function EditorContenido() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const editId = searchParams.get("edit");
+  const consignaParam = searchParams.get("consigna");
+  const fechaParam = searchParams.get("fecha");
+  const esHojaLibre = !!consignaParam && !editId;
   const textareaRef = useRef<HTMLTextAreaElement>(null);
 
-  const [consigna, setConsigna] = useState<string | null>(null);
+  const [consigna, setConsigna] = useState<string | null>(consignaParam ?? null);
   const [titulo, setTitulo] = useState("");
   const [contenido, setContenido] = useState("");
   const [isEditMode, setIsEditMode] = useState(false);
@@ -36,10 +40,12 @@ function EditorContenido() {
   const [guardandoBorrador, setGuardandoBorrador] = useState(false);
 
   useEffect(() => {
+    // Si viene consigna por query param (hoja libre), no hace fetch
+    if (consignaParam) return;
     fetch("/api/asignar-consigna-diaria")
       .then((r) => r.json())
       .then((data) => setConsigna(data.consigna?.texto ?? null));
-  }, []);
+  }, [consignaParam]);
 
   // Cargar borrador (Supabase tiene prioridad sobre localStorage)
   useEffect(() => {
@@ -177,6 +183,7 @@ function EditorContenido() {
             titulo: titulo.trim() || null,
             publicado,
             borrador: false,
+            ...(fechaParam ? { fecha_consigna: fechaParam } : {}),
           })
           .eq("id", borradorId)
           .eq("user_id", session?.user.id ?? "");
@@ -197,16 +204,33 @@ function EditorContenido() {
           titulo: titulo.trim() || null,
           consigna: consigna ?? "",
           publicado,
+          ...(fechaParam ? { fecha_consigna: fechaParam } : {}),
         });
       }
 
       if (!isEditMode && session?.user.id) {
-        await calcularYActualizarRacha(session.user.id);
+        // Hoja libre: no actualiza racha (texto retroactivo)
+        if (!esHojaLibre) {
+          await calcularYActualizarRacha(session.user.id);
+        }
+        const wordCount = contarPalabras(contenido);
+        const { data: perfil } = await supabase
+          .from("profiles")
+          .select("palabras_totales")
+          .eq("id", session.user.id)
+          .single();
+        await supabase
+          .from("profiles")
+          .update({ palabras_totales: (perfil?.palabras_totales ?? 0) + wordCount })
+          .eq("id", session.user.id);
       }
 
       if (!isEditMode) {
-        const hoy = new Date().toISOString().slice(0, 10);
-        localStorage.setItem(`renglon_completed_${hoy}`, "1");
+        // Hoja libre: no marca el día como completado (es retroactivo)
+        if (!esHojaLibre) {
+          const hoy = getFechaLocal();
+          localStorage.setItem(`renglon_completed_${hoy}`, "1");
+        }
         localStorage.removeItem("renglon_draft_titulo");
         localStorage.removeItem("renglon_draft_contenido");
       }

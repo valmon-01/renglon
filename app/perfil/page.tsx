@@ -14,8 +14,8 @@ interface Texto {
   id: string;
   contenido: string;
   titulo: string | null;
-  tags: string[] | null;
   created_at: string;
+  fecha_consigna: string | null;
   publicado: boolean;
   consigna: string;
 }
@@ -25,7 +25,7 @@ export default function Perfil() {
   const [user, setUser] = useState<User | null>(null);
   const [bio, setBio] = useState<string | null>(null);
   const [displayName, setDisplayName] = useState<string | null>(null);
-  const [racha, setRacha] = useState<number>(0);
+  const [palabrasTotales, setPalabrasTotales] = useState<number>(0);
   const [textos, setTextos] = useState<Texto[]>([]);
   const [libroAbierto, setLibroAbierto] = useState(false);
   const [cargando, setCargando] = useState(true);
@@ -44,10 +44,10 @@ export default function Perfil() {
       setUser(user);
 
       const [{ data: prof }, { data: texs }] = await Promise.all([
-        supabase.from("profiles").select("bio, racha_actual, display_name").eq("id", user.id).single(),
+        supabase.from("profiles").select("bio, racha_actual, palabras_totales, display_name").eq("id", user.id).single(),
         supabase
           .from("textos")
-          .select("id, contenido, titulo, tags, created_at, publicado, consigna")
+          .select("id, contenido, titulo, created_at, fecha_consigna, publicado, consigna")
           .eq("user_id", user.id)
           .eq("borrador", false)
           .order("created_at", { ascending: false }),
@@ -55,7 +55,7 @@ export default function Perfil() {
 
       setBio(prof?.bio ?? null);
       setDisplayName(prof?.display_name ?? null);
-      setRacha(prof?.racha_actual ?? 0);
+      setPalabrasTotales(prof?.palabras_totales ?? 0);
       setTextos((texs as Texto[]) ?? []);
       setCargando(false);
     }
@@ -85,6 +85,12 @@ export default function Perfil() {
   }
 
   if (cargando) return <TypewriterLoader />;
+
+  function formatPalabras(n: number): string {
+    if (!n) return "—";
+    if (n >= 1000) return `${(n / 1000).toFixed(1).replace(".", ".")}k`;
+    return String(n);
+  }
 
   const username = user?.user_metadata?.username ?? "Usuario";
   const publicados = textos.filter((t) => t.publicado);
@@ -264,12 +270,11 @@ export default function Perfil() {
                   }}
                 />
 
-                {/* Stats */}
+                {/* Stats — fila superior */}
                 <div style={{ display: "flex", justifyContent: "space-around" }}>
                   {[
                     { valor: textos.length, label: "escritos" },
                     { valor: publicados.length, label: "publicados" },
-                    { valor: racha, label: "días" },
                   ].map(({ valor, label }) => (
                     <div key={label} style={{ textAlign: "center" }}>
                       <span
@@ -277,7 +282,7 @@ export default function Perfil() {
                           fontFamily: "var(--font-display)",
                           fontStyle: "italic",
                           fontSize: 28,
-                          color: "#F5F0E8",
+                          color: "var(--color-papel)",
                           display: "block",
                           lineHeight: 1,
                         }}
@@ -299,6 +304,42 @@ export default function Perfil() {
                       </span>
                     </div>
                   ))}
+                </div>
+
+                {/* Stats — palabras escritas */}
+                <div
+                  style={{
+                    borderTop: "1px solid rgba(255,255,255,0.15)",
+                    marginTop: 20,
+                    paddingTop: 20,
+                    textAlign: "center",
+                  }}
+                >
+                  <span
+                    style={{
+                      fontFamily: "var(--font-display)",
+                      fontStyle: "italic",
+                      fontSize: 48,
+                      color: "var(--color-papel)",
+                      display: "block",
+                      lineHeight: 1,
+                    }}
+                  >
+                    {formatPalabras(palabrasTotales)}
+                  </span>
+                  <span
+                    style={{
+                      fontFamily: "var(--font-sans)",
+                      fontSize: 10,
+                      letterSpacing: "0.14em",
+                      textTransform: "uppercase",
+                      color: "rgba(245,240,232,0.4)",
+                      marginTop: 6,
+                      display: "block",
+                    }}
+                  >
+                    palabras escritas
+                  </span>
                 </div>
 
                 {/* Botón Leer escritos / Escribir primer texto */}

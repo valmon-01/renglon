@@ -1,8 +1,13 @@
 import { supabase } from "@/lib/supabase";
+import { getFechaLocal } from "@/utils/fecha";
 
 export async function calcularYActualizarRacha(userId: string): Promise<void> {
-  const hoy = new Date().toISOString().slice(0, 10);
-  const ayer = new Date(Date.now() - 86400000).toISOString().slice(0, 10);
+  const hoy = getFechaLocal();
+  const aDate = new Date();
+  aDate.setDate(aDate.getDate() - 1);
+  const ayer = new Date(aDate.getTime() - aDate.getTimezoneOffset() * 60000)
+    .toISOString()
+    .slice(0, 10);
 
   const { data: perfil } = await supabase
     .from("profiles")

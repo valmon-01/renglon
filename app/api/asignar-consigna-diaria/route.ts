@@ -1,10 +1,7 @@
 import { NextResponse } from 'next/server'
-import { createClient } from '@supabase/supabase-js'
+import { supabaseAdmin } from '@/lib/supabase-admin'
 
-const supabase = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL!,
-  process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
-)
+const supabase = supabaseAdmin
 
 export async function GET() {
   try {
@@ -15,7 +12,7 @@ export async function GET() {
       .from('consignas')
       .select('*')
       .eq('fecha', hoy)
-      .eq('publicado', true)
+      .eq('estado', 'publicada')
       .maybeSingle()
 
     if (existente) {
@@ -23,12 +20,11 @@ export async function GET() {
       return NextResponse.json({ consigna: existente })
     }
 
-    // 2. Buscar del banco: borrador = false, fecha IS NULL (aleatoria)
+    // 2. Buscar del banco
     const { data: banco } = await supabase
       .from('consignas')
       .select('*')
-      .eq('borrador', false)
-      .is('fecha', null)
+      .eq('estado', 'banco')
 
     if (!banco || banco.length === 0) {
       console.log('No hay consignas en el banco')
@@ -41,10 +37,10 @@ export async function GET() {
     // Elegir una aleatoriamente
     const delBanco = banco[Math.floor(Math.random() * banco.length)]
 
-    // 3. Asignarle fecha de hoy y marcar como publicado
+    // 3. Asignarle fecha de hoy y marcar como publicada
     const { data: actualizada, error } = await supabase
       .from('consignas')
-      .update({ fecha: hoy, publicado: true })
+      .update({ fecha: hoy, estado: 'publicada' })
       .eq('id', delBanco.id)
       .select()
       .single()

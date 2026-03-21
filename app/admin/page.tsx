@@ -26,9 +26,7 @@ interface Consigna {
   texto: string;
   categoria: string;
   fecha: string | null;
-  aprobada: boolean;
-  borrador: boolean;
-  asignada_automaticamente: boolean;
+  estado: string;
   created_at: string;
   texto_motivacional?: string | null;
 }
@@ -97,23 +95,20 @@ export default function Admin() {
     const { data: dataProgramadas } = await supabase
       .from("consignas")
       .select("*")
-      .eq("aprobada", true)
-      .eq("borrador", false)
+      .eq("estado", "programada")
       .gte("fecha", hoy)
       .order("fecha", { ascending: true });
 
     const { data: dataBanco } = await supabase
       .from("consignas")
       .select("*")
-      .eq("aprobada", true)
-      .eq("borrador", false)
-      .is("fecha", null)
+      .eq("estado", "banco")
       .order("created_at", { ascending: true });
 
     const { data: dataBorradores } = await supabase
       .from("consignas")
       .select("*")
-      .eq("borrador", true)
+      .eq("estado", "borrador")
       .order("created_at", { ascending: false });
 
     if (dataProgramadas) setProgramadas(dataProgramadas);
@@ -148,7 +143,7 @@ export default function Admin() {
     setAprobadoMsg("");
     try {
       const fechaEnviar = programarFecha ? fecha : null;
-      const borradorEnviar = !programarFecha && !agregarAlBancoIA;
+      const estadoEnviar = programarFecha ? "programada" : agregarAlBancoIA ? "banco" : "borrador";
       const res = await fetch("/api/aprobar-consigna", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -156,7 +151,7 @@ export default function Admin() {
           texto: consignasGeneradas[seleccionada],
           categoria,
           fecha: fechaEnviar,
-          borrador: borradorEnviar,
+          estado: estadoEnviar,
         }),
       });
       const data = await res.json();
@@ -223,7 +218,7 @@ export default function Admin() {
     setErrorPropio("");
     try {
       const fechaEnviar = programarFechaPropia ? fechaPropia : null;
-      const borradorEnviar = !programarFechaPropia && !agregarAlBancoPropias;
+      const estadoEnviar = programarFechaPropia ? "programada" : agregarAlBancoPropias ? "banco" : "borrador";
       const res = await fetch("/api/aprobar-consigna", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -231,7 +226,7 @@ export default function Admin() {
           texto: textoPropio.trim(),
           categoria: categoriaPropia,
           fecha: fechaEnviar,
-          borrador: borradorEnviar,
+          estado: estadoEnviar,
         }),
       });
       const data = await res.json();
@@ -263,7 +258,7 @@ export default function Admin() {
       const res = await fetch("/api/aprobar-consigna", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ id: consigna.id, borrador: false }),
+        body: JSON.stringify({ id: consigna.id, estado: "banco" }),
       });
       const data = await res.json();
       if (data.consigna) {
