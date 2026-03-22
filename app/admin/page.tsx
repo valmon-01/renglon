@@ -29,6 +29,7 @@ interface Consigna {
   estado: string;
   created_at: string;
   texto_motivacional?: string | null;
+  destacada?: boolean;
 }
 
 function hoyISO(): string {
@@ -291,6 +292,18 @@ export default function Admin() {
     await cargarConsignas();
   }
 
+  async function handleToggleDestacada(consigna: Consigna) {
+    const { data } = await supabase
+      .from("consignas")
+      .update({ destacada: !consigna.destacada })
+      .eq("id", consigna.id)
+      .select()
+      .single();
+    if (data) {
+      setBanco((prev) => prev.map((c) => c.id === consigna.id ? { ...c, destacada: data.destacada } : c));
+    }
+  }
+
   function handleProgramar(id: string) {
     setProgramandoBancoId((prev) => (prev === id ? null : id));
     setFechaBancoSeleccionada(hoyISO());
@@ -338,12 +351,24 @@ export default function Admin() {
         padding: "16px 20px",
         marginBottom: 12,
       }}>
-        {/* Fila top: pill categoría + ⋯ */}
+        {/* Fila top: pill categoría + estrella + ⋯ */}
         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
           <span style={{ fontSize: 11, color: "#64313E", backgroundColor: "rgba(100,49,62,0.08)", borderRadius: 12, padding: "2px 10px" }}>
             {CATEGORIAS.find((c) => c.value === consigna.categoria)?.label ?? consigna.categoria}
           </span>
-          <span style={{ color: "#9C8B7E", fontSize: 18, cursor: "pointer" }}>⋯</span>
+          <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+            {!showMoverAlBanco && (
+              <button
+                type="button"
+                onClick={() => handleToggleDestacada(consigna)}
+                title={consigna.destacada ? "Quitar de ejemplos" : "Marcar como ejemplo"}
+                style={{ background: "none", border: "none", fontSize: 16, cursor: "pointer", color: consigna.destacada ? "#64313E" : "#D6CFBF", padding: 0, lineHeight: 1 }}
+              >
+                ★
+              </button>
+            )}
+            <span style={{ color: "#9C8B7E", fontSize: 18, cursor: "pointer" }}>⋯</span>
+          </div>
         </div>
 
         {/* Texto consigna */}

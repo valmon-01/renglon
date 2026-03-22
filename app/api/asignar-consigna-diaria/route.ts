@@ -20,6 +20,26 @@ export async function GET() {
       return NextResponse.json({ consigna: existente })
     }
 
+    // 1b. Verificar si hay una consigna programada para hoy → publicarla
+    const { data: programada } = await supabase
+      .from('consignas')
+      .select('*')
+      .eq('fecha', hoy)
+      .eq('estado', 'programada')
+      .maybeSingle()
+
+    if (programada) {
+      const { data: publicada, error: errPub } = await supabase
+        .from('consignas')
+        .update({ estado: 'publicada' })
+        .eq('id', programada.id)
+        .select()
+        .single()
+
+      if (errPub) throw errPub
+      return NextResponse.json({ consigna: publicada })
+    }
+
     // 2. Buscar del banco
     const { data: banco } = await supabase
       .from('consignas')
