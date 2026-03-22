@@ -394,8 +394,8 @@ export default function Perfil() {
                 )}
               </div>
 
-              {/* Editar perfil */}
-              <div style={{ display: "flex", justifyContent: "center", marginTop: 16 }}>
+              {/* Editar perfil + Cerrar sesión */}
+              <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 8, marginTop: 16 }}>
                 <Link
                   href="/editar-perfil"
                   className="flex items-center gap-2 rounded-[6px] border border-borde px-5 py-2 text-sm text-tinta-suave transition-colors hover:border-tinta hover:text-tinta"
@@ -403,6 +403,13 @@ export default function Perfil() {
                   <PenLine size={14} strokeWidth={1.5} />
                   Editar perfil
                 </Link>
+                <button
+                  type="button"
+                  onClick={cerrarSesion}
+                  className="flex items-center gap-2 rounded-[6px] border border-borde px-5 py-2 text-sm text-tinta-suave transition-colors hover:border-tinta hover:text-tinta"
+                >
+                  Cerrar sesión
+                </button>
               </div>
             </motion.div>
           ) : (

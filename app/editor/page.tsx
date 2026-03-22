@@ -158,6 +158,7 @@ function EditorContenido() {
             consigna: consigna ?? "",
             publicado: false,
             borrador: true,
+            ...(fechaParam ? { fecha_consigna: fechaParam } : {}),
           })
           .select("id")
           .single();
@@ -204,6 +205,7 @@ function EditorContenido() {
           titulo: titulo.trim() || null,
           consigna: consigna ?? "",
           publicado,
+          borrador: false,
           ...(fechaParam ? { fecha_consigna: fechaParam } : {}),
         });
       }
