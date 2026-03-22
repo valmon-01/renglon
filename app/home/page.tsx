@@ -150,7 +150,7 @@ export default function Home() {
           top: 0,
           zIndex: 10,
           backgroundColor: "#F5F0EA",
-          borderBottom: "1px solid rgba(61,53,48,0.12)",
+          borderBottom: "1px solid rgba(61,53,48,0.15)",
           padding: "16px 20px 14px",
           textAlign: "center",
         }}
@@ -352,38 +352,6 @@ export default function Home() {
           </>
         ) : consigna === null ? (
           <div style={{ textAlign: "center", padding: "64px 32px" }}>
-            <div
-              style={{
-                display: "flex",
-                flexDirection: "column",
-                alignItems: "center",
-                gap: 6,
-                marginBottom: 32,
-              }}
-            >
-              <div
-                style={{
-                  width: 48,
-                  height: 1,
-                  backgroundColor: "rgba(61,53,48,0.15)",
-                }}
-              />
-              <div
-                style={{
-                  width: 64,
-                  height: 1,
-                  backgroundColor: "rgba(61,53,48,0.15)",
-                }}
-              />
-              <div
-                style={{
-                  width: 48,
-                  height: 1,
-                  backgroundColor: "rgba(61,53,48,0.15)",
-                }}
-              />
-            </div>
-
             {ultimaConsigna ? (
               <>
                 <p
@@ -429,39 +397,44 @@ export default function Home() {
               <>
                 <p
                   style={{
-                    fontFamily: "'Playfair Display', serif",
+                    fontFamily: "var(--font-display)",
                     fontStyle: "italic",
-                    fontSize: 20,
-                    color: "#3D3530",
+                    fontSize: 30,
+                    color: "var(--color-tinta)",
                     margin: "0 0 12px",
+                    lineHeight: 1.4,
                   }}
                 >
                   Las consignas llegan cada mañana.
                 </p>
                 <p
                   style={{
+                    fontFamily: "var(--font-sans)",
                     fontSize: 14,
-                    color: "#9C8B7E",
+                    color: "var(--color-tinta-suave)",
                     margin: "0 0 24px",
                   }}
                 >
                   Mientras tanto, podés explorar el feed.
                 </p>
-                <Link
-                  href="/feed"
-                  style={{
-                    display: "inline-block",
-                    backgroundColor: "#64313E",
-                    color: "#FDFAF5",
-                    padding: "12px 32px",
-                    borderRadius: 6,
-                    fontSize: 14,
-                    fontWeight: 500,
-                    textDecoration: "none",
-                  }}
-                >
-                  Ver el feed
-                </Link>
+                <div style={{ display: "flex", justifyContent: "center" }}>
+                  <Link
+                    href="/feed"
+                    style={{
+                      display: "inline-block",
+                      width: "fit-content",
+                      backgroundColor: "var(--color-borravino)",
+                      color: "var(--color-blanco-roto)",
+                      padding: "12px 32px",
+                      borderRadius: 6,
+                      fontSize: 14,
+                      fontWeight: 500,
+                      textDecoration: "none",
+                    }}
+                  >
+                    Ver el feed
+                  </Link>
+                </div>
               </>
             )}
           </div>

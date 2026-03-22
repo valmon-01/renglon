@@ -119,7 +119,7 @@ export default function Feed() {
         top: 0,
         zIndex: 10,
         backgroundColor: "#F5F0EA",
-        borderBottom: "1px solid rgba(61,53,48,0.12)",
+        borderBottom: "1px solid rgba(61,53,48,0.15)",
         padding: "20px 20px 16px",
         textAlign: "center",
       }}>

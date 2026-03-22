@@ -100,6 +100,7 @@ export default function NotebookPages({
         minHeight: 680,
         boxShadow: "4px 6px 32px rgba(28,25,23,0.16), -2px 0 0 rgba(28,25,23,0.08)",
         borderRadius: "4px 10px 10px 4px",
+        marginLeft: 12,
       }}
     >
       {text.publicado && (
@@ -169,7 +170,7 @@ export default function NotebookPages({
             position: "relative",
           }}
         >
-          {/* Fila 1: @username + cerrar — height 40px */}
+          {/* Fila única: @username izquierda + botones + cerrar derecha — height 40px */}
           <div
             style={{
               height: 40,
@@ -179,6 +180,7 @@ export default function NotebookPages({
               flexShrink: 0,
               paddingLeft: "60px",
               paddingRight: "40px",
+              gap: 16,
             }}
           >
             <Link
@@ -201,56 +203,22 @@ export default function NotebookPages({
             >
               @{username}
             </Link>
-            <button
-              type="button"
-              onClick={onClose}
-              title="Cerrar"
-              aria-label="Cerrar"
-              style={{
-                display: "flex",
-                alignItems: "center",
-                color: "#9C8B7E",
-                background: "none",
-                border: "none",
-                cursor: "pointer",
-                padding: 0,
-                flexShrink: 0,
-                marginLeft: 12,
-              }}
-            >
-              <X size={18} strokeWidth={1.5} />
-            </button>
-          </div>
 
-          {/* Fila 2: botones de acción con labels */}
-          {!readOnly && (text.publicado || isOwner) && (
-            <div
-              style={{
-                display: "flex",
-                alignItems: "flex-end",
-                justifyContent: "flex-end",
-                gap: 16,
-                flexShrink: 0,
-                paddingLeft: "60px",
-                paddingRight: "40px",
-                paddingBottom: 8,
-              }}
-            >
-              {text.publicado && (
+            <div style={{ display: "flex", alignItems: "center", gap: 16, flexShrink: 0 }}>
+              {!readOnly && text.publicado && (
                 <button
                   type="button"
                   onClick={() => setShowShare(true)}
                   aria-label="Compartir como imagen"
                   title="Compartir"
-                  style={{ ...iconButtonStyle, flexDirection: "column", gap: 3 }}
+                  style={{ ...iconButtonStyle, fontSize: 12 }}
                   className="hover:!text-[#64313E]"
                 >
-                  <Share2 size={18} strokeWidth={1.5} />
-                  <span style={{ fontFamily: "var(--font-sans)", fontSize: 10 }}>Compartir</span>
+                  <Share2 size={14} strokeWidth={1.5} />
                 </button>
               )}
 
-              {isOwner && (
+              {!readOnly && isOwner && (
                 <>
                   <button
                     type="button"
@@ -258,17 +226,14 @@ export default function NotebookPages({
                     disabled={toggleLoading}
                     aria-label={text.publicado ? "Cambiar a privado" : "Cambiar a público"}
                     title={text.publicado ? "Cambiar a privado" : "Cambiar a público"}
-                    style={{ ...iconButtonStyle, flexDirection: "column", gap: 3, opacity: toggleLoading ? 0.5 : 1 }}
+                    style={{ ...iconButtonStyle, fontSize: 12, opacity: toggleLoading ? 0.5 : 1 }}
                     className="hover:!text-[#64313E]"
                   >
                     {text.publicado ? (
-                      <Eye size={18} strokeWidth={1.5} />
+                      <Eye size={14} strokeWidth={1.5} />
                     ) : (
-                      <EyeOff size={18} strokeWidth={1.5} />
+                      <EyeOff size={14} strokeWidth={1.5} />
                     )}
-                    <span style={{ fontFamily: "var(--font-sans)", fontSize: 10 }}>
-                      {text.publicado ? "Público" : "Privado"}
-                    </span>
                   </button>
 
                   <button
@@ -276,16 +241,34 @@ export default function NotebookPages({
                     onClick={() => setShowDeleteConfirm(true)}
                     aria-label="Eliminar escrito"
                     title="Eliminar escrito"
-                    style={{ ...iconButtonStyle, flexDirection: "column", gap: 3 }}
+                    style={{ ...iconButtonStyle, fontSize: 12 }}
                     className="hover:!text-[#64313E]"
                   >
-                    <Trash2 size={18} strokeWidth={1.5} />
-                    <span style={{ fontFamily: "var(--font-sans)", fontSize: 10 }}>Eliminar</span>
+                    <Trash2 size={14} strokeWidth={1.5} />
                   </button>
                 </>
               )}
+
+              <button
+                type="button"
+                onClick={onClose}
+                title="Cerrar"
+                aria-label="Cerrar"
+                style={{
+                  display: "flex",
+                  alignItems: "center",
+                  color: "#9C8B7E",
+                  background: "none",
+                  border: "none",
+                  cursor: "pointer",
+                  padding: 0,
+                  flexShrink: 0,
+                }}
+              >
+                <X size={18} strokeWidth={1.5} />
+              </button>
             </div>
-          )}
+          </div>
 
           {/* Fecha + consigna — height 40px */}
           <div
@@ -311,7 +294,7 @@ export default function NotebookPages({
             >
               {fechaDDMMYYYY(text.fecha_consigna ?? text.created_at.slice(0, 10))}
               {text.consigna
-                ? ` — ${text.consigna.length > 50 ? text.consigna.slice(0, 50) + "…" : text.consigna}`
+                ? ` — ${text.consigna.length > 60 ? text.consigna.slice(0, 60) + "…" : text.consigna}`
                 : ""}
             </span>
           </div>

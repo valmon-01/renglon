@@ -122,7 +122,7 @@ export default function Perfil() {
         top: 0,
         zIndex: 10,
         backgroundColor: "#F5F0EA",
-        borderBottom: "1px solid rgba(61,53,48,0.12)",
+        borderBottom: "1px solid rgba(61,53,48,0.15)",
         padding: "20px 20px 16px",
         textAlign: "center",
       }}>
@@ -319,7 +319,7 @@ export default function Perfil() {
                     style={{
                       fontFamily: "var(--font-display)",
                       fontStyle: "italic",
-                      fontSize: 48,
+                      fontSize: 28,
                       color: "var(--color-papel)",
                       display: "block",
                       lineHeight: 1,

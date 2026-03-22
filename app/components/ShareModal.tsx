@@ -189,16 +189,30 @@ export default function ShareModal({
                   marginBottom: 20,
                 }}
               >
-                <span
-                  style={{
-                    fontFamily: "'Playfair Display', serif",
-                    fontStyle: "italic",
-                    fontSize: 18,
-                    color: "#3D3530",
-                  }}
-                >
-                  Compartir escrito
-                </span>
+                <div>
+                  {consigna && (
+                    <p
+                      style={{
+                        fontFamily: "Inter, sans-serif",
+                        fontSize: 11,
+                        color: "var(--color-tinta-suave)",
+                        margin: "0 0 4px",
+                      }}
+                    >
+                      {consigna.length > 60 ? consigna.slice(0, 60) + "…" : consigna}
+                    </p>
+                  )}
+                  <span
+                    style={{
+                      fontFamily: "'Playfair Display', serif",
+                      fontStyle: "italic",
+                      fontSize: 18,
+                      color: "#3D3530",
+                    }}
+                  >
+                    Compartir escrito
+                  </span>
+                </div>
                 <button
                   type="button"
                   onClick={onClose}
