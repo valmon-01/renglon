@@ -10,6 +10,10 @@ export async function POST(request: NextRequest) {
   try {
     const { categoria, contexto } = await request.json()
 
+    if (!categoria || typeof categoria !== 'string') {
+      return NextResponse.json({ error: 'Categoría requerida' }, { status: 400 })
+    }
+
     const { data: destacadas } = await supabaseAdmin
       .from('consignas')
       .select('texto')
@@ -20,11 +24,36 @@ export async function POST(request: NextRequest) {
       ? `Ejemplos de consignas que funcionan bien (tomá su estilo como referencia):\n${destacadas.map((c, i) => `${i + 1}. ${c.texto}`).join('\n')}\n\n`
       : ''
 
-    const systemPrompt = `Sos un coordinador de taller literario con experiencia en escritura creativa rioplatense. Conocés la tradición de consignas de talleres argentinos: consignas que funcionan como disparadores concretos, no como temas abstractos. Una buena consigna es específica, sensorial y abre una puerta pequeña hacia algo más grande. No dice 'escribí sobre el amor' sino 'escribí sobre algo que dejaste sin decir'. Para textos cortos de práctica diaria (200-300 palabras), la consigna ideal rompe la parálisis del primer renglón en blanco y permite escribir desde la experiencia personal sin necesitar ser escritor.`
+    const systemPrompt = `Sos un generador de consignas para renglón, una app de escritura creativa diaria para personas que no escriben habitualmente. Tu único objetivo es que alguien pueda empezar a escribir en menos de 1 minuto.
+
+REGLAS:
+- Una sola oración.
+- Siempre tiene un ancla concreta: un objeto, una situación específica, un personaje, un momento.
+- Tono liviano y directo. Nunca solemne, nunca abstracto, nunca académico.
+- No hacer preguntas filosóficas ni reflexiones amplias.
+- Alternar entre tres modos: MEMORIA (recordar algo específico), FICCIÓN (inventar desde algo propio), VOZ (confesar u opinar con estructura).
+
+EJEMPLOS DE CONSIGNAS BUENAS:
+- "Describí una pequeña regla de vida que usás sin darte cuenta." [VOZ]
+- "Imaginá la vida secreta de un objeto que heredaste de un familiar." [FICCIÓN]
+- "Escribí sobre algo que te encanta y que los demás no entienden." [VOZ]
+- "En una película de terror, ¿de qué forma absurda o dramática moriría tu personaje?" [FICCIÓN]
+- "Describí un lugar al que no podés volver." [MEMORIA]
+- "Escribí la reseña de una película que no existe pero te gustaría ver." [FICCIÓN]
+- "Describí la última vez que algo pequeño te hizo reír solo." [MEMORIA]
+- "Escribí qué trabajo extremadamente específico sentís que serías increíble haciéndolo." [VOZ]
+
+EJEMPLOS DE CONSIGNAS MALAS (no generes esto):
+- "Reflexioná sobre el paso del tiempo y cómo afecta tus relaciones." [demasiado abstracta]
+- "Escribí sobre el amor." [sin ancla]
+- "¿Qué significa para vos la libertad?" [filosófica, paraliza]
+- "Imaginá un mundo donde todo es diferente." [sin punto de entrada]
+
+Devolvé exactamente la cantidad de consignas pedidas, numeradas del 1 al 5, sin explicaciones, sin categoría entre corchetes.`
 
     const userPrompt = `Generá 5 consignas de escritura para la categoría '${categoria}'. ${contexto ? `Contexto o temática específica: ${contexto}.` : ''}
 
-${bloqueDestacadas}La consigna debe funcionar tanto para introspección como para ficción (realista, fantástica, distópica o apocalíptica). Proponé una situación, detalle, objeto, recuerdo o escena que pueda interpretarse de múltiples formas. Breve, concreta e imaginativa. Debe invitar a escribir textos de 200-300 palabras. Sin explicaciones, sin subtítulos, sin meta-comentarios.
+${bloqueDestacadas}La consigna debe funcionar tanto para introspección como para ficción (realista, fantástica, distópica o apocalíptica). Proponé una situación, detalle, objeto, recuerdo o escena que pueda interpretarse de múltiples formas. Breve, concreta e imaginativa. Debe invitar a escribir textos de 50-200 palabras. Sin explicaciones, sin subtítulos, sin meta-comentarios.
 
 Devolvé SOLO las 5 consignas numeradas del 1 al 5, sin explicaciones ni texto adicional.`
 
@@ -34,7 +63,7 @@ Devolvé SOLO las 5 consignas numeradas del 1 al 5, sin explicaciones ni texto a
         { role: 'system', content: systemPrompt },
         { role: 'user', content: userPrompt },
       ],
-    })
+    }, { timeout: 15000 })
 
     const contenido = completion.choices[0]?.message?.content ?? ''
 
