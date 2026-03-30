@@ -38,6 +38,10 @@ function EditorContenido() {
   const [isEditMode, setIsEditMode] = useState(false);
   const [borradorId, setBorradorId] = useState<string | null>(null);
   const [guardandoBorrador, setGuardandoBorrador] = useState(false);
+  const [mostrarAnteriores, setMostrarAnteriores] = useState(false);
+  const [consignasAnteriores, setConsignasAnteriores] = useState<{ texto: string; fecha: string }[]>([]);
+  const [cargandoAnteriores, setCargandoAnteriores] = useState(false);
+  const [esConsignaAnterior, setEsConsignaAnterior] = useState(false);
 
   useEffect(() => {
     // Si viene consigna por query param (hoja libre), no hace fetch
@@ -136,6 +140,37 @@ function EditorContenido() {
     }
   }
 
+  async function cargarConsignasAnteriores() {
+    if (consignasAnteriores.length > 0) {
+      setMostrarAnteriores(!mostrarAnteriores);
+      return;
+    }
+    setCargandoAnteriores(true);
+    try {
+      const hoy = getFechaLocal();
+      const { data } = await supabase
+        .from("consignas")
+        .select("texto, fecha")
+        .eq("publicado", true)
+        .lt("fecha", hoy)
+        .order("fecha", { ascending: false })
+        .limit(6);
+      if (data) setConsignasAnteriores(data);
+      setMostrarAnteriores(true);
+    } finally {
+      setCargandoAnteriores(false);
+    }
+  }
+
+  function seleccionarConsignaAnterior(c: { texto: string; fecha: string }) {
+    setConsigna(c.texto);
+    setEsConsignaAnterior(true);
+    setMostrarAnteriores(false);
+    setTitulo("");
+    setContenido("");
+    setBorradorId(null);
+  }
+
   async function guardarBorrador() {
     if (contenido.trim() === "") return;
     setGuardandoBorrador(true);
@@ -149,6 +184,9 @@ function EditorContenido() {
           .eq("id", borradorId)
           .eq("user_id", session.user.id);
       } else {
+        const fechaConsignaBorrador = esConsignaAnterior
+          ? consignasAnteriores.find(c => c.texto === consigna)?.fecha ?? null
+          : fechaParam ?? null;
         const { data } = await supabase
           .from("textos")
           .insert({
@@ -158,7 +196,7 @@ function EditorContenido() {
             consigna: consigna ?? "",
             publicado: false,
             borrador: true,
-            ...(fechaParam ? { fecha_consigna: fechaParam } : {}),
+            ...(fechaConsignaBorrador ? { fecha_consigna: fechaConsignaBorrador } : {}),
           })
           .select("id")
           .single();
@@ -199,6 +237,9 @@ function EditorContenido() {
           .eq("id", editId)
           .eq("user_id", session?.user.id ?? "");
       } else {
+        const fechaConsigna = esConsignaAnterior
+          ? consignasAnteriores.find(c => c.texto === consigna)?.fecha ?? null
+          : fechaParam ?? null;
         await supabase.from("textos").insert({
           user_id: session?.user.id ?? null,
           contenido,
@@ -206,13 +247,13 @@ function EditorContenido() {
           consigna: consigna ?? "",
           publicado,
           borrador: false,
-          ...(fechaParam ? { fecha_consigna: fechaParam } : {}),
+          ...(fechaConsigna ? { fecha_consigna: fechaConsigna } : {}),
         });
       }
 
       if (!isEditMode && session?.user.id) {
         // Hoja libre: no actualiza racha (texto retroactivo)
-        if (!esHojaLibre) {
+        if (!esHojaLibre && !esConsignaAnterior) {
           await calcularYActualizarRacha(session.user.id);
         }
         const wordCount = contarPalabras(contenido);
@@ -229,7 +270,7 @@ function EditorContenido() {
 
       if (!isEditMode) {
         // Hoja libre: no marca el día como completado (es retroactivo)
-        if (!esHojaLibre) {
+        if (!esHojaLibre && !esConsignaAnterior) {
           const hoy = getFechaLocal();
           localStorage.setItem(`renglon_completed_${hoy}`, "1");
         }
@@ -360,6 +401,64 @@ function EditorContenido() {
               <span className="truncate min-w-0">{consigna ?? "—"}</span>
               <span className="shrink-0">{formatFechaCorta()}</span>
             </p>
+
+            {/* Selector de consignas anteriores */}
+            {!isEditMode && !esHojaLibre && (
+              <>
+                <button
+                  type="button"
+                  onClick={cargarConsignasAnteriores}
+                  className="select-none text-sm text-tinta-suave/60 transition-colors hover:text-tinta-suave"
+                  style={{ lineHeight: "40px", background: "none", border: "none", padding: 0, cursor: "pointer", fontFamily: "Inter, sans-serif" }}
+                >
+                  {cargandoAnteriores ? "Cargando…" : mostrarAnteriores ? "Ocultar anteriores" : "Ver consignas anteriores"}
+                </button>
+
+                <AnimatePresence>
+                  {mostrarAnteriores && consignasAnteriores.length > 0 && (
+                    <motion.div
+                      initial={{ opacity: 0, height: 0 }}
+                      animate={{ opacity: 1, height: "auto" }}
+                      exit={{ opacity: 0, height: 0 }}
+                      transition={{ duration: 0.2 }}
+                      style={{ overflow: "hidden" }}
+                    >
+                      {consignasAnteriores.map((c) => (
+                        <button
+                          key={c.fecha}
+                          type="button"
+                          onClick={() => seleccionarConsignaAnterior(c)}
+                          className="block w-full text-left font-display italic text-tinta-suave/70 transition-colors hover:text-tinta"
+                          style={{
+                            fontSize: "14px",
+                            lineHeight: "40px",
+                            background: "none",
+                            border: "none",
+                            padding: 0,
+                            cursor: "pointer",
+                            whiteSpace: "nowrap",
+                            overflow: "hidden",
+                            textOverflow: "ellipsis",
+                          }}
+                        >
+                          <span style={{ fontSize: "12px", fontFamily: "Inter, sans-serif", fontStyle: "normal", opacity: 0.5, marginRight: "8px" }}>
+                            {new Date(c.fecha + "T12:00:00").toLocaleDateString("es-AR", { day: "numeric", month: "short" })}
+                          </span>
+                          {c.texto}
+                        </button>
+                      ))}
+                    </motion.div>
+                  )}
+                </AnimatePresence>
+              </>
+            )}
+
+            {/* Indicador si eligió una consigna anterior */}
+            {esConsignaAnterior && (
+              <p className="select-none text-xs text-tinta-suave/50" style={{ lineHeight: "40px", fontFamily: "Inter, sans-serif" }}>
+                Escribiendo sobre una consigna anterior — no cuenta para la racha de hoy
+              </p>
+            )}
 
             {/* Título */}
             <input
