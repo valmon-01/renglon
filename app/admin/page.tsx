@@ -6,19 +6,19 @@ import { supabase } from "@/lib/supabase";
 
 const ADMIN_EMAIL = "valenmonti01@gmail.com";
 
-const CATEGORIAS = [
-  { value: "memoria", label: "Memoria" },
-  { value: "objeto cotidiano", label: "Objeto cotidiano" },
-  { value: "lugar", label: "Lugar" },
-  { value: "cuerpo", label: "Cuerpo" },
-  { value: "tiempo", label: "Tiempo" },
-  { value: "vínculo", label: "Vínculo" },
-  { value: "primera vez", label: "Primera vez" },
-  { value: "ausencia", label: "Ausencia" },
-  { value: "trabajo y rutina", label: "Trabajo y rutina" },
-  { value: "infancia", label: "Infancia" },
-  { value: "decisión", label: "Decisión" },
-  { value: "miedo", label: "Miedo" },
+const SEMILLAS = [
+  "infancia", "comidas", "lluvia", "objetos rotos", "miedos",
+  "viajes en colectivo", "cumpleaños", "mentiras piadosas", "mascotas",
+  "olores", "mudanzas", "primeras veces", "insomnio", "cocinas",
+  "fotos viejas", "vecinos", "promesas", "cicatrices", "canciones",
+  "supermercados", "despedidas", "ropa", "espejos", "abuelos",
+  "recreos", "llaves", "aeropuertos", "plantas", "siestas",
+  "cuadernos", "hospitales", "feriados", "escaleras", "bolsillos",
+  "heladeras", "trenes", "cumpleaños ajenos", "baños públicos",
+  "mochilas", "ventanas", "relojes", "cajones desordenados",
+  "conversaciones con desconocidos", "últimas veces", "techos",
+  "ruidos nocturnos", "filas de espera", "rituales de la mañana",
+  "cosas que coleccionaste", "excusas",
 ];
 
 interface Consigna {
@@ -49,8 +49,7 @@ export default function Admin() {
   const router = useRouter();
 
   const [verificando, setVerificando] = useState(true);
-  const [categoria, setCategoria] = useState("memoria");
-  const [contexto, setContexto] = useState("");
+  const [tema, setTema] = useState("");
   const [generando, setGenerando] = useState(false);
   const [consignasGeneradas, setConsignasGeneradas] = useState<string[]>([]);
   const [seleccionada, setSeleccionada] = useState<number | null>(null);
@@ -72,7 +71,6 @@ export default function Admin() {
   const [errorBanco, setErrorBanco] = useState("");
 
   const [textoPropio, setTextoPropio] = useState("");
-  const [categoriaPropia, setCategoriaPropia] = useState("memoria");
   const [programarFechaPropia, setProgramarFechaPropia] = useState(false);
   const [fechaPropia, setFechaPropia] = useState(hoyISO());
   const [guardandoPropio, setGuardandoPropio] = useState(false);
@@ -118,7 +116,8 @@ export default function Admin() {
 
   }
 
-  async function handleGenerar() {
+  async function handleGenerar(temaOverride?: string) {
+    const temaFinal = temaOverride !== undefined ? temaOverride : tema;
     setGenerando(true);
     setConsignasGeneradas([]);
     setSeleccionada(null);
@@ -127,7 +126,7 @@ export default function Admin() {
       const res = await fetch("/api/generar-consignas", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ categoria, contexto }),
+        body: JSON.stringify({ tema: temaFinal }),
       });
       const data = await res.json();
       if (data.consignas) setConsignasGeneradas(data.consignas);
@@ -150,7 +149,7 @@ export default function Admin() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           texto: consignasGeneradas[seleccionada],
-          categoria,
+          categoria: "general",
           fecha: fechaEnviar,
           estado: estadoEnviar,
         }),
@@ -166,7 +165,6 @@ export default function Admin() {
         );
         setSeleccionada(null);
         setConsignasGeneradas([]);
-        setContexto("");
         setProgramarFecha(false);
         setAgregarAlBancoIA(false);
         await cargarConsignas();
@@ -225,7 +223,7 @@ export default function Admin() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           texto: textoPropio.trim(),
-          categoria: categoriaPropia,
+          categoria: "general",
           fecha: fechaEnviar,
           estado: estadoEnviar,
         }),
@@ -351,11 +349,8 @@ export default function Admin() {
         padding: "16px 20px",
         marginBottom: 12,
       }}>
-        {/* Fila top: pill categoría + estrella + ⋯ */}
-        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-          <span style={{ fontSize: 11, color: "#64313E", backgroundColor: "rgba(100,49,62,0.08)", borderRadius: 12, padding: "2px 10px" }}>
-            {CATEGORIAS.find((c) => c.value === consigna.categoria)?.label ?? consigna.categoria}
-          </span>
+        {/* Fila top: estrella + ⋯ */}
+        <div style={{ display: "flex", justifyContent: "flex-end", alignItems: "center" }}>
           <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
             {!showMoverAlBanco && (
               <button
@@ -475,35 +470,76 @@ export default function Admin() {
             <div style={{ backgroundColor: "#FFFFFF", borderRadius: 12, padding: 24, boxShadow: "0 1px 8px rgba(0,0,0,0.05)" }}>
               <p style={{ fontSize: 11, letterSpacing: "0.12em", color: "#9C8B7E", marginBottom: 20, margin: "0 0 20px" }}>NUEVA CONSIGNA</p>
 
-              {/* Select categoría IA */}
-              <select
-                value={categoria}
-                onChange={(e) => setCategoria(e.target.value)}
-                style={{ ...inputStyle, marginBottom: 12 }}
-              >
-                {CATEGORIAS.map((c) => (
-                  <option key={c.value} value={c.value}>{c.label}</option>
-                ))}
-              </select>
-
-              {/* Textarea contexto */}
-              <textarea
-                value={contexto}
-                onChange={(e) => setContexto(e.target.value)}
-                placeholder="Contexto o temática a explorar…"
-                rows={4}
-                style={{ ...inputStyle, resize: "none", marginBottom: 16 }}
+              {/* Input tema */}
+              <input
+                type="text"
+                value={tema}
+                onChange={(e) => setTema(e.target.value)}
+                placeholder="Tema o disparador (ej: llaves, infancia, lluvia…)"
+                style={{ ...inputStyle, marginBottom: 8 }}
               />
 
-              {/* Botón generar */}
+              {/* Inspirar tema */}
               <button
                 type="button"
-                onClick={handleGenerar}
-                disabled={generando}
-                style={{ width: "100%", backgroundColor: "#64313E", color: "white", borderRadius: 8, padding: "12px", fontSize: 14, border: "none", cursor: "pointer", opacity: generando ? 0.7 : 1 }}
+                onClick={() => {
+                  const shuffled = [...SEMILLAS].sort(() => Math.random() - 0.5);
+                  setTema(shuffled.slice(0, 3).join(", "));
+                }}
+                style={{
+                  width: "100%",
+                  backgroundColor: "transparent",
+                  color: "#9C8B7E",
+                  border: "1px solid rgba(61,53,48,0.12)",
+                  borderRadius: 8,
+                  padding: "8px",
+                  fontSize: 12,
+                  cursor: "pointer",
+                  marginBottom: 12,
+                }}
               >
-                {generando ? "Generando…" : "✨ Generar con IA"}
+                🎲 Inspirar tema
               </button>
+
+              {/* Botones generar */}
+              <div style={{ display: "flex", gap: 8 }}>
+                <button
+                  type="button"
+                  onClick={() => handleGenerar()}
+                  disabled={generando}
+                  style={{
+                    flex: 1,
+                    backgroundColor: "#64313E",
+                    color: "white",
+                    borderRadius: 8,
+                    padding: "12px",
+                    fontSize: 14,
+                    border: "none",
+                    cursor: "pointer",
+                    opacity: generando ? 0.7 : 1,
+                  }}
+                >
+                  {generando ? "Generando…" : "✨ Generar"}
+                </button>
+                <button
+                  type="button"
+                  onClick={() => handleGenerar("")}
+                  disabled={generando}
+                  style={{
+                    backgroundColor: "transparent",
+                    color: "#64313E",
+                    border: "1px solid #64313E",
+                    borderRadius: 8,
+                    padding: "12px",
+                    fontSize: 14,
+                    cursor: "pointer",
+                    opacity: generando ? 0.7 : 1,
+                    whiteSpace: "nowrap",
+                  }}
+                >
+                  🎰 Sorprendeme
+                </button>
+              </div>
 
               {/* Consignas generadas */}
               {consignasGeneradas.length > 0 && (
@@ -582,17 +618,6 @@ export default function Admin() {
                 style={{ ...inputStyle, marginBottom: 12 }}
               />
               {errorPropio && <p style={{ fontSize: 12, color: "#64313E", marginBottom: 8 }}>{errorPropio}</p>}
-
-              {/* Select categoría manual */}
-              <select
-                value={categoriaPropia}
-                onChange={(e) => setCategoriaPropia(e.target.value)}
-                style={{ ...inputStyle, marginBottom: 8 }}
-              >
-                {CATEGORIAS.map((c) => (
-                  <option key={c.value} value={c.value}>{c.label}</option>
-                ))}
-              </select>
 
               <label style={{ display: "flex", alignItems: "center", gap: 8, fontSize: 13, color: "#3D3530", marginBottom: 8, cursor: "pointer" }}>
                 <input type="checkbox" checked={programarFechaPropia} onChange={(e) => { setProgramarFechaPropia(e.target.checked); if (e.target.checked) setAgregarAlBancoPropias(false); }} style={{ accentColor: "#64313E" }} />

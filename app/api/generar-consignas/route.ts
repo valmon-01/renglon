@@ -8,11 +8,7 @@ const groq = new Groq({ apiKey: process.env.GROQ_API_KEY })
 
 export async function POST(request: NextRequest) {
   try {
-    const { categoria, contexto } = await request.json()
-
-    if (!categoria || typeof categoria !== 'string') {
-      return NextResponse.json({ error: 'Categoría requerida' }, { status: 400 })
-    }
+    const { tema } = await request.json()
 
     const { data: destacadas } = await supabaseAdmin
       .from('consignas')
@@ -51,11 +47,13 @@ EJEMPLOS DE CONSIGNAS MALAS (no generes esto):
 
 Devolvé exactamente la cantidad de consignas pedidas, numeradas del 1 al 5, sin explicaciones, sin categoría entre corchetes.`
 
-    const userPrompt = `Generá 5 consignas de escritura para la categoría '${categoria}'. ${contexto ? `Contexto o temática específica: ${contexto}.` : ''}
+    const userPrompt = tema && tema.trim()
+      ? `Generá 5 consignas de escritura inspiradas en el tema: "${tema.trim()}".
 
-${bloqueDestacadas}La consigna debe funcionar tanto para introspección como para ficción (realista, fantástica, distópica o apocalíptica). Proponé una situación, detalle, objeto, recuerdo o escena que pueda interpretarse de múltiples formas. Breve, concreta e imaginativa. Debe invitar a escribir textos de 50-200 palabras. Sin explicaciones, sin subtítulos, sin meta-comentarios.
+${bloqueDestacadas}La consigna debe funcionar tanto para introspección como para ficción (realista, fantástica, distópica o apocalíptica). Proponé una situación, detalle, objeto, recuerdo o escena que pueda interpretarse de múltiples formas. Breve, concreta e imaginativa. Debe invitar a escribir textos de 50-200 palabras. Sin explicaciones, sin subtítulos, sin meta-comentarios.`
+      : `Generá 5 consignas de escritura variadas. Sorprendé con temas inesperados.
 
-Devolvé SOLO las 5 consignas numeradas del 1 al 5, sin explicaciones ni texto adicional.`
+${bloqueDestacadas}La consigna debe funcionar tanto para introspección como para ficción (realista, fantástica, distópica o apocalíptica). Proponé una situación, detalle, objeto, recuerdo o escena que pueda interpretarse de múltiples formas. Breve, concreta e imaginativa. Debe invitar a escribir textos de 50-200 palabras. Sin explicaciones, sin subtítulos, sin meta-comentarios.`
 
     const completion = await groq.chat.completions.create({
       model: 'llama-3.3-70b-versatile',
