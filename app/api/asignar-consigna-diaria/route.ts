@@ -1,76 +1,117 @@
-import { NextResponse } from 'next/server'
-import { supabaseAdmin } from '@/lib/supabase-admin'
+import { type NextRequest, NextResponse } from "next/server"
+import { supabaseAdmin } from "@/lib/supabase-admin"
+import { isCronRequest } from "@/lib/server/auth"
 
-const supabase = supabaseAdmin
+/**
+ * Fecha de hoy en America/Argentina/Buenos_Aires (UTC-3 sin DST).
+ * Usamos el TZ para que el "día" corresponda a la experiencia del usuario
+ * y no al servidor en UTC.
+ */
+function hoyARG(): string {
+  const now = new Date()
+  // en-CA => YYYY-MM-DD
+  return new Intl.DateTimeFormat("en-CA", {
+    timeZone: "America/Argentina/Buenos_Aires",
+    year: "numeric",
+    month: "2-digit",
+    day: "2-digit",
+  }).format(now)
+}
 
-export async function GET() {
-  try {
-    const hoy = new Date().toISOString().split('T')[0]
+/**
+ * GET /api/asignar-consigna-diaria
+ *
+ * Modo lectura (público, sin auth): devuelve la consigna publicada de hoy.
+ *   La consigna del día ya es visible en la landing pública, así que la
+ *   lectura es idempotente y no revela nada privado. NO hace mutaciones
+ *   en este modo — evita race conditions y abuso.
+ *
+ * Modo cron (Authorization: Bearer CRON_SECRET):
+ *   - Si ya hay consigna publicada para hoy → noop
+ *   - Si hay una programada para hoy → la marca como publicada
+ *   - Si no, elige una del banco al azar y la publica para hoy
+ */
+export async function GET(request: NextRequest) {
+  const hoy = hoyARG()
 
-    // 1. Verificar si ya hay consigna asignada para hoy
-    const { data: existente } = await supabase
-      .from('consignas')
-      .select('*')
-      .eq('fecha', hoy)
-      .eq('estado', 'publicada')
-      .maybeSingle()
+  // ── Modo cron ────────────────────────────────────────────────────────
+  if (isCronRequest(request)) {
+    try {
+      const { data: existente } = await supabaseAdmin
+        .from("consignas")
+        .select("*")
+        .eq("fecha", hoy)
+        .eq("estado", "publicada")
+        .maybeSingle()
 
-    if (existente) {
-      console.log('Consigna ya asignada para hoy:', existente.id)
-      return NextResponse.json({ consigna: existente })
-    }
+      if (existente) {
+        return NextResponse.json({ consigna: existente, source: "ya-publicada" })
+      }
 
-    // 1b. Verificar si hay una consigna programada para hoy → publicarla
-    const { data: programada } = await supabase
-      .from('consignas')
-      .select('*')
-      .eq('fecha', hoy)
-      .eq('estado', 'programada')
-      .maybeSingle()
+      const { data: programada } = await supabaseAdmin
+        .from("consignas")
+        .select("*")
+        .eq("fecha", hoy)
+        .eq("estado", "programada")
+        .maybeSingle()
 
-    if (programada) {
-      const { data: publicada, error: errPub } = await supabase
-        .from('consignas')
-        .update({ estado: 'publicada' })
-        .eq('id', programada.id)
+      if (programada) {
+        const { data: publicada, error: errPub } = await supabaseAdmin
+          .from("consignas")
+          .update({ estado: "publicada" })
+          .eq("id", programada.id)
+          .select()
+          .single()
+        if (errPub) throw errPub
+        return NextResponse.json({ consigna: publicada, source: "programada" })
+      }
+
+      const { data: banco } = await supabaseAdmin
+        .from("consignas")
+        .select("*")
+        .eq("estado", "banco")
+
+      if (!banco || banco.length === 0) {
+        return NextResponse.json(
+          { error: "No hay consignas disponibles en el banco", consigna: null },
+          { status: 404 },
+        )
+      }
+
+      const delBanco = banco[Math.floor(Math.random() * banco.length)]
+      const { data: actualizada, error } = await supabaseAdmin
+        .from("consignas")
+        .update({ fecha: hoy, estado: "publicada" })
+        .eq("id", delBanco.id)
         .select()
         .single()
+      if (error) throw error
 
-      if (errPub) throw errPub
-      return NextResponse.json({ consigna: publicada })
-    }
-
-    // 2. Buscar del banco
-    const { data: banco } = await supabase
-      .from('consignas')
-      .select('*')
-      .eq('estado', 'banco')
-
-    if (!banco || banco.length === 0) {
-      console.log('No hay consignas en el banco')
-      return NextResponse.json(
-        { error: 'No hay consignas disponibles en el banco', consigna: null },
-        { status: 404 }
+      return NextResponse.json({ consigna: actualizada, source: "banco" })
+    } catch (error) {
+      console.error(
+        "Error asignando consigna (cron):",
+        error instanceof Error ? error.message : String(error),
       )
+      return NextResponse.json({ error: "Error al asignar consigna" }, { status: 500 })
     }
+  }
 
-    // Elegir una aleatoriamente
-    const delBanco = banco[Math.floor(Math.random() * banco.length)]
+  // ── Modo lectura (público) ───────────────────────────────────────────
+  try {
+    const { data } = await supabaseAdmin
+      .from("consignas")
+      .select("id, texto, categoria, fecha, estado")
+      .eq("fecha", hoy)
+      .eq("estado", "publicada")
+      .maybeSingle()
 
-    // 3. Asignarle fecha de hoy y marcar como publicada
-    const { data: actualizada, error } = await supabase
-      .from('consignas')
-      .update({ fecha: hoy, estado: 'publicada' })
-      .eq('id', delBanco.id)
-      .select()
-      .single()
-
-    if (error) throw error
-
-    console.log('Consigna asignada:', actualizada.id)
-    return NextResponse.json({ consigna: actualizada })
+    return NextResponse.json({ consigna: data ?? null })
   } catch (error) {
-    console.error('Error asignando consigna diaria:', error)
-    return NextResponse.json({ error: 'Error al asignar consigna' }, { status: 500 })
+    console.error(
+      "Error leyendo consigna diaria:",
+      error instanceof Error ? error.message : String(error),
+    )
+    return NextResponse.json({ error: "Error al leer consigna" }, { status: 500 })
   }
 }

@@ -1,24 +1,50 @@
 // v3 - groq
 // Requiere: ALTER TABLE consignas ADD COLUMN IF NOT EXISTS destacada boolean DEFAULT false;
-import { NextRequest, NextResponse } from 'next/server'
-import Groq from 'groq-sdk'
-import { supabaseAdmin } from '@/lib/supabase-admin'
+import { type NextRequest, NextResponse } from "next/server"
+import Groq from "groq-sdk"
+import { z } from "zod"
+import { supabaseAdmin } from "@/lib/supabase-admin"
+import { requireAdmin } from "@/lib/server/auth"
 
 const groq = new Groq({ apiKey: process.env.GROQ_API_KEY })
 
-export async function POST(request: NextRequest) {
-  try {
-    const { tema } = await request.json()
+// Input validation: tema opcional, string corto para evitar prompts gigantes
+// que inflan el costo de Groq o generan outputs fuera de spec.
+const BodySchema = z.object({
+  tema: z.string().trim().max(200).optional().default(""),
+})
 
+export async function POST(request: NextRequest) {
+  // AuthZ: solo admin puede generar consignas (Groq cuesta dinero).
+  const admin = await requireAdmin()
+  if (!admin) {
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
+  }
+
+  // Validación de input
+  let body: unknown
+  try {
+    body = await request.json()
+  } catch {
+    return NextResponse.json({ error: "Body inválido" }, { status: 400 })
+  }
+  const parsed = BodySchema.safeParse(body)
+  if (!parsed.success) {
+    return NextResponse.json({ error: "Parámetros inválidos" }, { status: 400 })
+  }
+  const { tema } = parsed.data
+
+  try {
     const { data: destacadas } = await supabaseAdmin
-      .from('consignas')
-      .select('texto')
-      .eq('destacada', true)
+      .from("consignas")
+      .select("texto")
+      .eq("destacada", true)
       .limit(8)
 
-    const bloqueDestacadas = destacadas && destacadas.length > 0
-      ? `Ejemplos de consignas que funcionan bien (tomá su estilo como referencia):\n${destacadas.map((c, i) => `${i + 1}. ${c.texto}`).join('\n')}\n\n`
-      : ''
+    const bloqueDestacadas =
+      destacadas && destacadas.length > 0
+        ? `Ejemplos de consignas que funcionan bien (tomá su estilo como referencia):\n${destacadas.map((c, i) => `${i + 1}. ${c.texto}`).join("\n")}\n\n`
+        : ""
 
     const systemPrompt = `Sos un generador de consignas para renglón, una app de escritura creativa diaria para personas que no escriben habitualmente. Tu único objetivo es que alguien pueda empezar a escribir en menos de 1 minuto.
 
@@ -47,34 +73,41 @@ EJEMPLOS DE CONSIGNAS MALAS (no generes esto):
 
 Devolvé exactamente la cantidad de consignas pedidas, numeradas del 1 al 5, sin explicaciones, sin categoría entre corchetes.`
 
-    const userPrompt = tema && tema.trim()
-      ? `Generá 5 consignas de escritura inspiradas en el tema: "${tema.trim()}".
+    const userPrompt =
+      tema && tema.trim()
+        ? `Generá 5 consignas de escritura inspiradas en el tema: "${tema.trim()}".
 
 ${bloqueDestacadas}La consigna debe funcionar tanto para introspección como para ficción (realista, fantástica, distópica o apocalíptica). Proponé una situación, detalle, objeto, recuerdo o escena que pueda interpretarse de múltiples formas. Breve, concreta e imaginativa. Debe invitar a escribir textos de 50-200 palabras. Sin explicaciones, sin subtítulos, sin meta-comentarios.`
-      : `Generá 5 consignas de escritura variadas. Sorprendé con temas inesperados.
+        : `Generá 5 consignas de escritura variadas. Sorprendé con temas inesperados.
 
 ${bloqueDestacadas}La consigna debe funcionar tanto para introspección como para ficción (realista, fantástica, distópica o apocalíptica). Proponé una situación, detalle, objeto, recuerdo o escena que pueda interpretarse de múltiples formas. Breve, concreta e imaginativa. Debe invitar a escribir textos de 50-200 palabras. Sin explicaciones, sin subtítulos, sin meta-comentarios.`
 
-    const completion = await groq.chat.completions.create({
-      model: 'llama-3.3-70b-versatile',
-      messages: [
-        { role: 'system', content: systemPrompt },
-        { role: 'user', content: userPrompt },
-      ],
-    }, { timeout: 15000 })
+    const completion = await groq.chat.completions.create(
+      {
+        model: "llama-3.3-70b-versatile",
+        messages: [
+          { role: "system", content: systemPrompt },
+          { role: "user", content: userPrompt },
+        ],
+      },
+      { timeout: 15000 },
+    )
 
-    const contenido = completion.choices[0]?.message?.content ?? ''
+    const contenido = completion.choices[0]?.message?.content ?? ""
 
     const consignas = contenido
-      .split('\n')
+      .split("\n")
       .filter((line) => /^\d+[.)]\s/.test(line.trim()))
-      .map((line) => line.replace(/^\d+[.)]\s*/, '').trim())
+      .map((line) => line.replace(/^\d+[.)]\s*/, "").trim())
       .filter((line) => line.length > 0)
 
     return NextResponse.json({ consignas })
   } catch (error) {
-    console.error('Error generando consignas — mensaje:', error instanceof Error ? error.message : String(error))
-    console.error('Error generando consignas — completo:', JSON.stringify(error, Object.getOwnPropertyNames(error)))
-    return NextResponse.json({ error: 'Error al generar consignas' }, { status: 500 })
+    // Solo el mensaje — evitamos dump completo que podría incluir tokens de Groq.
+    console.error(
+      "Error generando consignas:",
+      error instanceof Error ? error.message : String(error),
+    )
+    return NextResponse.json({ error: "Error al generar consignas" }, { status: 500 })
   }
 }

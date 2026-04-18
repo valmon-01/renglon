@@ -1,10 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { useRouter } from "next/navigation";
 import { supabase } from "@/lib/supabase";
-
-const ADMIN_EMAIL = "valenmonti01@gmail.com";
 
 const SEMILLAS = [
   "infancia", "comidas", "lluvia", "objetos rotos", "miedos",
@@ -46,8 +43,6 @@ function formatFechaLegible(fecha: string): string {
 }
 
 export default function Admin() {
-  const router = useRouter();
-
   const [verificando, setVerificando] = useState(true);
   const [tema, setTema] = useState("");
   const [generando, setGenerando] = useState(false);
@@ -78,15 +73,11 @@ export default function Admin() {
   const [errorPropio, setErrorPropio] = useState("");
 
   useEffect(() => {
-    supabase.auth.getUser().then(({ data }) => {
-      if (data.user?.email !== ADMIN_EMAIL) {
-        router.replace("/home");
-      } else {
-        setVerificando(false);
-        cargarConsignas();
-      }
-    });
-  }, [router]);
+    // La verificación de admin ya la hace el layout server-side (app/admin/layout.tsx).
+    // Si llegamos aquí, el usuario es admin. Sólo cargamos datos.
+    setVerificando(false);
+    cargarConsignas();
+  }, []);
 
   async function cargarConsignas() {
     const hoy = hoyISO();
