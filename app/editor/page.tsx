@@ -6,7 +6,6 @@ import { useRouter, useSearchParams } from "next/navigation";
 import { ArrowLeft, Check, Globe, Lock } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { supabase } from "@/lib/supabase";
-import { calcularYActualizarRacha } from "@/utils/dailyProgress";
 import { getFechaLocal } from "@/utils/fecha";
 
 const META_PALABRAS = 300;
@@ -214,6 +213,9 @@ function EditorContenido() {
         data: { session },
       } = await supabase.auth.getSession();
 
+      // ID del texto resultante (lo necesitamos para llamar a /api/registrar-escritura)
+      let textoId: string | null = null;
+
       if (borradorId) {
         await supabase
           .from("textos")
@@ -226,6 +228,7 @@ function EditorContenido() {
           })
           .eq("id", borradorId)
           .eq("user_id", session?.user.id ?? "");
+        textoId = borradorId;
       } else if (isEditMode && editId) {
         await supabase
           .from("textos")
@@ -236,36 +239,40 @@ function EditorContenido() {
           })
           .eq("id", editId)
           .eq("user_id", session?.user.id ?? "");
+        textoId = editId;
       } else {
         const fechaConsigna = esConsignaAnterior
           ? consignasAnteriores.find(c => c.texto === consigna)?.fecha ?? null
           : fechaParam ?? null;
-        await supabase.from("textos").insert({
-          user_id: session?.user.id ?? null,
-          contenido,
-          titulo: titulo.trim() || null,
-          consigna: consigna ?? "",
-          publicado,
-          borrador: false,
-          ...(fechaConsigna ? { fecha_consigna: fechaConsigna } : {}),
-        });
+        const { data: insertado } = await supabase
+          .from("textos")
+          .insert({
+            user_id: session?.user.id ?? null,
+            contenido,
+            titulo: titulo.trim() || null,
+            consigna: consigna ?? "",
+            publicado,
+            borrador: false,
+            ...(fechaConsigna ? { fecha_consigna: fechaConsigna } : {}),
+          })
+          .select("id")
+          .single();
+        textoId = insertado?.id ?? null;
       }
 
-      if (!isEditMode && session?.user.id) {
-        // Hoja libre: no actualiza racha (texto retroactivo)
-        if (!esHojaLibre && !esConsignaAnterior) {
-          await calcularYActualizarRacha(session.user.id);
+      // Palabras y racha se calculan en el servidor (no confiamos en el cliente).
+      // El endpoint verifica ownership del texto y rechaza manipulaciones.
+      if (!isEditMode && session?.user.id && textoId) {
+        const retroactivo = esHojaLibre || esConsignaAnterior;
+        try {
+          await fetch("/api/registrar-escritura", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ textoId, retroactivo }),
+          });
+        } catch (e) {
+          console.error("No se pudo registrar estadísticas de escritura", e);
         }
-        const wordCount = contarPalabras(contenido);
-        const { data: perfil } = await supabase
-          .from("profiles")
-          .select("palabras_totales")
-          .eq("id", session.user.id)
-          .single();
-        await supabase
-          .from("profiles")
-          .update({ palabras_totales: (perfil?.palabras_totales ?? 0) + wordCount })
-          .eq("id", session.user.id);
       }
 
       if (!isEditMode) {
