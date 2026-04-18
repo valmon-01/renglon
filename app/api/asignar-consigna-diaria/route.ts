@@ -1,6 +1,6 @@
 import { type NextRequest, NextResponse } from "next/server"
 import { supabaseAdmin } from "@/lib/supabase-admin"
-import { getCurrentUser, isCronRequest } from "@/lib/server/auth"
+import { isCronRequest } from "@/lib/server/auth"
 
 /**
  * Fecha de hoy en America/Argentina/Buenos_Aires (UTC-3 sin DST).
@@ -21,8 +21,10 @@ function hoyARG(): string {
 /**
  * GET /api/asignar-consigna-diaria
  *
- * Modo usuario (auth requerida): devuelve la consigna publicada de hoy.
- *   NO hace mutaciones para evitar race conditions entre clientes.
+ * Modo lectura (público, sin auth): devuelve la consigna publicada de hoy.
+ *   La consigna del día ya es visible en la landing pública, así que la
+ *   lectura es idempotente y no revela nada privado. NO hace mutaciones
+ *   en este modo — evita race conditions y abuso.
  *
  * Modo cron (Authorization: Bearer CRON_SECRET):
  *   - Si ya hay consigna publicada para hoy → noop
@@ -95,12 +97,7 @@ export async function GET(request: NextRequest) {
     }
   }
 
-  // ── Modo usuario ─────────────────────────────────────────────────────
-  const user = await getCurrentUser()
-  if (!user) {
-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
-  }
-
+  // ── Modo lectura (público) ───────────────────────────────────────────
   try {
     const { data } = await supabaseAdmin
       .from("consignas")
