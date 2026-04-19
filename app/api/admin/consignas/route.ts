@@ -11,7 +11,9 @@ export const dynamic = "force-dynamic"
  */
 export async function GET() {
   const admin = await requireAdmin()
-  if (!admin.ok) return admin.response
+  if (!admin) {
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
+  }
 
   const hoy = new Date().toISOString().slice(0, 10)
 

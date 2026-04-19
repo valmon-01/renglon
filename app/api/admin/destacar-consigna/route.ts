@@ -12,7 +12,9 @@ const schema = z.object({
 
 export async function POST(request: NextRequest) {
   const admin = await requireAdmin()
-  if (!admin.ok) return admin.response
+  if (!admin) {
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
+  }
 
   let body: unknown
   try {
