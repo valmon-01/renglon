@@ -80,31 +80,21 @@ export default function Admin() {
   }, []);
 
   async function cargarConsignas() {
-    const hoy = hoyISO();
-
-    const { data: dataProgramadas } = await supabase
-      .from("consignas")
-      .select("*")
-      .eq("estado", "programada")
-      .gte("fecha", hoy)
-      .order("fecha", { ascending: true });
-
-    const { data: dataBanco } = await supabase
-      .from("consignas")
-      .select("*")
-      .eq("estado", "banco")
-      .order("created_at", { ascending: true });
-
-    const { data: dataBorradores } = await supabase
-      .from("consignas")
-      .select("*")
-      .eq("estado", "borrador")
-      .order("created_at", { ascending: false });
-
-    if (dataProgramadas) setProgramadas(dataProgramadas);
-    if (dataBanco) setBanco(dataBanco);
-    if (dataBorradores) setBorradores(dataBorradores);
-
+    // RLS restringe lectura de consignas no publicadas a anon/authenticated.
+    // Leemos via endpoint server-side (service role) que valida que seas admin.
+    try {
+      const res = await fetch("/api/admin/consignas", { cache: "no-store" });
+      if (!res.ok) {
+        console.error("No se pudieron cargar las consignas", res.status);
+        return;
+      }
+      const data = await res.json();
+      setProgramadas(data.programadas ?? []);
+      setBanco(data.banco ?? []);
+      setBorradores(data.borradores ?? []);
+    } catch (e) {
+      console.error("Error cargando consignas", e);
+    }
   }
 
   async function handleGenerar(temaOverride?: string) {
@@ -145,8 +135,8 @@ export default function Admin() {
           estado: estadoEnviar,
         }),
       });
-      const data = await res.json();
-      if (data.consigna) {
+      const data = await res.json().catch(() => ({}));
+      if (res.ok && data.consigna) {
         setAprobadoMsg(
           programarFecha
             ? `Programada para el ${formatFechaLegible(fecha)}.`
@@ -160,10 +150,11 @@ export default function Admin() {
         setAgregarAlBancoIA(false);
         await cargarConsignas();
       } else {
-        setAprobadoMsg("Error al guardar.");
+        setAprobadoMsg(data.error || `Error al guardar (HTTP ${res.status}).`);
       }
     } catch (e) {
-      console.error(e);
+      console.error("handleAprobar", e);
+      setAprobadoMsg("Error de red al guardar.");
     } finally {
       setAprobando(false);
     }
@@ -219,8 +210,8 @@ export default function Admin() {
           estado: estadoEnviar,
         }),
       });
-      const data = await res.json();
-      if (data.consigna) {
+      const data = await res.json().catch(() => ({}));
+      if (res.ok && data.consigna) {
         setGuardadoMsgPropio(
           programarFechaPropia
             ? `Programada para el ${formatFechaLegible(fechaPropia)}.`
@@ -233,10 +224,11 @@ export default function Admin() {
         setAgregarAlBancoPropias(false);
         await cargarConsignas();
       } else {
-        setGuardadoMsgPropio("Error al guardar.");
+        setErrorPropio(data.error || `Error al guardar (HTTP ${res.status}).`);
       }
     } catch (e) {
-      console.error(e);
+      console.error("handleGuardarPropia", e);
+      setErrorPropio("Error de red al guardar.");
     } finally {
       setGuardandoPropio(false);
     }
@@ -277,19 +269,40 @@ export default function Admin() {
   }
 
   async function handleEliminar(id: string) {
-    await supabase.from("consignas").delete().eq("id", id);
-    await cargarConsignas();
+    try {
+      const res = await fetch("/api/admin/eliminar-consigna", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ id }),
+      });
+      if (!res.ok) {
+        console.error("No se pudo eliminar la consigna");
+        return;
+      }
+      await cargarConsignas();
+    } catch (e) {
+      console.error("Error eliminando consigna", e);
+    }
   }
 
   async function handleToggleDestacada(consigna: Consigna) {
-    const { data } = await supabase
-      .from("consignas")
-      .update({ destacada: !consigna.destacada })
-      .eq("id", consigna.id)
-      .select()
-      .single();
-    if (data) {
-      setBanco((prev) => prev.map((c) => c.id === consigna.id ? { ...c, destacada: data.destacada } : c));
+    try {
+      const res = await fetch("/api/admin/destacar-consigna", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ id: consigna.id, destacada: !consigna.destacada }),
+      });
+      if (!res.ok) return;
+      const data = await res.json();
+      if (data.consigna) {
+        setBanco((prev) =>
+          prev.map((c) =>
+            c.id === consigna.id ? { ...c, destacada: data.consigna.destacada } : c,
+          ),
+        );
+      }
+    } catch (e) {
+      console.error("Error destacando consigna", e);
     }
   }
 

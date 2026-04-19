@@ -46,7 +46,15 @@ export async function POST(request: NextRequest) {
   }
   const parsed = BodySchema.safeParse(raw)
   if (!parsed.success) {
-    return NextResponse.json({ error: "Parámetros inválidos" }, { status: 400 })
+    // Exponemos una descripción del primer issue para diagnosticar sin
+    // filtrar información sensible (es un endpoint admin, es aceptable).
+    const first = parsed.error.issues[0]
+    const path = first?.path?.join(".") || "body"
+    const msg = first?.message || "inválido"
+    return NextResponse.json(
+      { error: `Parámetros inválidos: ${path} ${msg}` },
+      { status: 400 },
+    )
   }
   const body = parsed.data
 
@@ -90,6 +98,21 @@ export async function POST(request: NextRequest) {
     }
 
     // INSERT: nueva consigna
+    // Si viene con fecha, chequeamos colisión (UNIQUE INDEX parcial en fecha).
+    if (body.fecha) {
+      const { data: colision } = await supabaseAdmin
+        .from("consignas")
+        .select("id")
+        .eq("fecha", body.fecha)
+        .maybeSingle()
+      if (colision) {
+        return NextResponse.json(
+          { error: "Esa fecha ya tiene una consigna asignada." },
+          { status: 409 },
+        )
+      }
+    }
+
     const { data, error } = await supabaseAdmin
       .from("consignas")
       .insert({
@@ -103,10 +126,9 @@ export async function POST(request: NextRequest) {
     if (error) throw error
     return NextResponse.json({ consigna: data })
   } catch (error) {
-    console.error(
-      "Error aprobando consigna:",
-      error instanceof Error ? error.message : String(error),
-    )
-    return NextResponse.json({ error: "Error al aprobar consigna" }, { status: 500 })
+    const msg = error instanceof Error ? error.message : String(error)
+    console.error("Error aprobando consigna:", msg)
+    // Devolvemos el mensaje real del DB (es endpoint admin, no hay leak sensible).
+    return NextResponse.json({ error: `DB: ${msg}` }, { status: 500 })
   }
 }
