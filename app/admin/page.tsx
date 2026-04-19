@@ -135,8 +135,8 @@ export default function Admin() {
           estado: estadoEnviar,
         }),
       });
-      const data = await res.json();
-      if (data.consigna) {
+      const data = await res.json().catch(() => ({}));
+      if (res.ok && data.consigna) {
         setAprobadoMsg(
           programarFecha
             ? `Programada para el ${formatFechaLegible(fecha)}.`
@@ -150,10 +150,11 @@ export default function Admin() {
         setAgregarAlBancoIA(false);
         await cargarConsignas();
       } else {
-        setAprobadoMsg("Error al guardar.");
+        setAprobadoMsg(data.error || `Error al guardar (HTTP ${res.status}).`);
       }
     } catch (e) {
-      console.error(e);
+      console.error("handleAprobar", e);
+      setAprobadoMsg("Error de red al guardar.");
     } finally {
       setAprobando(false);
     }
@@ -209,8 +210,8 @@ export default function Admin() {
           estado: estadoEnviar,
         }),
       });
-      const data = await res.json();
-      if (data.consigna) {
+      const data = await res.json().catch(() => ({}));
+      if (res.ok && data.consigna) {
         setGuardadoMsgPropio(
           programarFechaPropia
             ? `Programada para el ${formatFechaLegible(fechaPropia)}.`
@@ -223,10 +224,11 @@ export default function Admin() {
         setAgregarAlBancoPropias(false);
         await cargarConsignas();
       } else {
-        setGuardadoMsgPropio("Error al guardar.");
+        setErrorPropio(data.error || `Error al guardar (HTTP ${res.status}).`);
       }
     } catch (e) {
-      console.error(e);
+      console.error("handleGuardarPropia", e);
+      setErrorPropio("Error de red al guardar.");
     } finally {
       setGuardandoPropio(false);
     }
