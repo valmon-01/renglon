@@ -119,6 +119,8 @@ function EditorContenido() {
   const [guardando, setGuardando] = useState(false);
   const [confirmacion, setConfirmacion] = useState<"publicado" | "privado" | null>(null);
   const [pasteMsg, setPasteMsg] = useState(false);
+  const [errorMsg, setErrorMsg] = useState<string | null>(null);
+  const [borradorGuardadoMsg, setBorradorGuardadoMsg] = useState(false);
 
   const wordCount = contarPalabras(contenido);
   const progreso = Math.min((wordCount / META_PALABRAS) * 100, 100);
@@ -150,7 +152,7 @@ function EditorContenido() {
       const { data } = await supabase
         .from("consignas")
         .select("texto, fecha")
-        .eq("publicado", true)
+        .eq("estado", "publicada")
         .lt("fecha", hoy)
         .order("fecha", { ascending: false })
         .limit(6);
@@ -173,20 +175,25 @@ function EditorContenido() {
   async function guardarBorrador() {
     if (contenido.trim() === "") return;
     setGuardandoBorrador(true);
+    setErrorMsg(null);
     try {
       const { data: { session } } = await supabase.auth.getSession();
-      if (!session?.user) return;
+      if (!session?.user) {
+        setErrorMsg("Tenés que iniciar sesión para guardar.");
+        return;
+      }
       if (borradorId) {
-        await supabase
+        const { error } = await supabase
           .from("textos")
           .update({ contenido, titulo: titulo.trim() || null })
           .eq("id", borradorId)
           .eq("user_id", session.user.id);
+        if (error) throw error;
       } else {
         const fechaConsignaBorrador = esConsignaAnterior
           ? consignasAnteriores.find(c => c.texto === consigna)?.fecha ?? null
           : fechaParam ?? null;
-        const { data } = await supabase
+        const { data, error } = await supabase
           .from("textos")
           .insert({
             user_id: session.user.id,
@@ -199,8 +206,16 @@ function EditorContenido() {
           })
           .select("id")
           .single();
+        if (error) throw error;
         if (data) setBorradorId(data.id);
       }
+      // Feedback visible de que se guardó.
+      setBorradorGuardadoMsg(true);
+      setTimeout(() => setBorradorGuardadoMsg(false), 2000);
+    } catch (e: unknown) {
+      const msg = e instanceof Error ? e.message : "No se pudo guardar el borrador";
+      console.error("Error guardando borrador", e);
+      setErrorMsg(msg);
     } finally {
       setGuardandoBorrador(false);
     }
@@ -208,16 +223,23 @@ function EditorContenido() {
 
   async function guardar(publicado: boolean) {
     setGuardando(true);
+    setErrorMsg(null);
     try {
       const {
         data: { session },
       } = await supabase.auth.getSession();
 
+      if (!session?.user) {
+        setErrorMsg("Tenés que iniciar sesión para guardar.");
+        setGuardando(false);
+        return;
+      }
+
       // ID del texto resultante (lo necesitamos para llamar a /api/registrar-escritura)
       let textoId: string | null = null;
 
       if (borradorId) {
-        await supabase
+        const { error } = await supabase
           .from("textos")
           .update({
             contenido,
@@ -227,10 +249,11 @@ function EditorContenido() {
             ...(fechaParam ? { fecha_consigna: fechaParam } : {}),
           })
           .eq("id", borradorId)
-          .eq("user_id", session?.user.id ?? "");
+          .eq("user_id", session.user.id);
+        if (error) throw error;
         textoId = borradorId;
       } else if (isEditMode && editId) {
-        await supabase
+        const { error } = await supabase
           .from("textos")
           .update({
             contenido,
@@ -238,16 +261,17 @@ function EditorContenido() {
             publicado,
           })
           .eq("id", editId)
-          .eq("user_id", session?.user.id ?? "");
+          .eq("user_id", session.user.id);
+        if (error) throw error;
         textoId = editId;
       } else {
         const fechaConsigna = esConsignaAnterior
           ? consignasAnteriores.find(c => c.texto === consigna)?.fecha ?? null
           : fechaParam ?? null;
-        const { data: insertado } = await supabase
+        const { data: insertado, error } = await supabase
           .from("textos")
           .insert({
-            user_id: session?.user.id ?? null,
+            user_id: session.user.id,
             contenido,
             titulo: titulo.trim() || null,
             consigna: consigna ?? "",
@@ -257,12 +281,13 @@ function EditorContenido() {
           })
           .select("id")
           .single();
+        if (error) throw error;
         textoId = insertado?.id ?? null;
       }
 
       // Palabras y racha se calculan en el servidor (no confiamos en el cliente).
       // El endpoint verifica ownership del texto y rechaza manipulaciones.
-      if (!isEditMode && session?.user.id && textoId) {
+      if (!isEditMode && textoId) {
         const retroactivo = esHojaLibre || esConsignaAnterior;
         try {
           await fetch("/api/registrar-escritura", {
@@ -271,6 +296,7 @@ function EditorContenido() {
             body: JSON.stringify({ textoId, retroactivo }),
           });
         } catch (e) {
+          // No bloqueamos el flujo de publicación por un fallo en stats.
           console.error("No se pudo registrar estadísticas de escritura", e);
         }
       }
@@ -295,7 +321,10 @@ function EditorContenido() {
           router.push(publicado ? "/feed" : "/perfil");
         }
       }, 1800);
-    } catch {
+    } catch (e: unknown) {
+      const msg = e instanceof Error ? e.message : "No se pudo guardar tu texto";
+      console.error("Error guardando texto", e);
+      setErrorMsg(msg);
       setGuardando(false);
     }
   }
@@ -347,8 +376,14 @@ function EditorContenido() {
           Volver
         </Link>
         <div className="flex items-center gap-1.5 text-tinta-suave">
-          <Check size={14} strokeWidth={2} />
-          <span className="text-sm">Guardado</span>
+          {borradorGuardadoMsg ? (
+            <>
+              <Check size={14} strokeWidth={2} />
+              <span className="text-sm">Borrador guardado</span>
+            </>
+          ) : (
+            <span className="text-sm opacity-60">Autosave activo</span>
+          )}
         </div>
       </nav>
 
@@ -356,6 +391,16 @@ function EditorContenido() {
       {pasteMsg && (
         <div className="border-b border-borde bg-papel-oscuro px-6 py-3 text-center text-sm text-tinta-suave">
           <em>renglón</em> es un espacio de escritura manual — no está permitido pegar texto
+        </div>
+      )}
+
+      {/* Error al guardar */}
+      {errorMsg && (
+        <div
+          className="border-b px-6 py-3 text-center text-sm"
+          style={{ backgroundColor: "#fdecec", borderColor: "#f1c4c4", color: "#64313E" }}
+        >
+          {errorMsg}
         </div>
       )}
 

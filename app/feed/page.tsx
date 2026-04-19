@@ -6,6 +6,7 @@ import { useRouter } from "next/navigation";
 import { EyeOff, Heart } from "lucide-react";
 import { supabase } from "@/lib/supabase";
 import TypewriterLoader from "@/app/components/TypewriterLoader";
+import { getFechaLocal } from "@/utils/fecha";
 
 interface Texto {
   id: string;
@@ -15,10 +16,6 @@ interface Texto {
   created_at: string;
   user_id: string;
   username: string;
-}
-
-function getHoy(): string {
-  return new Date().toISOString().slice(0, 10);
 }
 
 function tiempoRelativo(fecha: string): string {
@@ -31,7 +28,7 @@ function tiempoRelativo(fecha: string): string {
 }
 
 export default function Feed() {
-  const hoy = getHoy();
+  const hoy = getFechaLocal();
   const router = useRouter();
   const [completado, setCompletado] = useState(false);
   const [consigna, setConsigna] = useState<string | null>(null);
